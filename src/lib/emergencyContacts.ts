@@ -84,14 +84,14 @@ export const emergencyContacts: EmergencyContact[] = [
     available_24h: true,
   },
   {
-    name: 'Local Rescue Team',
-    nameTh: 'ทีมกู้ภัยพื้นที่',
+    name: 'Chiang Mai Municipal Special Rescue Station',
+    nameTh: 'สถานีหน่วยกู้ภัยพิเศษเทศบาลนครเชียงใหม่',
     category: 'rescue',
-    phone: '',
+    phone: '053232974',
     priority: 'medium',
     available_24h: true,
-    description: 'Add local rescue phone number before event day',
-    descriptionTh: 'เพิ่มเบอร์กู้ภัยพื้นที่ก่อนวันงาน',
+    description: 'Local rescue service for Chiang Mai city area. Alternate numbers: 053-259-353-5.',
+    descriptionTh: 'ให้บริการในเขตตัวเมือง เบอร์สำรอง: 053-259-353-5',
   },
 ];
 
