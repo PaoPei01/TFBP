@@ -53,13 +53,13 @@ export function StaffDashboardPage() {
         <Link className={`staff-action-card ${access.can_view_emergency ? 'danger-card' : 'disabled-link'}`} to={access.can_view_emergency ? '/staff/emergency' : '#'} aria-disabled={!access.can_view_emergency}>
           <ShieldAlert size={28} />
           <strong>Emergency</strong>
-          <span>เฉพาะ role emergency_staff หรือ admin</span>
+          <span>admin และ staff ทุก role เข้าได้ตามกลุ่มที่ได้รับมอบหมาย</span>
         </Link>
       </div>
 
       <Card className="staff-confidential-card">
         <strong>Role rules</strong>
-        <span>staff เห็นเฉพาะสี/กลุ่มที่ assign, mentor เห็นเฉพาะ subgroup, viewer ดูได้อย่างเดียว, emergency_staff เข้าเฉพาะหน้า emergency</span>
+        <span>staff เห็นเฉพาะสี/กลุ่มที่ assign, mentor เห็นเฉพาะ subgroup, viewer ดูได้อย่างเดียว, emergency ใช้ได้ทุก role แต่ยังจำกัดข้อมูลตามกลุ่ม</span>
       </Card>
     </section>
   );
