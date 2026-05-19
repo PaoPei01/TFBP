@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { errorMessage } from '../utils/error';
 
 export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
@@ -11,7 +12,7 @@ export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []) {
     try {
       setData(await loader());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');
+      setError(errorMessage(err, 'เกิดข้อผิดพลาด'));
     } finally {
       setLoading(false);
     }

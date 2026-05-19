@@ -125,7 +125,12 @@ export async function rejectEditRequest(id: string, note: string) {
 }
 
 export async function updateProfile(id: string, values: Partial<Profile>) {
-  const { error } = await supabase.rpc('update_profile_admin', { input_profile_id: id, input_new_data: values });
+  const cleaned = Object.fromEntries(
+    Object.entries(values)
+      .filter(([key]) => !['id', 'created_at', 'updated_at'].includes(key))
+      .map(([key, value]) => [key, value === '' ? null : value]),
+  );
+  const { error } = await supabase.rpc('update_profile_admin', { input_profile_id: id, input_new_data: cleaned });
   if (error) throw error;
 }
 

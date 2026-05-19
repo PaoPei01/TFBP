@@ -16,6 +16,7 @@ import { majorLabel } from '../lib/major';
 import type { Profile } from '../lib/types';
 import { deleteProfile, fetchAdminMajors, fetchAdminProfiles, fetchAdminSummary, updateProfile } from '../services/profiles';
 import { exportProfilesCsv } from '../utils/csv';
+import { errorMessage } from '../utils/error';
 
 export function AdminDashboardPage() {
   const [search, setSearch] = useState('');
@@ -36,7 +37,7 @@ export function AdminDashboardPage() {
       setEditing(null);
       await profilesState.reload();
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'บันทึกไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'บันทึกไม่สำเร็จ') });
     }
   }
 
@@ -48,7 +49,7 @@ export function AdminDashboardPage() {
       setDeleting(null);
       await profilesState.reload();
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'ลบไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'ลบไม่สำเร็จ') });
     }
   }
 
@@ -129,14 +130,25 @@ export function AdminDashboardPage() {
       <Modal open={Boolean(editing)} title="แก้ไขข้อมูลผู้เข้าร่วม" onClose={() => setEditing(null)}>
         {editing ? (
           <div className="form-grid two-col modal-body">
-            {Object.entries(fieldLabels).map(([field, label]) => (
-              <Input
-                key={field}
-                label={label}
-                value={String(editing[field as keyof Profile] ?? '')}
-                onChange={(event) => setEditing({ ...editing, [field]: event.target.value })}
-              />
-            ))}
+            {Object.entries(fieldLabels).map(([field, label]) =>
+              field === 'public_profile' || field === 'show_instagram' || field === 'show_line_id' ? (
+                <label className="check-field" key={field}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(editing[field as keyof Profile])}
+                    onChange={(event) => setEditing({ ...editing, [field]: event.target.checked })}
+                  />
+                  <span>{label}</span>
+                </label>
+              ) : (
+                <Input
+                  key={field}
+                  label={label}
+                  value={String(editing[field as keyof Profile] ?? '')}
+                  onChange={(event) => setEditing({ ...editing, [field]: event.target.value })}
+                />
+              ),
+            )}
             <div className="form-actions full-span">
               <Button onClick={saveProfile}>บันทึก</Button>
               <Button variant="secondary" onClick={() => setEditing(null)}>

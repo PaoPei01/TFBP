@@ -14,6 +14,7 @@ import { groupKey, groupMeta, mainGroups, subgroups } from '../lib/groups';
 import { getMajorCode, majorLabel } from '../lib/major';
 import type { GroupAssignment, GroupProfile, MainGroup, Subgroup } from '../lib/types';
 import { fetchGroupProfiles, lockGroups, saveGroupAssignments } from '../services/groups';
+import { errorMessage } from '../utils/error';
 import { exportGroupsCsv, exportGroupsXlsx } from '../utils/groupExport';
 
 function assignmentFromProfile(profile: GroupProfile): Pick<GroupAssignment, 'profile_id' | 'main_group' | 'subgroup' | 'locked'> | null {
@@ -70,7 +71,7 @@ export function GroupDashboardPage() {
       setDrafts({});
       await state.reload();
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'บันทึกไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'บันทึกไม่สำเร็จ') });
     }
   }
 
@@ -80,7 +81,7 @@ export function GroupDashboardPage() {
       setToast({ type: 'success', message: 'ล็อกกลุ่มแล้ว' });
       await state.reload();
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'ล็อกไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'ล็อกไม่สำเร็จ') });
     }
   }
 

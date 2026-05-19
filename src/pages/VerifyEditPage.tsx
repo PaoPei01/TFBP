@@ -14,6 +14,7 @@ import { majorLabel } from '../lib/major';
 import type { EditableProfileFields, Profile } from '../lib/types';
 import { fetchVerifiedFriendRecommendations, fetchVerifiedGroupContext } from '../services/groups';
 import { createEditRequest, pickEditableFields, verifyProfileIdentity } from '../services/profiles';
+import { errorMessage } from '../utils/error';
 
 export function VerifyEditPage() {
   const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ export function VerifyEditPage() {
       setFriends(recommendations);
       setToast({ type: 'success', message: 'ยืนยันตัวตนสำเร็จ' });
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'ยืนยันตัวตนไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'ยืนยันตัวตนไม่สำเร็จ') });
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ export function VerifyEditPage() {
       await createEditRequest(profile, form);
       setToast({ type: 'success', message: 'ส่งคำขอแก้ไขแล้ว รอแอดมินอนุมัติ' });
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'ส่งคำขอไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'ส่งคำขอไม่สำเร็จ') });
     } finally {
       setLoading(false);
     }

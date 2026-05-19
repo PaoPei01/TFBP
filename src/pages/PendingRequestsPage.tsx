@@ -10,6 +10,7 @@ import { useAsync } from '../hooks/useAsync';
 import { fieldLabels } from '../lib/constants';
 import type { EditRequest } from '../lib/types';
 import { approveEditRequest, fetchPendingRequests, rejectEditRequest } from '../services/profiles';
+import { errorMessage } from '../utils/error';
 
 export function PendingRequestsPage() {
   const state = useAsync(fetchPendingRequests, []);
@@ -22,7 +23,7 @@ export function PendingRequestsPage() {
       setToast({ type: 'success', message: 'อนุมัติคำขอแล้ว' });
       await state.reload();
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'อนุมัติไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'อนุมัติไม่สำเร็จ') });
     }
   }
 
@@ -32,7 +33,7 @@ export function PendingRequestsPage() {
       setToast({ type: 'success', message: 'ปฏิเสธคำขอแล้ว' });
       await state.reload();
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : 'ปฏิเสธไม่สำเร็จ' });
+      setToast({ type: 'error', message: errorMessage(err, 'ปฏิเสธไม่สำเร็จ') });
     }
   }
 
