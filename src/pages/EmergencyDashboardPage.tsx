@@ -262,15 +262,15 @@ export function EmergencyDashboardPage() {
               </div>
               <HealthFlags profile={profile} detail />
               <div className="emergency-contact-grid">
-                <a className="call-card primary-call" href={profile.phone ? `tel:${profile.phone}` : undefined}>
-                  <Phone size={18} />
-                  <span>{language === 'th' ? 'โทรผู้เข้าร่วม' : 'Call participant'}</span>
-                  <strong>{profile.phone || '-'}</strong>
-                </a>
-                <a className="call-card" href={profile.emergency_phone ? `tel:${profile.emergency_phone}` : undefined}>
+                <a className="call-card primary-call" href={profile.emergency_phone ? `tel:${profile.emergency_phone}` : undefined}>
                   <Phone size={18} />
                   <span>{language === 'th' ? 'โทรฉุกเฉิน' : 'Emergency contact'}</span>
                   <strong>{profile.emergency_phone || '-'}</strong>
+                </a>
+                <a className="call-card" href={profile.phone ? `tel:${profile.phone}` : undefined}>
+                  <Phone size={18} />
+                  <span>{language === 'th' ? 'โทรผู้เข้าร่วม' : 'Call participant'}</span>
+                  <strong>{profile.phone || '-'}</strong>
                 </a>
               </div>
               <div className="form-grid">
