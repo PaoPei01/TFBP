@@ -16,7 +16,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { fieldLabel, fieldLabels } from '../lib/constants';
 import { groupLabel } from '../lib/grouping';
 import { groupMeta, mainGroups, subgroups } from '../lib/groups';
-import { majorLabel } from '../lib/major';
+import { majorCatalog, majorLabel, normalizeMajor } from '../lib/major';
 import type { GroupProfile, Profile } from '../lib/types';
 import { deleteProfile, fetchAdminMajors, fetchAdminProfiles, fetchAdminSummary, updateProfile } from '../services/profiles';
 import { exportProfilesCsv } from '../utils/csv';
@@ -173,7 +173,35 @@ export function AdminDashboardPage() {
         {editing ? (
           <div className="form-grid two-col modal-body">
             {Object.keys(fieldLabels).map((field) =>
-              field === 'public_profile' || field === 'show_instagram' || field === 'show_line_id' ? (
+              field === 'major' ? (
+                <Select
+                  key={field}
+                  label={fieldLabel(field, language)}
+                  value={editing.major ? normalizeMajor(editing.major) : ''}
+                  options={majorCatalog.map((major) => ({ value: `${major.th} (${major.code})`, label: majorLabel(`(${major.code})`, language) }))}
+                  onChange={(event) => setEditing({ ...editing, major: event.target.value })}
+                />
+              ) : field === 'admission_round' ? (
+                <Select
+                  key={field}
+                  label={fieldLabel(field, language)}
+                  value={editing.admission_round ?? ''}
+                  options={['Portfolio', 'Quota', 'Admission']}
+                  onChange={(event) => setEditing({ ...editing, admission_round: (event.target.value || null) as Profile['admission_round'] })}
+                />
+              ) : field === 'gender' ? (
+                <Select
+                  key={field}
+                  label={fieldLabel(field, language)}
+                  value={editing.gender ?? ''}
+                  options={[
+                    { value: 'male', label: language === 'th' ? 'ชาย' : 'Male' },
+                    { value: 'female', label: language === 'th' ? 'หญิง' : 'Female' },
+                    { value: 'other', label: language === 'th' ? 'อื่น ๆ' : 'Other' },
+                  ]}
+                  onChange={(event) => setEditing({ ...editing, gender: event.target.value || null })}
+                />
+              ) : field === 'public_profile' || field === 'show_instagram' || field === 'show_line_id' ? (
                 <label className="check-field" key={field}>
                   <input
                     type="checkbox"

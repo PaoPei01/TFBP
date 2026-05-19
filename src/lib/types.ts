@@ -7,6 +7,7 @@ export type Profile = {
   name_th: string | null;
   name_en: string | null;
   nickname: string | null;
+  nickname_en: string | null;
   major: string | null;
   phone: string | null;
   emergency_phone: string | null;
@@ -30,7 +31,7 @@ export type Profile = {
   updated_at: string | null;
 };
 
-export type PublicProfile = Pick<Profile, 'id' | 'name_th' | 'name_en' | 'nickname' | 'major'> & {
+export type PublicProfile = Pick<Profile, 'id' | 'name_th' | 'name_en' | 'nickname' | 'nickname_en' | 'major'> & {
   main_group: MainGroup | null;
   subgroup: Subgroup | null;
 };
@@ -38,6 +39,7 @@ export type PublicProfile = Pick<Profile, 'id' | 'name_th' | 'name_en' | 'nickna
 export type EditableProfileFields = Pick<
   Profile,
   | 'nickname'
+  | 'nickname_en'
   | 'phone'
   | 'emergency_phone'
   | 'line_id'
@@ -328,6 +330,10 @@ export type Database = {
         Returns: undefined;
       };
       lock_group_assignments: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      clear_group_assignments: {
         Args: Record<string, never>;
         Returns: undefined;
       };

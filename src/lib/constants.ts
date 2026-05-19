@@ -1,5 +1,6 @@
 export const editableFields = [
   'nickname',
+  'nickname_en',
   'phone',
   'emergency_phone',
   'line_id',
@@ -20,6 +21,7 @@ export const fieldLabels: Record<string, string> = {
   name_th: 'ชื่อภาษาไทย',
   name_en: 'ชื่อภาษาอังกฤษ',
   nickname: 'ชื่อเล่น',
+  nickname_en: 'ชื่อเล่นภาษาอังกฤษ',
   major: 'สาขา',
   phone: 'เบอร์โทร',
   emergency_phone: 'เบอร์ติดต่อฉุกเฉิน',
@@ -45,6 +47,7 @@ export const fieldLabelsEn: Record<string, string> = {
   name_th: 'Thai name',
   name_en: 'English name',
   nickname: 'Nickname',
+  nickname_en: 'English nickname',
   major: 'Major',
   phone: 'Phone',
   emergency_phone: 'Emergency phone',

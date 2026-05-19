@@ -256,7 +256,7 @@ export function EmergencyDashboardPage() {
                 <div>
                   <h2>{profile.nickname || profile.name_th}</h2>
                   <p>{profile.name_th} · {majorLabel(profile.major)}</p>
-                  <span>{groupLabel(profile.main_group, profile.subgroup)}</span>
+                  <span>{groupLabel(profile.main_group, profile.subgroup, language)}</span>
                 </div>
                 {draft.needs ? <Badge status="rejected">Needs special care</Badge> : <Badge status="pending">Medical watch</Badge>}
               </div>

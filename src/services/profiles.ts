@@ -6,6 +6,8 @@ import type { AdminSummary, ChangeLog, EditableProfileFields, EditRequest, Group
 type SearchOptions = {
   search?: string;
   major?: string;
+  mainGroup?: string;
+  subgroup?: string;
 };
 
 export async function fetchPublicProfiles(options: SearchOptions): Promise<PublicProfile[]> {
@@ -15,7 +17,12 @@ export async function fetchPublicProfiles(options: SearchOptions): Promise<Publi
   });
   if (error) throw error;
   const rows = (data ?? []) as PublicProfile[];
-  return options.major ? rows.filter((row) => getMajorCode(row.major) === options.major) : rows;
+  return rows.filter((row) => {
+    if (options.major && getMajorCode(row.major) !== options.major) return false;
+    if (options.mainGroup && row.main_group !== options.mainGroup) return false;
+    if (options.subgroup && row.subgroup !== options.subgroup) return false;
+    return true;
+  });
 }
 
 export async function fetchPublicMajors(): Promise<string[]> {
@@ -135,6 +142,11 @@ export async function updateProfile(id: string, values: Partial<Profile>) {
       .map(([key, value]) => [key, value === '' ? null : value]),
   );
   const { error } = await supabase.rpc('update_profile_admin', { input_profile_id: id, input_new_data: cleaned });
+  if (error) throw error;
+}
+
+export async function clearGroupAssignments() {
+  const { error } = await supabase.rpc('clear_group_assignments');
   if (error) throw error;
 }
 

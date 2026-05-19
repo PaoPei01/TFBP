@@ -1,4 +1,4 @@
-import { Download, Lock, RefreshCw, Shuffle } from 'lucide-react';
+import { Download, Lock, RefreshCw, Shuffle, Trash2 } from 'lucide-react';
 import { DragEvent, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ContactLinks } from '../components/ContactLinks';
@@ -17,6 +17,7 @@ import { groupKey, groupMeta, mainGroups, subgroups } from '../lib/groups';
 import { getMajorCode, majorLabel } from '../lib/major';
 import type { GroupAssignment, GroupProfile, GroupSetting, MainGroup, Subgroup } from '../lib/types';
 import { fetchGroupProfiles, fetchGroupSettings, lockGroups, saveGroupAssignments, saveGroupSetting, settingKey } from '../services/groups';
+import { clearGroupAssignments } from '../services/profiles';
 import { errorMessage } from '../utils/error';
 import { exportGroupsCsv, exportGroupsXlsx } from '../utils/groupExport';
 
@@ -123,6 +124,20 @@ export function GroupDashboardPage() {
     }
   }
 
+  async function clearAssignments() {
+    const confirmed = window.confirm(language === 'th' ? 'ต้องการลบข้อมูลการจัดกลุ่มทั้งหมดใช่ไหม? หลังจากนี้สามารถ Auto Generate ใหม่ได้' : 'Clear all group assignments? You can auto-generate again afterward.');
+    if (!confirmed) return;
+    try {
+      await clearGroupAssignments();
+      setDrafts({});
+      setAuditReady(false);
+      setToast({ type: 'success', message: language === 'th' ? 'ลบข้อมูลการจัดกลุ่มทั้งหมดแล้ว' : 'All group assignments cleared' });
+      await state.reload();
+    } catch (err) {
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ลบข้อมูลการจัดกลุ่มไม่สำเร็จ' : 'Failed to clear group assignments') });
+    }
+  }
+
   function onDrop(event: DragEvent, mainGroup: MainGroup, subgroup: Subgroup) {
     const profileId = event.dataTransfer.getData('text/plain');
     if (!profileId || locked) return;
@@ -163,6 +178,9 @@ export function GroupDashboardPage() {
           </Button>
           <Button variant="danger" icon={<Lock size={18} />} onClick={lock} disabled={locked || assignedCount === 0}>
             Lock Groups
+          </Button>
+          <Button variant="danger" icon={<Trash2 size={18} />} onClick={clearAssignments} disabled={assignedCount === 0}>
+            {language === 'th' ? 'ลบการจัดกลุ่มทั้งหมด' : 'Clear all groups'}
           </Button>
           <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportGroupsCsv(profiles)}>
             CSV

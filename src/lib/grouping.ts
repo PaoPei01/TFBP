@@ -14,6 +14,7 @@ const majorWeight = 9.2;
 const registrationWeight = 2.6;
 const medicalWeight = 1.8;
 const admissionWeight = 1.2;
+const internationalSupportMajors = new Set(['MEPM', 'EESG', 'CIE', 'IEL', 'IGME', 'ISCE', 'SCE']);
 
 function allBuckets() {
   return mainGroups.flatMap((mainGroup, mainIndex) => {
@@ -74,6 +75,10 @@ function registrationBucket(profile: AssignmentInput) {
   return 'registration-unknown';
 }
 
+function needsInternationalSupport(profile: AssignmentInput) {
+  return internationalSupportMajors.has(getMajorCode(profile.major));
+}
+
 export function calculateGroupStats(profiles: AssignmentInput[], assignments: Pick<GroupAssignment, 'profile_id' | 'main_group' | 'subgroup'>[]): GroupStats[] {
   const stats = emptyStats();
   const byProfile = new Map(profiles.map((profile) => [profile.id, profile]));
@@ -106,6 +111,7 @@ export function autoAssignGroups(profiles: AssignmentInput[], existingAssignment
   const lockedIds = new Set(locked.map((assignment) => assignment.profile_id));
   const sortable = profiles
     .filter((profile) => !lockedIds.has(profile.id))
+    .filter((profile) => !needsInternationalSupport(profile))
     .sort((a, b) =>
       `${getMajorCode(a.major)}-${registrationBucket(a)}-${medicalBucket(a)}-${a.registration_order ?? 999999}-${a.id}`.localeCompare(
         `${getMajorCode(b.major)}-${registrationBucket(b)}-${medicalBucket(b)}-${b.registration_order ?? 999999}-${b.id}`,
@@ -120,6 +126,21 @@ export function autoAssignGroups(profiles: AssignmentInput[], existingAssignment
     notes: 'locked',
   }));
   const stats = calculateGroupStats(profiles, drafts);
+
+  const redBProfiles = profiles
+    .filter((profile) => !lockedIds.has(profile.id))
+    .filter(needsInternationalSupport)
+    .sort((a, b) =>
+      `${getMajorCode(a.major)}-${registrationBucket(a)}-${medicalBucket(a)}-${a.registration_order ?? 999999}-${a.id}`.localeCompare(
+        `${getMajorCode(b.major)}-${registrationBucket(b)}-${medicalBucket(b)}-${b.registration_order ?? 999999}-${b.id}`,
+      ),
+    );
+
+  for (const profile of redBProfiles) {
+    drafts.push({ profile_id: profile.id, main_group: 'Red', subgroup: 'B', notes: 'international-support-red-b' });
+    const target = stats.find((item) => item.main_group === 'Red' && item.subgroup === 'B');
+    if (target) increment(target, profile);
+  }
 
   sortable.forEach((profile, index) => {
     const orderedBuckets = index % 2 === 0 ? buckets : [...buckets].reverse();

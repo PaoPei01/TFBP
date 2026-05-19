@@ -14,7 +14,7 @@ export const majorCatalog: MajorInfo[] = [
   { code: 'IE', th: 'ภาควิชาวิศวกรรมอุตสาหการ', en: 'Industrial Engineering' },
   { code: 'IEL', th: 'ภาควิชาวิศวกรรมอุตสาหการและการจัดการ โลจิสติกส์', en: 'Industrial Engineering and Logistics Management' },
   { code: 'IGE', th: 'ภาควิชาวิศวกรรมบูรณาการ', en: 'Integrated Engineering' },
-  { code: 'IGE International', th: 'ภาควิชาวิศวกรรมบูรณาการ และพหุวิทยาการ', en: 'Integrated and Multi-disciplinary Engineering' },
+  { code: 'IGME', th: 'ภาควิชาวิศวกรรมบูรณาการ และพหุวิทยาการ', en: 'Integrated and Multi-disciplinary Engineering' },
   { code: 'ISCE', th: 'ภาควิชาวิศวกรรมระบบสารสนเทศและความมั่นคงปลอดภัยไซเบอร์', en: 'Information Systems and Cybersecurity Engineering' },
   { code: 'ME', th: 'ภาควิชาวิศวกรรมเครื่องกล', en: 'Mechanical Engineering' },
   { code: 'MEPM', th: 'ภาควิชาวิศวกรรมเครื่องกลและการบริหารโครงการวิศวกรรม', en: 'Mechanical Engineering and Engineering Project Management' },
@@ -28,7 +28,7 @@ export function getMajorCode(major?: string | null) {
   const match = value.match(/\(([^)]+)\)\s*$/);
   if (match) {
     const rawCode = match[1].replace(/\s+/g, ' ').trim();
-    if (/^ige\s*international$/i.test(rawCode)) return 'IGE International';
+    if (/^(ige\s*international|igme)$/i.test(rawCode)) return 'IGME';
     return rawCode.toUpperCase();
   }
   const normalized = value.toLowerCase();
