@@ -30,6 +30,7 @@ export function EmergencyDashboardPage() {
   const [allergyType, setAllergyType] = useState('');
   const [notes, setNotes] = useState<Record<string, { note: string; needs: boolean }>>({});
   const [toast, setToast] = useState<ToastState>(null);
+  const canEditHealthTools = Boolean(accessState.data?.is_admin || accessState.data?.roles.includes('emergency_staff'));
 
   const rows = useMemo(() => state.data?.participants ?? [], [state.data?.participants]);
   const filtered = useMemo(() => {
@@ -56,8 +57,8 @@ export function EmergencyDashboardPage() {
   }, [allergyType, group, medical, rows, search, subgroup]);
 
   async function save(profile: EmergencyProfile) {
-    if (!accessState.data?.is_admin) {
-      setToast({ type: 'error', message: 'บัญชีนี้ดูข้อมูลฉุกเฉินได้ แต่แก้ note ได้เฉพาะ admin' });
+    if (!canEditHealthTools) {
+      setToast({ type: 'error', message: 'บัญชีนี้ดูข้อมูลฉุกเฉินได้ แต่แก้ note ได้เฉพาะ admin หรือ emergency_staff' });
       return;
     }
     const current = notes[profile.id] ?? { note: profile.emergency_note ?? '', needs: Boolean(profile.needs_special_care) };
@@ -165,7 +166,7 @@ export function EmergencyDashboardPage() {
                   placeholder="เช่น ให้พี่กลุ่มช่วยติดตาม / แจ้งพยาบาลแล้ว"
                 />
                 <div className="form-actions">
-                  <Button icon={<Save size={18} />} onClick={() => save(profile)} disabled={!accessState.data?.is_admin}>บันทึก note</Button>
+                  <Button icon={<Save size={18} />} onClick={() => save(profile)} disabled={!canEditHealthTools}>บันทึก note</Button>
                 </div>
               </div>
             </Card>

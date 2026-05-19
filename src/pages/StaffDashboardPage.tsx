@@ -13,7 +13,7 @@ export function StaffDashboardPage() {
   const accessState = useAsync(fetchStaffAccessContext, []);
   const context = state.data;
   const access = context?.access ?? accessState.data;
-  const assignedLabel = context?.assignment ? groupLabel(context.assignment.main_group, context.assignment.subgroup) : access?.is_admin ? 'ทุกกลุ่ม' : '-';
+  const assignedLabel = context?.assignment ? groupLabel(context.assignment.main_group, context.assignment.subgroup) : access?.is_admin || access?.roles.includes('emergency_staff') ? 'ทุกกลุ่ม' : '-';
   const medicalCount = (context?.participants ?? []).filter((profile) => profile.disease || profile.drug_allergy || profile.food_allergy).length;
   const isEmergencyOnly = Boolean(access?.roles.includes('emergency_staff') && !access?.roles.some((role) => ['staff', 'mentor', 'viewer'].includes(role)));
 
@@ -36,7 +36,7 @@ export function StaffDashboardPage() {
       </div>
 
       <div className="stats-grid">
-        <DashboardStatCard label="ในความรับผิดชอบ" value={context?.participants.length ?? (isEmergencyOnly ? 'ทุกกลุ่ม' : 0)} icon={<UsersRound size={20} />} />
+        <DashboardStatCard label={isEmergencyOnly ? 'ขอบเขตสุขภาพ' : 'ในความรับผิดชอบ'} value={context?.participants.length ?? (isEmergencyOnly ? 'ทุกกลุ่ม' : 0)} icon={<UsersRound size={20} />} />
         <DashboardStatCard label="พี่กลุ่ม" value={context?.staff_roster.length ?? 0} />
         <DashboardStatCard label="Medical visible" value={medicalCount} icon={<AlertTriangle size={20} />} />
       </div>
@@ -54,14 +54,14 @@ export function StaffDashboardPage() {
         </Link>
         <Link className={`staff-action-card ${access.can_view_emergency ? 'danger-card' : 'disabled-link'}`} to={access.can_view_emergency ? '/staff/emergency' : '#'} aria-disabled={!access.can_view_emergency}>
           <ShieldAlert size={28} />
-          <strong>Emergency</strong>
-          <span>emergency_staff เห็นทุกกลุ่ม, staff role อื่นเห็นตามกลุ่มที่ได้รับมอบหมาย</span>
+          <strong>Health Tools</strong>
+          <span>emergency_staff ใช้เครื่องมือสุขภาพได้เต็มรูปแบบทุกกลุ่ม</span>
         </Link>
       </div>
 
       <Card className="staff-confidential-card">
         <strong>Role rules</strong>
-        <span>emergency_staff ใช้เครื่องมือฝั่ง staff ได้และดู emergency ทุกกลุ่ม แต่ยังเข้าเครื่องมือแอดมินไม่ได้ถ้าไม่ได้อยู่ในตาราง admins</span>
+        <span>emergency_staff ใช้เฉพาะเครื่องมือสุขภาพ: ดูข้อมูลฉุกเฉินทุกกลุ่ม บันทึก note และ special care ได้ แต่ไม่แตะงานสตาฟกลุ่มหรือแอดมิน</span>
       </Card>
     </section>
   );
