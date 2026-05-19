@@ -18,6 +18,8 @@ export type Profile = {
   disease: string | null;
   drug_allergy: string | null;
   admission_round: 'Portfolio' | 'Quota' | 'Admission' | null;
+  form_submitted_at: string | null;
+  registration_order: number | null;
   gender: string | null;
   hometown: string | null;
   interests: string | null;
@@ -112,6 +114,8 @@ export type GroupStats = {
   capacity: number;
   majorCounts: Record<string, number>;
   admissionCounts: Record<string, number>;
+  registrationCounts: Record<string, number>;
+  medicalCounts: Record<string, number>;
   genderCounts: Record<string, number>;
   warnings: string[];
 };

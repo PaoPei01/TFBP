@@ -45,6 +45,8 @@ export async function exportGroupsXlsx(rows: GroupProfile[], stats: GroupStats[]
     { header: 'Nickname', key: 'nickname', width: 16 },
     { header: 'Major', key: 'major', width: 42 },
     { header: 'Admission Round', key: 'admission_round', width: 18 },
+    { header: 'Registration Order', key: 'registration_order', width: 18 },
+    { header: 'Medical Flags', key: 'medical_flags', width: 16 },
     { header: 'Main Group', key: 'main_group', width: 14 },
     { header: 'Subgroup', key: 'subgroup', width: 10 },
   ];
@@ -54,6 +56,8 @@ export async function exportGroupsXlsx(rows: GroupProfile[], stats: GroupStats[]
       nickname: row.nickname,
       major: majorLabel(row.major),
       admission_round: row.admission_round,
+      registration_order: row.registration_order,
+      medical_flags: [row.food_allergy, row.disease, row.drug_allergy].filter((value) => value && value !== '-').length,
       main_group: row.group_assignment?.main_group,
       subgroup: row.group_assignment?.subgroup,
     }),
@@ -70,9 +74,15 @@ export async function exportGroupsXlsx(rows: GroupProfile[], stats: GroupStats[]
   });
 
   const admissionSheet = workbook.addWorksheet('Admission distribution');
-  admissionSheet.addRow(['Group', 'Subgroup', 'Admission Round', 'Count']);
+  admissionSheet.addRow(['Group', 'Subgroup', 'Admission/Registration Bucket', 'Count']);
   stats.forEach((item) => {
-    Object.entries(item.admissionCounts).forEach(([round, count]) => admissionSheet.addRow([item.main_group, item.subgroup, round, count]));
+    Object.entries(item.registrationCounts).forEach(([round, count]) => admissionSheet.addRow([item.main_group, item.subgroup, round, count]));
+  });
+
+  const medicalSheet = workbook.addWorksheet('Medical distribution');
+  medicalSheet.addRow(['Group', 'Subgroup', 'Medical Bucket', 'Count']);
+  stats.forEach((item) => {
+    Object.entries(item.medicalCounts).forEach(([bucket, count]) => medicalSheet.addRow([item.main_group, item.subgroup, bucket, count]));
   });
 
   const attendance = workbook.addWorksheet('Attendance sheet');

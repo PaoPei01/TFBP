@@ -6,7 +6,7 @@ export type MajorInfo = {
 
 export const majorCatalog: MajorInfo[] = [
   { code: 'CE', th: 'ภาควิชาวิศวกรรมโยธา', en: 'Civil Engineering' },
-  { code: 'CIE', th: 'ภาควิชาวิศวกรรมโยธา (นานาชาติ)', en: 'Civil Engineering International Program' },
+  { code: 'CIE', th: 'ภาควิชาวิศวกรรมโยธา (นานาชาติ)', en: 'Civil Engineering (International)' },
   { code: 'CPE', th: 'ภาควิชาวิศวกรรมคอมพิวเตอร์', en: 'Computer Engineering' },
   { code: 'EE', th: 'ภาควิชาวิศวกรรมไฟฟ้า', en: 'Electrical Engineering' },
   { code: 'EESG', th: 'ภาควิชาวิศวกรรมไฟฟ้าและเทคโนโลยีโครงข่ายไฟฟ้าอัจฉริยะ', en: 'Electrical Engineering and Smart Grid Technology' },
@@ -14,20 +14,30 @@ export const majorCatalog: MajorInfo[] = [
   { code: 'IE', th: 'ภาควิชาวิศวกรรมอุตสาหการ', en: 'Industrial Engineering' },
   { code: 'IEL', th: 'ภาควิชาวิศวกรรมอุตสาหการและการจัดการ โลจิสติกส์', en: 'Industrial Engineering and Logistics Management' },
   { code: 'IGE', th: 'ภาควิชาวิศวกรรมบูรณาการ', en: 'Integrated Engineering' },
-  { code: 'ISCE', th: 'ภาควิชาวิศวกรรมระบบสารสนเทศและความมั่นคงปลอดภัยไซเบอร์', en: 'Information Systems and Cyber Security Engineering' },
+  { code: 'IGE International', th: 'ภาควิชาวิศวกรรมบูรณาการ และพหุวิทยาการ', en: 'Integrated and Multi-disciplinary Engineering' },
+  { code: 'ISCE', th: 'ภาควิชาวิศวกรรมระบบสารสนเทศและความมั่นคงปลอดภัยไซเบอร์', en: 'Information Systems and Cybersecurity Engineering' },
   { code: 'ME', th: 'ภาควิชาวิศวกรรมเครื่องกล', en: 'Mechanical Engineering' },
-  { code: 'MEPM', th: 'ภาควิชาวิศวกรรมเครื่องกลและการบริหารโครงการวิศวกรรม', en: 'Mechanical Engineering and Project Management' },
+  { code: 'MEPM', th: 'ภาควิชาวิศวกรรมเครื่องกลและการบริหารโครงการวิศวกรรม', en: 'Mechanical Engineering and Engineering Project Management' },
   { code: 'MNP', th: 'ภาควิชาวิศวกรรมเหมืองแร่และปิโตรเลียม', en: 'Mining and Petroleum Engineering' },
-  { code: 'REAI', th: 'ภาควิชาวิศวกรรมหุ่นยนต์และปัญญาประดิษฐ์', en: 'Robotics and Artificial Intelligence Engineering' },
+  { code: 'REAI', th: 'ภาควิชาวิศวกรรมหุ่นยนต์และปัญญาประดิษฐ์', en: 'Robotics Engineering and Artificial Intelligence' },
   { code: 'SCE', th: 'ภาควิชาวิศวกรรมเซมิคอนดักเตอร์', en: 'Semiconductor Engineering' },
 ];
 
 export function getMajorCode(major?: string | null) {
   const value = major ?? '';
-  const match = value.match(/\(([A-Z0-9]+)\)\s*$/);
-  if (match) return match[1];
+  const match = value.match(/\(([^)]+)\)\s*$/);
+  if (match) {
+    const rawCode = match[1].replace(/\s+/g, ' ').trim();
+    if (/^ige\s*international$/i.test(rawCode)) return 'IGE International';
+    return rawCode.toUpperCase();
+  }
   const normalized = value.toLowerCase();
-  return majorCatalog.find((majorInfo) => normalized.includes(majorInfo.en.toLowerCase()) || normalized.includes(majorInfo.th.toLowerCase()))?.code ?? value;
+  return (
+    majorCatalog.find((majorInfo) => {
+      const code = majorInfo.code.toLowerCase();
+      return normalized.includes(majorInfo.en.toLowerCase()) || normalized.includes(majorInfo.th.toLowerCase()) || normalized.includes(`(${code})`);
+    })?.code ?? value
+  );
 }
 
 export function normalizeMajor(major?: string | null) {

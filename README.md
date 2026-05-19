@@ -81,7 +81,7 @@
 ## Import Registration Excel
 
 The importer reads the Google Forms Excel export and upserts rows into `profiles` by `email`.
-It also normalizes major aliases, so `Industrial Engineering and Logistics Management (IEL)` and `ภาควิชาวิศวกรรมอุตสาหการและการจัดการ โลจิสติกส์ (IEL)` are treated as the same major.
+It also normalizes major aliases, so `Industrial Engineering and Logistics Management (IEL)` and `ภาควิชาวิศวกรรมอุตสาหการและการจัดการ โลจิสติกส์ (IEL)` are treated as the same major. The importer stores the Google Forms timestamp and row order as `form_submitted_at` and `registration_order`, which the group balancer uses as a registration-wave proxy.
 
 Dry run first:
 
@@ -146,6 +146,10 @@ The frontend also includes the same helper in `src/lib/contactParser.ts` for imp
 1. Login as admin.
 2. Go to `/admin/groups`.
 3. Click **Auto Generate Groups** to balance participants across 14 subgroups.
+   - Highest priority: major distribution
+   - Next: registration time/order distribution
+   - Next: medical condition distribution
+   - Optional/future: admission round distribution when that data exists
 4. Drag participants between subgroup cards for manual adjustment.
 5. Review imbalance warnings, group size bars, major distribution, and admission round distribution.
 6. Click **บันทึกการจัดกลุ่ม** to save assignments.

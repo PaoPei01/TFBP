@@ -649,9 +649,14 @@ th {
 
 .stacked-bars > div {
   display: grid;
-  grid-template-columns: 90px 1fr;
+  grid-template-columns: 90px 1fr auto;
   align-items: center;
   gap: 0.75rem;
+}
+
+.stacked-bars small {
+  color: var(--text-soft);
+  font-weight: 800;
 }
 
 .stacked-bars > div > div {

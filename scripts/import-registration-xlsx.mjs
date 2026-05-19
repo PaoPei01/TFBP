@@ -20,6 +20,7 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const emptyValues = new Set(['', '-', 'ไม่มี', 'none', 'no', 'n/a', 'null', 'ไม่่มี']);
 const majorAliases = [
   ['IEL', ['Industrial Engineering and Logistics Management', 'โลจิสติกส์ (IEL)', 'Logistics Management (IEL)']],
+  ['IGE International', ['Integrated and Multi-disciplinary Engineering', 'พหุวิทยาการ', 'IGE international']],
 ];
 
 function loadDotEnv(envPath) {
@@ -101,9 +102,19 @@ function normalizeMajor(value) {
   for (const [code, aliases] of majorAliases) {
     if (aliases.some((alias) => major.toLowerCase().includes(alias.toLowerCase()))) {
       if (code === 'IEL') return 'ภาควิชาวิศวกรรมอุตสาหการและการจัดการ โลจิสติกส์ (IEL)';
+      if (code === 'IGE International') return 'ภาควิชาวิศวกรรมบูรณาการ และพหุวิทยาการ (IGE International)';
     }
   }
   return major;
+}
+
+function parseTimestamp(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  const raw = clean(value);
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 function normalizeAdmissionRound(value) {
@@ -116,7 +127,7 @@ function normalizeAdmissionRound(value) {
   return null;
 }
 
-function rowToProfile(row) {
+function rowToProfile(row, registrationOrder) {
   const contact = first(row, ['ช่องทางการติดต่อ', 'Contact Channels']);
   const parsed = parseContact(contact);
 
@@ -137,6 +148,8 @@ function rowToProfile(row) {
     disease: first(row, ['โรคประจำตัว ', 'Congenital disease']),
     drug_allergy: first(row, ['ยาที่แพ้', 'Drug Allergies']),
     admission_round: normalizeAdmissionRound(first(row, ['รอบการรับเข้า', 'Admission Round', 'รอบที่ติด', 'Round'])),
+    form_submitted_at: parseTimestamp(row['ประทับเวลา'] ?? row.Timestamp),
+    registration_order: registrationOrder,
     gender: first(row, ['เพศ', 'Gender']),
     hometown: first(row, ['จังหวัด', 'ภูมิลำเนา', 'Hometown', 'Province']),
     interests: first(row, ['ความสนใจ', 'Interests']),
@@ -164,7 +177,7 @@ async function readWorkbook(inputPath) {
     headers.forEach((header, colNumber) => {
       if (header) row[header] = excelRow.getCell(colNumber).value;
     });
-    const profile = rowToProfile(row);
+    const profile = rowToProfile(row, rowNumber - 1);
     if (profile.email || profile.name_th || profile.name_en) profiles.push(profile);
   });
 

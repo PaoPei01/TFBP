@@ -176,6 +176,7 @@ export function GroupDashboardPage() {
                       {Object.entries(subgroupStats?.majorCounts ?? {}).slice(0, 5).map(([major, count]) => (
                         <small key={major}>{major} {count}</small>
                       ))}
+                      <small>Medical {(subgroupStats?.medicalCounts['medical-one'] ?? 0) + (subgroupStats?.medicalCounts['medical-multiple'] ?? 0)}</small>
                     </div>
                     <div className="draggable-list">
                       {subgroupProfiles.slice(0, 16).map((profile) => (
@@ -208,6 +209,27 @@ export function GroupDashboardPage() {
                   </i>
                 ))}
               </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="distribution-panel">
+        <h2>Registration / medical distribution</h2>
+        <div className="stacked-bars">
+          {stats.map((item) => (
+            <div key={`${item.key}-medical`}>
+              <span>{item.main_group} {item.subgroup}</span>
+              <div>
+                {Object.entries(item.registrationCounts).slice(0, 8).map(([bucket, count]) => (
+                  <i key={bucket} title={`${bucket}: ${count}`} style={{ width: `${Math.max(4, (count / Math.max(1, item.count)) * 100)}%` }}>
+                    {count}
+                  </i>
+                ))}
+              </div>
+              <small>
+                medical {(item.medicalCounts['medical-one'] ?? 0) + (item.medicalCounts['medical-multiple'] ?? 0)}
+              </small>
             </div>
           ))}
         </div>
