@@ -21,8 +21,10 @@ export function App() {
         <Route index element={<PublicListPage />} />
         <Route path="edit" element={<VerifyEditPage />} />
         <Route path="admin" element={<AdminLoginPage />} />
-        <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer']} />}>
+        <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer', 'emergency_staff']} />}>
           <Route path="staff" element={<StaffDashboardPage />} />
+        </Route>
+        <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer']} />}>
           <Route path="staff/my-group" element={<StaffMobilePage />} />
         </Route>
         <Route element={<StaffGuard requireAttendance />}>

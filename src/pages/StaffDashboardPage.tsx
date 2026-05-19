@@ -6,25 +6,27 @@ import { Card } from '../components/ui/Card';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
 import { useAsync } from '../hooks/useAsync';
 import { groupLabel } from '../lib/grouping';
-import { fetchStaffGroupContext } from '../services/staff';
+import { fetchStaffAccessContext, fetchStaffGroupContext } from '../services/staff';
 
 export function StaffDashboardPage() {
   const state = useAsync(fetchStaffGroupContext, []);
+  const accessState = useAsync(fetchStaffAccessContext, []);
   const context = state.data;
-  const access = context?.access;
+  const access = context?.access ?? accessState.data;
   const assignedLabel = context?.assignment ? groupLabel(context.assignment.main_group, context.assignment.subgroup) : access?.is_admin ? 'ทุกกลุ่ม' : '-';
   const medicalCount = (context?.participants ?? []).filter((profile) => profile.disease || profile.drug_allergy || profile.food_allergy).length;
+  const isEmergencyOnly = Boolean(access?.roles.includes('emergency_staff') && !access?.roles.some((role) => ['staff', 'mentor', 'viewer'].includes(role)));
 
-  if (state.loading) return <LoadingSkeleton />;
-  if (state.error) return <div className="error-state">{state.error}</div>;
-  if (!context || !access?.can_view_staff) return <div className="empty-state">บัญชีนี้ยังไม่มีสิทธิ์ Staff Mode</div>;
+  if (state.loading || accessState.loading) return <LoadingSkeleton />;
+  if (state.error && !accessState.data?.can_view_emergency) return <div className="error-state">{state.error}</div>;
+  if (!access?.can_view_staff && !access?.can_view_emergency) return <div className="empty-state">บัญชีนี้ยังไม่มีสิทธิ์ Staff Mode</div>;
 
   return (
     <section className="page-stack staff-page">
       <div className="section-heading">
         <p className="eyebrow">Staff App Mode</p>
         <h1>Staff Dashboard</h1>
-        <p>โหมดมือถือสำหรับหน้างาน เห็นเฉพาะกลุ่มที่ได้รับมอบหมายตาม role</p>
+        <p>โหมดมือถือสำหรับหน้างาน สิทธิ์จะแยกตาม role และไม่เปิดเครื่องมือแอดมินให้ staff</p>
       </div>
 
       <div className="staff-role-strip">
@@ -34,13 +36,13 @@ export function StaffDashboardPage() {
       </div>
 
       <div className="stats-grid">
-        <DashboardStatCard label="ในความรับผิดชอบ" value={context.participants.length} icon={<UsersRound size={20} />} />
-        <DashboardStatCard label="พี่กลุ่ม" value={context.staff_roster.length} />
+        <DashboardStatCard label="ในความรับผิดชอบ" value={context?.participants.length ?? (isEmergencyOnly ? 'ทุกกลุ่ม' : 0)} icon={<UsersRound size={20} />} />
+        <DashboardStatCard label="พี่กลุ่ม" value={context?.staff_roster.length ?? 0} />
         <DashboardStatCard label="Medical visible" value={medicalCount} icon={<AlertTriangle size={20} />} />
       </div>
 
       <div className="staff-action-grid">
-        <Link className="staff-action-card" to="/staff/my-group">
+        <Link className={`staff-action-card ${isEmergencyOnly ? 'disabled-link' : ''}`} to={isEmergencyOnly ? '#' : '/staff/my-group'} aria-disabled={isEmergencyOnly}>
           <Search size={28} />
           <strong>My Group</strong>
           <span>รายชื่อและช่องทางติดต่อในกลุ่ม</span>
@@ -53,13 +55,13 @@ export function StaffDashboardPage() {
         <Link className={`staff-action-card ${access.can_view_emergency ? 'danger-card' : 'disabled-link'}`} to={access.can_view_emergency ? '/staff/emergency' : '#'} aria-disabled={!access.can_view_emergency}>
           <ShieldAlert size={28} />
           <strong>Emergency</strong>
-          <span>admin และ staff ทุก role เข้าได้ตามกลุ่มที่ได้รับมอบหมาย</span>
+          <span>emergency_staff เห็นทุกกลุ่ม, staff role อื่นเห็นตามกลุ่มที่ได้รับมอบหมาย</span>
         </Link>
       </div>
 
       <Card className="staff-confidential-card">
         <strong>Role rules</strong>
-        <span>staff เห็นเฉพาะสี/กลุ่มที่ assign, mentor เห็นเฉพาะ subgroup, viewer ดูได้อย่างเดียว, emergency ใช้ได้ทุก role แต่ยังจำกัดข้อมูลตามกลุ่ม</span>
+        <span>emergency_staff ใช้เครื่องมือฝั่ง staff ได้และดู emergency ทุกกลุ่ม แต่ยังเข้าเครื่องมือแอดมินไม่ได้ถ้าไม่ได้อยู่ในตาราง admins</span>
       </Card>
     </section>
   );
