@@ -11,6 +11,7 @@
 - Admin dashboard with full participant data, search, major filter, summary cards, CSV export, direct edit, and delete
 - Pending edit-request approval/rejection flow with change logs
 - Thai/English UI toggle
+- Mobile-first operational UX with sticky bottom navigation, stacked mobile cards, sticky action bars, emergency dock, swipe attendance, and lazy-loaded admin/staff pages
 - Smart group assignment for 7 color groups x A/B subgroups with balancing by size, major, and admission round
 - Admin drag-and-drop group adjustment, lock workflow, imbalance warnings, CSV and XLSX group exports
 - Verified participant group reveal with mentors, schedule, meeting point, and privacy-safe friend recommendations
@@ -195,3 +196,18 @@ The script imports into `group_staff` and updates `group_settings.mentors` for e
 ```bash
 npm run build
 ```
+
+## Mobile Event-Operations Checklist
+
+Before using the app at the event, test on at least one iPhone-sized screen and one Android Chrome device:
+
+- Public search can be reached in 1 tap and results are readable without horizontal scrolling.
+- Admin participant lists render as stacked cards on phones; desktop tables remain available on larger screens.
+- Bottom navigation is visible, does not cover important buttons, and respects the iPhone safe area.
+- Emergency dashboard shows one-tap call buttons for EMS, Head Medic, and Police from any scroll position.
+- Staff attendance can mark present/absent with one tap or swipe, and offline queue sync works after reconnecting.
+- Group management can select color/subgroup with horizontal tabs and quick-move participants on touch devices.
+- Forms keep Save/Approve/Reject actions reachable near the bottom and do not hide behind the keyboard.
+- Text remains readable on iPhone SE width, iPhone 12/13/14 width, Android mid-range widths, tablets, and desktop.
+- Focus states are visible with keyboard navigation and all touch targets are at least 44px high.
+- `prefers-reduced-motion` disables nonessential motion.

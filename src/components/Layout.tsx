@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { Menu, ShieldCheck } from 'lucide-react';
+import { HeartPulse, Home, Menu, Search, Shield, ShieldCheck, UsersRound } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export function Layout() {
@@ -44,6 +44,28 @@ export function Layout() {
       <main className="page-shell">
         <Outlet />
       </main>
+      <nav className="mobile-bottom-nav" aria-label={language === 'th' ? 'เมนูหลักมือถือ' : 'Mobile primary navigation'}>
+        <NavLink to="/">
+          <Home size={19} />
+          <span>{language === 'th' ? 'หน้าหลัก' : 'Home'}</span>
+        </NavLink>
+        <Link to="/">
+          <Search size={19} />
+          <span>{language === 'th' ? 'ค้นหา' : 'Search'}</span>
+        </Link>
+        <NavLink to="/admin/groups">
+          <UsersRound size={19} />
+          <span>{language === 'th' ? 'กลุ่ม' : 'Groups'}</span>
+        </NavLink>
+        <NavLink to="/staff/emergency">
+          <HeartPulse size={19} />
+          <span>{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</span>
+        </NavLink>
+        <NavLink to="/staff">
+          <Shield size={19} />
+          <span>{language === 'th' ? 'สตาฟ' : 'Staff'}</span>
+        </NavLink>
+      </nav>
     </div>
   );
 }

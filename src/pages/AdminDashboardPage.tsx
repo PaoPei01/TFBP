@@ -135,6 +135,20 @@ export function AdminDashboardPage() {
         rows={profiles}
         getKey={(row) => row.id}
         emptyText={t.participantNotFound}
+        mobileDetailsLabel={language === 'th' ? 'ข้อมูลเพิ่มเติม' : 'More details'}
+        mobileTitle={(row) => row.nickname || row.name_th}
+        mobileSubtitle={(row) => `${row.name_th} · ${majorLabel(row.major, language)}`}
+        mobileMeta={(row) => groupLabel(row.group_assignment?.main_group, row.group_assignment?.subgroup, language)}
+        mobileActions={(row) => (
+          <div className="row-actions">
+            <Button variant="secondary" icon={<Pencil size={16} />} onClick={() => setEditing(row)}>
+              {t.editAction}
+            </Button>
+            <Button variant="danger" icon={<Trash2 size={16} />} onClick={() => setDeleting(row)}>
+              {t.deleteAction}
+            </Button>
+          </div>
+        )}
         columns={[
           {
             key: 'name',
@@ -219,7 +233,7 @@ export function AdminDashboardPage() {
                 />
               ),
             )}
-            <div className="form-actions full-span">
+            <div className="form-actions full-span sticky-form-actions">
               <Button onClick={saveProfile}>{language === 'th' ? 'บันทึก' : 'Save'}</Button>
               <Button variant="secondary" onClick={() => setEditing(null)}>
                 {language === 'th' ? 'ยกเลิก' : 'Cancel'}

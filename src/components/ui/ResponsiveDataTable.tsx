@@ -12,9 +12,14 @@ type Props<T> = {
   columns: Column<T>[];
   getKey: (row: T) => string;
   emptyText: string;
+  mobileTitle?: (row: T) => ReactNode;
+  mobileSubtitle?: (row: T) => ReactNode;
+  mobileMeta?: (row: T) => ReactNode;
+  mobileActions?: (row: T) => ReactNode;
+  mobileDetailsLabel?: string;
 };
 
-export function ResponsiveDataTable<T>({ rows, columns, getKey, emptyText }: Props<T>) {
+export function ResponsiveDataTable<T>({ rows, columns, getKey, emptyText, mobileTitle, mobileSubtitle, mobileMeta, mobileActions, mobileDetailsLabel = 'Details' }: Props<T>) {
   if (!rows.length) {
     return <div className="empty-state">{emptyText}</div>;
   }
@@ -44,12 +49,25 @@ export function ResponsiveDataTable<T>({ rows, columns, getKey, emptyText }: Pro
       <div className="mobile-list">
         {rows.map((row) => (
           <Card key={getKey(row)} className="mobile-row">
-            {columns.map((column) => (
-              <div key={column.key}>
-                <span>{column.header}</span>
-                <div>{column.render(row)}</div>
+            {mobileTitle || mobileSubtitle || mobileMeta ? (
+              <div className="mobile-row-head">
+                <div>
+                  {mobileTitle ? <strong>{mobileTitle(row)}</strong> : null}
+                  {mobileSubtitle ? <span>{mobileSubtitle(row)}</span> : null}
+                </div>
+                {mobileMeta ? <em>{mobileMeta(row)}</em> : null}
               </div>
-            ))}
+            ) : null}
+            <details>
+              <summary>{mobileDetailsLabel}</summary>
+              {columns.filter((column) => column.key !== 'actions').map((column) => (
+                <div key={column.key}>
+                  <span>{column.header}</span>
+                  <div>{column.render(row)}</div>
+                </div>
+              ))}
+            </details>
+            {mobileActions ? <div className="mobile-card-actions">{mobileActions(row)}</div> : columns.find((column) => column.key === 'actions')?.render(row)}
           </Card>
         ))}
       </div>

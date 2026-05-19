@@ -3,6 +3,8 @@ import { DragEvent, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ContactLinks } from '../components/ContactLinks';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { MobileGroupTabs } from '../components/mobile/MobileGroupTabs';
+import { StickyBottomBar } from '../components/mobile/StickyBottomBar';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -36,6 +38,7 @@ export function GroupDashboardPage() {
   const state = useAsync(fetchGroupProfiles, []);
   const settingsState = useAsync(fetchGroupSettings, []);
   const [drafts, setDrafts] = useState<Record<string, Pick<GroupAssignment, 'profile_id' | 'main_group' | 'subgroup' | 'notes'>>>({});
+  const [activeGroup, setActiveGroup] = useState<{ mainGroup: MainGroup; subgroup: Subgroup }>({ mainGroup: 'Red', subgroup: 'A' });
   const [auditReady, setAuditReady] = useState(false);
   const [editingSetting, setEditingSetting] = useState<Pick<GroupSetting, 'main_group' | 'subgroup' | 'motto' | 'meeting_point' | 'schedule' | 'mentors'>>({
     main_group: 'Red',
@@ -59,6 +62,7 @@ export function GroupDashboardPage() {
 
   const stats = useMemo(() => calculateGroupStats(profiles, effectiveAssignments), [profiles, effectiveAssignments]);
   const assignedCount = effectiveAssignments.length;
+  const groupCounts = useMemo(() => Object.fromEntries(stats.map((item) => [item.key, item.count])), [stats]);
   const warnings = stats.flatMap((item) => item.warnings.map((warning) => `${groupLabel(item.main_group, item.subgroup, language)}: ${warning}`));
   const locked = profiles.some((profile) => profile.group_assignment?.locked);
 
@@ -147,6 +151,15 @@ export function GroupDashboardPage() {
     }));
   }
 
+  function assignTo(profileId: string, mainGroup = activeGroup.mainGroup, subgroup = activeGroup.subgroup) {
+    if (!profileId || locked) return;
+    setDrafts((current) => ({
+      ...current,
+      [profileId]: { profile_id: profileId, main_group: mainGroup, subgroup, notes: 'mobile-quick-move' },
+    }));
+    setAuditReady(false);
+  }
+
   return (
     <section className="page-stack">
       <Toast toast={toast} />
@@ -191,6 +204,14 @@ export function GroupDashboardPage() {
         </div>
         {locked ? <Badge status="approved">{language === 'th' ? 'ล็อกแล้ว' : 'Locked'}</Badge> : auditReady ? <Badge status="approved">{language === 'th' ? 'Audit พร้อมล็อก' : 'Audit ready'}</Badge> : <Badge status="pending">{language === 'th' ? 'ต้อง Audit ก่อนล็อก' : 'Audit required before lock'}</Badge>}
       </Card>
+
+      <MobileGroupTabs
+        activeMainGroup={activeGroup.mainGroup}
+        activeSubgroup={activeGroup.subgroup}
+        counts={groupCounts}
+        language={language}
+        onChange={(mainGroup, subgroup) => setActiveGroup({ mainGroup, subgroup })}
+      />
 
       <Card className="group-settings-panel">
         <div>
@@ -279,6 +300,11 @@ export function GroupDashboardPage() {
                           <strong>{profile.nickname || profile.name_th}</strong>
                           <span>{getMajorCode(profile.major)} · {profile.admission_round || (language === 'th' ? 'รอบ ?' : 'Round ?')}</span>
                           <ContactLinks instagram={profile.instagram} facebook={profile.facebook} lineId={profile.line_id} compact />
+                          <div className="quick-move-row">
+                            <button type="button" onClick={() => assignTo(profile.id)} disabled={locked}>
+                              {language === 'th' ? 'ย้ายไปแท็บที่เลือก' : 'Move to selected'}
+                            </button>
+                          </div>
                         </div>
                       ))}
                       {subgroupProfiles.length > 16 ? <small>+{subgroupProfiles.length - 16} {language === 'th' ? 'คน' : 'more'}</small> : null}
@@ -340,10 +366,21 @@ export function GroupDashboardPage() {
               <div className="drag-person" draggable={!locked} key={profile.id} onDragStart={(event) => event.dataTransfer.setData('text/plain', profile.id)}>
                 <strong>{profile.nickname || profile.name_th}</strong>
                 <span>{majorLabel(profile.major, language)} · {profile.admission_round || (language === 'th' ? 'รอบ ?' : 'Round ?')}</span>
+                <div className="quick-move-row">
+                  <button type="button" onClick={() => assignTo(profile.id)} disabled={locked}>
+                    {language === 'th' ? `ส่งเข้า ${groupLabel(activeGroup.mainGroup, activeGroup.subgroup, language)}` : `Move to ${groupLabel(activeGroup.mainGroup, activeGroup.subgroup, language)}`}
+                  </button>
+                </div>
               </div>
             ))}
         </div>
       </Card>
+
+      <StickyBottomBar label={language === 'th' ? 'ปุ่มจัดกลุ่มด่วน' : 'Quick group actions'}>
+        <Button icon={<Shuffle size={18} />} onClick={generate} disabled={locked}>Auto</Button>
+        <Button variant="secondary" onClick={save} disabled={!Object.keys(drafts).length || locked}>{language === 'th' ? 'บันทึก' : 'Save'}</Button>
+        <Button variant="secondary" icon={<Download size={18} />} onClick={exportAudit}>Audit</Button>
+      </StickyBottomBar>
     </section>
   );
 }

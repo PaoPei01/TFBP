@@ -1,7 +1,9 @@
-import { AlertTriangle, Clipboard, Flame, Phone, Save, Search, ShieldAlert, Siren } from 'lucide-react';
+import { AlertTriangle, Clipboard, Phone, Save, Search, ShieldAlert, Siren } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { HealthFlags, hasHealthFlag } from '../components/HealthFlags';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { EmergencyQuickDock } from '../components/mobile/EmergencyQuickDock';
+import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -143,6 +145,16 @@ export function EmergencyDashboardPage() {
           <span>{language === 'th' ? 'ห้ามแชร์ภาพหน้าจอหรือเผยแพร่ข้อมูลสุขภาพต่อสาธารณะ ใช้เพื่อประสานงานฉุกเฉินเท่านั้น' : 'Do not share screenshots or disclose health data publicly. Use this only for emergency coordination.'}</span>
         </div>
       </Card>
+
+      <MobileSearchHeader
+        label={language === 'th' ? 'ค้นหาเคสด่วน' : 'Quick case search'}
+        value={search}
+        onChange={setSearch}
+        placeholder={language === 'th' ? 'ชื่อ ชื่อเล่น เบอร์ กลุ่ม' : 'Name, nickname, phone, group'}
+        resultText={`${filtered.length} ${language === 'th' ? 'รายการ' : 'cases'}`}
+      >
+        <a href="tel:1669">{language === 'th' ? 'โทร 1669' : 'Call 1669'}</a>
+      </MobileSearchHeader>
 
       <Card className="emergency-escalation-panel">
         <div className="emergency-panel-head">
@@ -297,11 +309,7 @@ export function EmergencyDashboardPage() {
         })}
       </div>
 
-      <div className="emergency-dock" aria-label={language === 'th' ? 'ปุ่มลัดฉุกเฉิน' : 'Emergency quick actions'}>
-        <a className="dock-critical" href="tel:1669"><Flame size={18} /> EMS 1669</a>
-        <a href="tel:0636510902"><Phone size={18} /> Head Medic</a>
-        <a href="tel:191">Police 191</a>
-      </div>
+      <EmergencyQuickDock language={language} />
     </section>
   );
 }

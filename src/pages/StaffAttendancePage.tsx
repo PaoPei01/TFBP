@@ -3,6 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
+import { StickyBottomBar } from '../components/mobile/StickyBottomBar';
+import { SwipeAttendanceCard } from '../components/mobile/SwipeAttendanceCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -126,6 +129,14 @@ export function StaffAttendancePage() {
         <Button variant="secondary" icon={<UploadCloud size={18} />} onClick={syncQueue} disabled={!queue.length}>Sync {queue.length}</Button>
       </div>
 
+      <MobileSearchHeader
+        label={language === 'th' ? 'ค้นหารายชื่อ' : 'Search participants'}
+        value={search}
+        onChange={setSearch}
+        placeholder={language === 'th' ? 'ชื่อ ชื่อเล่น เบอร์ สาขา' : 'Name, nickname, phone, major'}
+        resultText={`${participants.length} ${language === 'th' ? 'คน' : 'people'}`}
+      />
+
       <div className="attendance-toolbar">
         <Input label={language === 'th' ? 'วันที่กิจกรรม' : 'Event date'} type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} />
         <div className="search-shell">
@@ -145,15 +156,19 @@ export function StaffAttendancePage() {
           const status = queued?.status ?? profile.attendance?.status;
           return (
             <Card className="attendance-card" key={profile.id}>
-              <div>
-                <h2>{profile.nickname || profile.name_th}</h2>
-                <p>{profile.name_th} · {majorLabel(profile.major, language)}</p>
-                <span>{groupLabel(profile.group_assignment?.main_group, profile.group_assignment?.subgroup, language)}</span>
-              </div>
-              <div className="attendance-status-line">
-                <strong>{status ? (language === 'th' ? statuses.find((item) => item.value === status)?.labelTh : statuses.find((item) => item.value === status)?.labelEn) : language === 'th' ? 'ยังไม่เช็ก' : 'Not marked'}</strong>
+              <SwipeAttendanceCard
+                title={profile.nickname || profile.name_th || '-'}
+                subtitle={`${profile.name_th || '-'} · ${majorLabel(profile.major, language)}`}
+                meta={groupLabel(profile.group_assignment?.main_group, profile.group_assignment?.subgroup, language)}
+                status={status ?? undefined}
+                statusLabel={status ? (language === 'th' ? statuses.find((item) => item.value === status)?.labelTh ?? status : statuses.find((item) => item.value === status)?.labelEn ?? status) : language === 'th' ? 'ยังไม่เช็ก' : 'Not marked'}
+                presentLabel={language === 'th' ? 'มาแล้ว' : 'Present'}
+                absentLabel={language === 'th' ? 'ไม่มา' : 'Absent'}
+                onPresent={() => mark(profile.id, 'present')}
+                onAbsent={() => mark(profile.id, 'absent')}
+              >
                 {queued ? <span>{language === 'th' ? 'รอ sync' : 'Waiting to sync'}</span> : profile.attendance?.marked_at ? <span>{new Date(profile.attendance.marked_at).toLocaleTimeString(language === 'th' ? 'th-TH' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span> : null}
-              </div>
+              </SwipeAttendanceCard>
               <div className="attendance-actions">
                 {statuses.map((item) => (
                   <Button key={item.value} variant={status === item.value ? 'primary' : 'secondary'} icon={item.icon} onClick={() => mark(profile.id, item.value)}>
@@ -165,6 +180,11 @@ export function StaffAttendancePage() {
           );
         })}
       </div>
+
+      <StickyBottomBar label={language === 'th' ? 'ปุ่มเช็กชื่อด่วน' : 'Quick attendance actions'}>
+        <Button variant="secondary" icon={<UploadCloud size={18} />} onClick={syncQueue} disabled={!queue.length}>Sync {queue.length}</Button>
+        <Button variant="secondary" icon={<Search size={18} />} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>{language === 'th' ? 'ค้นหา' : 'Search'}</Button>
+      </StickyBottomBar>
     </section>
   );
 }

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -44,6 +45,18 @@ export function PublicListPage() {
         <strong>{language === 'th' ? 'ประกาศความเป็นส่วนตัว' : 'Privacy notice'}</strong>
         <span>{t.privacy}</span>
       </Card>
+
+      <MobileSearchHeader
+        label={t.search}
+        value={search}
+        onChange={setSearch}
+        placeholder={language === 'th' ? 'ค้นหาชื่อ ชื่อเล่น สาขา' : 'Search name, nickname, major'}
+        resultText={resultText}
+      >
+        <button type="button" onClick={() => { setMajor(''); setMainGroup(''); setSubgroup(''); }}>
+          {language === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}
+        </button>
+      </MobileSearchHeader>
 
       <div className="toolbar">
         <div className="search-shell">
