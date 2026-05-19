@@ -120,7 +120,7 @@ export type GroupSetting = {
 export type StaffAssignment = {
   id: string;
   user_id: string;
-  main_group: MainGroup;
+  main_group: MainGroup | null;
   subgroup: Subgroup | null;
   role: StaffRole | null;
   created_at: string | null;
@@ -255,7 +255,7 @@ export type Database = {
       };
       staff_assignments: {
         Row: StaffAssignment;
-        Insert: Partial<StaffAssignment> & { user_id: string; role?: StaffRole; main_group: MainGroup };
+        Insert: Partial<StaffAssignment> & { user_id: string; role?: StaffRole };
         Update: Partial<StaffAssignment>;
       };
       staff_attendance: {

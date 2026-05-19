@@ -13,7 +13,7 @@ export function StaffDashboardPage() {
   const accessState = useAsync(fetchStaffAccessContext, []);
   const context = state.data;
   const access = context?.access ?? accessState.data;
-  const assignedLabel = context?.assignment ? groupLabel(context.assignment.main_group, context.assignment.subgroup) : access?.is_admin || access?.roles.includes('emergency_staff') ? 'ทุกกลุ่ม' : '-';
+  const assignedLabel = context?.assignment?.main_group ? groupLabel(context.assignment.main_group, context.assignment.subgroup) : access?.is_admin || access?.roles.includes('emergency_staff') ? 'ทุกกลุ่ม' : '-';
   const medicalCount = (context?.participants ?? []).filter((profile) => profile.disease || profile.drug_allergy || profile.food_allergy).length;
   const isEmergencyOnly = Boolean(access?.roles.includes('emergency_staff') && !access?.roles.some((role) => ['staff', 'mentor', 'viewer'].includes(role)));
 

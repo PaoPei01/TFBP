@@ -36,7 +36,7 @@ export function StaffMobilePage() {
     <section className="page-stack staff-page">
       <div className="section-heading">
         <p className="eyebrow">Staff Mobile View</p>
-        <h1>{context.assignment ? groupLabel(context.assignment.main_group, context.assignment.subgroup) : 'All groups'}</h1>
+        <h1>{context.assignment?.main_group ? groupLabel(context.assignment.main_group, context.assignment.subgroup) : 'All groups'}</h1>
         <p>ดูข้อมูลเฉพาะกลุ่มที่รับผิดชอบสำหรับหน้างาน</p>
       </div>
 
