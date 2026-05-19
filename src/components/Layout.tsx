@@ -1,9 +1,39 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { HeartPulse, Home, Menu, Search, Shield, ShieldCheck, UsersRound } from 'lucide-react';
+import { HeartPulse, Home, LogOut, Menu, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../lib/supabase';
+
+type SessionUser = {
+  id: string;
+  email?: string;
+};
 
 export function Layout() {
   const { language, setLanguage, t } = useLanguage();
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (active) setUser(data.user ? { id: data.user.id, email: data.user.email } : null);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+    });
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  async function signOut() {
+    setSigningOut(true);
+    await supabase.auth.signOut();
+    setSigningOut(false);
+    setUser(null);
+  }
 
   return (
     <div>
@@ -41,6 +71,24 @@ export function Layout() {
           <button className="language-toggle" type="button" onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}>
             {language === 'th' ? 'EN' : 'TH'}
           </button>
+          {user ? (
+            <div className="auth-status" title={user.email ?? user.id}>
+              <span>
+                <UserCheck size={15} />
+                {language === 'th' ? 'เข้าสู่ระบบแล้ว' : 'Signed in'}
+              </span>
+              <small>{user.email ?? user.id}</small>
+              <button type="button" onClick={signOut} disabled={signingOut}>
+                <LogOut size={15} />
+                {language === 'th' ? 'ออก' : 'Logout'}
+              </button>
+            </div>
+          ) : (
+            <NavLink className="auth-login-link" to="/admin">
+              <Shield size={15} />
+              {language === 'th' ? 'เข้าสู่ระบบ' : 'Login'}
+            </NavLink>
+          )}
         </div>
       </nav>
       <main className="page-shell">

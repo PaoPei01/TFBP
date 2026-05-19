@@ -170,6 +170,61 @@ a {
   cursor: pointer;
 }
 
+.auth-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: 340px;
+  border: 1px solid rgba(25, 122, 70, 0.16);
+  border-radius: 999px;
+  padding: 0.28rem 0.32rem 0.28rem 0.65rem;
+  background: rgba(39, 174, 96, 0.1);
+  color: #14683c;
+}
+
+.auth-status span,
+.auth-login-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 900;
+}
+
+.auth-status small {
+  overflow: hidden;
+  max-width: 150px;
+  color: #2f6f4f;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.auth-status button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.62rem;
+  color: #8d1324;
+  background: rgba(201, 52, 68, 0.1);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.auth-status button:disabled {
+  opacity: 0.6;
+}
+
+.auth-login-link {
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  color: var(--accent-strong) !important;
+  background: rgba(40, 104, 232, 0.08);
+}
+
 .page-shell {
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
@@ -1936,6 +1991,24 @@ th {
 
   .nav-menu {
     margin-left: auto;
+  }
+
+  .auth-status {
+    order: 10;
+    width: 100%;
+    max-width: none;
+    justify-content: space-between;
+    border-radius: 20px;
+  }
+
+  .auth-status small {
+    max-width: 34vw;
+  }
+
+  .auth-login-link {
+    min-height: 40px;
+    padding: 0.45rem 0.65rem !important;
+    font-size: 0.86rem;
   }
 
   .nav-menu > div {
