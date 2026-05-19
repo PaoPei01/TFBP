@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "import:registrations": "node scripts/import-registration-xlsx.mjs",
+    "import:group-staff": "node scripts/import-group-staff-roster.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

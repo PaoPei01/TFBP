@@ -163,6 +163,33 @@ The frontend also includes the same helper in `src/lib/contactParser.ts` for imp
 
 Participants who verify identity on `/edit` will see their color group, subgroup, mentors, activity schedule, meeting point, and privacy-safe friend recommendations.
 
+## Import Group Staff Roster
+
+Because group staff data contains phone numbers and medical details, keep the source file local and untracked.
+
+1. Create a private local file:
+
+   ```bash
+   mkdir -p private
+   nano private/group-staff-roster.txt
+   ```
+
+2. Paste the staff roster text into that file.
+
+3. Dry run:
+
+   ```bash
+   npm run import:group-staff -- "private/group-staff-roster.txt"
+   ```
+
+4. Import:
+
+   ```bash
+   npm run import:group-staff -- "private/group-staff-roster.txt" --commit
+   ```
+
+The script imports into `group_staff` and updates `group_settings.mentors` for each color/subgroup.
+
 ## Build
 
 ```bash

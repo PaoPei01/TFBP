@@ -126,6 +126,22 @@ export type StaffAssignment = {
   created_at: string | null;
 };
 
+export type GroupStaff = {
+  id: string;
+  student_id: string | null;
+  name: string;
+  nickname: string | null;
+  phone: string | null;
+  disease: string | null;
+  drug_allergy: string | null;
+  food_allergy: string | null;
+  main_group: MainGroup;
+  subgroup: Subgroup;
+  duty: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 export type GroupProfile = Profile & {
   group_assignment?: GroupAssignment | null;
 };
@@ -181,6 +197,11 @@ export type Database = {
         Row: StaffAssignment;
         Insert: Partial<StaffAssignment> & { user_id: string; main_group: MainGroup };
         Update: Partial<StaffAssignment>;
+      };
+      group_staff: {
+        Row: GroupStaff;
+        Insert: Partial<GroupStaff> & { name: string; main_group: MainGroup; subgroup: Subgroup };
+        Update: Partial<GroupStaff>;
       };
     };
     Views: {

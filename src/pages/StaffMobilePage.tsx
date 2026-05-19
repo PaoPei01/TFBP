@@ -45,6 +45,22 @@ export function StaffMobilePage() {
         </div>
       </Card>
 
+      {context.staff_roster?.length ? (
+        <Card className="staff-roster-panel">
+          <h2>พี่กลุ่ม</h2>
+          <div className="staff-roster-grid">
+            {context.staff_roster.map((staff) => (
+              <div key={`${staff.main_group}-${staff.subgroup}-${staff.student_id || staff.name}`} className="staff-roster-person">
+                <strong>{staff.nickname || staff.name}</strong>
+                <span>{staff.name}</span>
+                <small>{staff.phone || '-'}</small>
+                <HealthFlags profile={staff} detail />
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : null}
+
       <div className="search-shell">
         <Search size={18} aria-hidden="true" />
         <Input label="ค้นหาในกลุ่ม" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ชื่อ ชื่อเล่น เบอร์ หรือสาขา" />

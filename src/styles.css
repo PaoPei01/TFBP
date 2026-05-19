@@ -893,6 +893,35 @@ th {
   gap: 0.85rem;
 }
 
+.staff-roster-panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.staff-roster-panel h2 {
+  margin: 0;
+}
+
+.staff-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.65rem;
+}
+
+.staff-roster-person {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(132, 155, 190, 0.18);
+  border-radius: 18px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.staff-roster-person span,
+.staff-roster-person small {
+  color: var(--text-soft);
+}
+
 .staff-participant-card {
   display: grid;
   gap: 0.85rem;

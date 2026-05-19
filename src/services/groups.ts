@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { GroupAssignment, GroupProfile, GroupSetting, MainGroup, Subgroup, StaffAssignment } from '../lib/types';
+import type { GroupAssignment, GroupProfile, GroupSetting, GroupStaff, MainGroup, Subgroup, StaffAssignment } from '../lib/types';
 
 export async function fetchGroupProfiles(): Promise<GroupProfile[]> {
   const { data: profiles, error: profileError } = await supabase.from('profiles').select('*').order('name_th');
@@ -49,10 +49,10 @@ export async function saveGroupSetting(setting: Pick<GroupSetting, 'main_group' 
   if (error) throw error;
 }
 
-export async function fetchStaffContext(): Promise<{ assignment: StaffAssignment | null; settings: GroupSetting[]; participants: GroupProfile[] } | null> {
+export async function fetchStaffContext(): Promise<{ assignment: StaffAssignment | null; settings: GroupSetting[]; staff_roster: GroupStaff[]; participants: GroupProfile[] } | null> {
   const { data, error } = await supabase.rpc('get_staff_group_context');
   if (error) throw error;
-  return data as { assignment: StaffAssignment | null; settings: GroupSetting[]; participants: GroupProfile[] } | null;
+  return data as { assignment: StaffAssignment | null; settings: GroupSetting[]; staff_roster: GroupStaff[]; participants: GroupProfile[] } | null;
 }
 
 export async function isStaffOrAdmin() {
@@ -91,10 +91,10 @@ export async function fetchFriendRecommendations(profileId: string): Promise<Gro
     .filter(Boolean) as GroupProfile[];
 }
 
-export async function fetchVerifiedGroupContext(email: string, phone: string): Promise<{ profile: GroupProfile; assignment: GroupAssignment | null; setting?: GroupSetting | null } | null> {
+export async function fetchVerifiedGroupContext(email: string, phone: string): Promise<{ profile: GroupProfile; assignment: GroupAssignment | null; setting?: GroupSetting | null; staff_roster?: GroupStaff[] } | null> {
   const { data, error } = await supabase.rpc('get_verified_group_context', { input_email: email.trim().toLowerCase(), input_phone: phone.trim() });
   if (error) throw error;
-  return data as { profile: GroupProfile; assignment: GroupAssignment | null; setting?: GroupSetting | null } | null;
+  return data as { profile: GroupProfile; assignment: GroupAssignment | null; setting?: GroupSetting | null; staff_roster?: GroupStaff[] } | null;
 }
 
 export async function fetchVerifiedFriendRecommendations(email: string, phone: string): Promise<GroupProfile[]> {

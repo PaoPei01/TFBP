@@ -95,7 +95,7 @@ export function VerifyEditPage() {
                 <p>{groupContext.setting?.motto || groupMeta[groupContext.assignment.main_group].motto}</p>
               </div>
               <div className="group-details-grid">
-                <div><strong>พี่สตาฟ</strong><span>{groupContext.setting?.mentors || groupMeta[groupContext.assignment.main_group].mentors.join(', ')}</span></div>
+                <div><strong>พี่สตาฟ</strong><span>{groupContext.staff_roster?.length ? groupContext.staff_roster.map((staff) => `${staff.nickname || staff.name}`).join(', ') : groupContext.setting?.mentors || groupMeta[groupContext.assignment.main_group].mentors.join(', ')}</span></div>
                 <div><strong>เวลา</strong><span>{groupContext.setting?.schedule || groupMeta[groupContext.assignment.main_group].schedule}</span></div>
                 <div><strong>จุดนัดพบ</strong><span>{groupContext.setting?.meeting_point || groupMeta[groupContext.assignment.main_group].meetingPoint}</span></div>
               </div>
