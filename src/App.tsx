@@ -10,6 +10,7 @@ import { VerifyEditPage } from './pages/VerifyEditPage';
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage').then((module) => ({ default: module.AdminLoginPage })));
 const ChangeLogPage = lazy(() => import('./pages/ChangeLogPage').then((module) => ({ default: module.ChangeLogPage })));
+const DataHealthPage = lazy(() => import('./pages/DataHealthPage').then((module) => ({ default: module.DataHealthPage })));
 const EmergencyDashboardPage = lazy(() => import('./pages/EmergencyDashboardPage').then((module) => ({ default: module.EmergencyDashboardPage })));
 const GroupDashboardPage = lazy(() => import('./pages/GroupDashboardPage').then((module) => ({ default: module.GroupDashboardPage })));
 const DocumentCenterPage = lazy(() => import('./pages/DocumentCenterPage').then((module) => ({ default: module.DocumentCenterPage })));
@@ -58,6 +59,7 @@ export function App() {
           <Route path="admin/documents/history" element={<Suspense fallback={<LoadingSkeleton />}><DocumentHistoryPage /></Suspense>} />
           <Route path="admin/requests" element={<Suspense fallback={<LoadingSkeleton />}><PendingRequestsPage /></Suspense>} />
           <Route path="admin/logs" element={<Suspense fallback={<LoadingSkeleton />}><ChangeLogPage /></Suspense>} />
+          <Route path="admin/data-health" element={<Suspense fallback={<LoadingSkeleton />}><DataHealthPage /></Suspense>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

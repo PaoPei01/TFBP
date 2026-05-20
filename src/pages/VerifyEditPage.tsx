@@ -25,13 +25,18 @@ export function VerifyEditPage() {
   const [form, setForm] = useState<EditableProfileFields | null>(null);
   const [groupContext, setGroupContext] = useState<Awaited<ReturnType<typeof fetchVerifiedGroupContext>>>(null);
   const [friends, setFriends] = useState<Awaited<ReturnType<typeof fetchVerifiedFriendRecommendations>>>([]);
+  const [groupSoftMessage, setGroupSoftMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [contextLoading, setContextLoading] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
 
   async function handleVerify(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
     setToast(null);
+    setGroupContext(null);
+    setFriends([]);
+    setGroupSoftMessage('');
     try {
       const verified = await verifyProfileIdentity(email, phone);
       if (!verified) {
@@ -40,10 +45,21 @@ export function VerifyEditPage() {
       }
       setProfile(verified);
       setForm(pickEditableFields(verified));
-      const [context, recommendations] = await Promise.all([fetchVerifiedGroupContext(email, phone), fetchVerifiedFriendRecommendations(email, phone)]);
-      setGroupContext(context);
-      setFriends(recommendations);
       setToast({ type: 'success', message: language === 'th' ? 'ยืนยันตัวตนสำเร็จ' : 'Identity verified' });
+      setContextLoading(true);
+      fetchVerifiedGroupContext(email, phone)
+        .then((context) => {
+          setGroupContext(context);
+          if (!context?.assignment) setGroupSoftMessage(language === 'th' ? 'ยังไม่ได้จัดกลุ่ม หรือไม่สามารถโหลดข้อมูลกลุ่มได้ในขณะนี้' : 'Group information is not available yet.');
+        })
+        .catch(() => {
+          setGroupContext(null);
+          setGroupSoftMessage(language === 'th' ? 'ยังไม่ได้จัดกลุ่ม หรือไม่สามารถโหลดข้อมูลกลุ่มได้ในขณะนี้' : 'Group information is not available yet.');
+        })
+        .finally(() => setContextLoading(false));
+      fetchVerifiedFriendRecommendations(email, phone)
+        .then((recommendations) => setFriends(recommendations ?? []))
+        .catch(() => setFriends([]));
     } catch (err) {
       setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ยืนยันตัวตนไม่สำเร็จ' : 'Verification failed') });
     } finally {
@@ -84,7 +100,7 @@ export function VerifyEditPage() {
         </form>
       </Card>
 
-      {loading ? <LoadingSkeleton count={2} /> : null}
+      {loading || contextLoading ? <LoadingSkeleton count={contextLoading ? 1 : 2} /> : null}
 
       {profile && form ? (
         <>
@@ -102,9 +118,7 @@ export function VerifyEditPage() {
                 <div><strong>{language === 'th' ? 'จุดนัดพบ' : 'Meeting point'}</strong><span>{groupContext.setting?.meeting_point || groupMeta[groupContext.assignment.main_group].meetingPoint}</span></div>
               </div>
             </Card>
-          ) : (
-            <Card className="empty-state">{language === 'th' ? 'ยังไม่ได้จัดกลุ่ม กรุณารอผู้ดูแลระบบประกาศกลุ่ม' : 'Group not assigned yet. Please wait for the admin announcement.'}</Card>
-          )}
+          ) : groupSoftMessage ? <Card className="empty-state">{groupSoftMessage}</Card> : null}
 
           {friends.length ? (
             <Card className="friend-panel">

@@ -1,4 +1,5 @@
 import { editableFields } from '../lib/constants';
+import { cleanNullableText } from '../lib/dataClean';
 import { getMajorCode, majorCodeOptions } from '../lib/major';
 import { supabase } from '../lib/supabase';
 import { normalizeMajor } from '../lib/major';
@@ -136,7 +137,7 @@ export async function updateProfile(id: string, values: Partial<Profile>) {
   const cleaned = Object.fromEntries(
     Object.entries(values)
       .filter(([key]) => !['id', 'created_at', 'updated_at'].includes(key))
-      .map(([key, value]) => [key, value === '' ? null : value]),
+      .map(([key, value]) => [key, typeof value === 'string' || value == null ? cleanNullableText(value) : value]),
   );
   if (cleaned.major) cleaned.major = normalizeMajor(String(cleaned.major));
   const { error } = await supabase.rpc('update_profile_admin', { input_profile_id: id, input_new_data: cleaned });

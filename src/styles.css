@@ -203,6 +203,65 @@ a {
   background: rgba(39, 174, 96, 0.13);
 }
 
+.account-menu {
+  position: relative;
+}
+
+.account-menu summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.account-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-menu > div {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 32;
+  display: grid;
+  gap: 0.35rem;
+  min-width: 230px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.6rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+.account-menu strong {
+  overflow-wrap: anywhere;
+  padding: 0.45rem 0.55rem;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.account-menu a,
+.account-menu button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0.55rem 0.7rem;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.account-menu a:hover,
+.account-menu button:hover {
+  background: rgba(40, 104, 232, 0.09);
+  color: var(--accent-strong);
+}
+
 .auth-icon-link {
   display: inline-grid;
   place-items: center;

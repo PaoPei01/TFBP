@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { cleanNullableText } from '../lib/dataClean';
 import { getMajorCode, normalizeMajor } from '../lib/major';
 import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles, normalizeStaffSystemRole } from '../lib/staffRoles';
 import type { MainGroup, StaffRole, Subgroup } from '../lib/types';
@@ -57,8 +58,8 @@ const wantedSheets = new Set(['ข้อมูลทีมงาน', 'ข้อ
 const emptyValues = new Set(['', '-', 'ไม่มี', 'none', 'no', 'n/a', 'null']);
 
 function clean(value: unknown) {
-  const text = String(value ?? '').replace(/\s+/g, ' ').trim();
-  return text && !emptyValues.has(text.toLowerCase()) ? text : null;
+  const cleaned = cleanNullableText(value);
+  return cleaned && !emptyValues.has(cleaned.toLowerCase()) ? cleaned : null;
 }
 
 function normalizeHeader(header: string) {

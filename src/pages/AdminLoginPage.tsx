@@ -54,6 +54,7 @@ export function AdminLoginPage() {
     setSigningOut(false);
     setUser(null);
     setToast({ type: 'success', message: language === 'th' ? 'ออกจากระบบแล้ว' : 'Signed out' });
+    navigate('/');
   }
 
   return (

@@ -1,4 +1,5 @@
 import { getMajorCode, normalizeMajor } from '../lib/major';
+import { cleanNullableText } from '../lib/dataClean';
 import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles, normalizeStaffSystemRole } from '../lib/staffRoles';
 import { supabase } from '../lib/supabase';
 import type { MainGroup, StaffAssignmentRecommendation, StaffManagementRow, StaffProfile, StaffQuotaAnalytics, StaffRole, StaffRoleConflict, StaffStructureValidation, Subgroup } from '../lib/types';
@@ -28,6 +29,8 @@ export type StaffUpdatePayload = {
     secondary_roles?: string[] | null;
   };
 };
+
+export type StaffImportMode = 'full' | 'major_only' | 'contact_only' | 'medical_only';
 
 export async function fetchAdminStaffProfiles(filters: StaffFilters = {}): Promise<StaffManagementRow[]> {
   const { data, error } = await supabase.rpc('get_admin_staff_profiles');
@@ -63,7 +66,7 @@ export async function fetchAdminStaffProfiles(filters: StaffFilters = {}): Promi
 }
 
 export async function updateStaffProfile(id: string, payload: StaffUpdatePayload) {
-  const clean = (object: Record<string, unknown>) => Object.fromEntries(Object.entries(object).map(([key, value]) => [key, value === '' ? null : value]));
+  const clean = (object: Record<string, unknown>) => Object.fromEntries(Object.entries(object).map(([key, value]) => [key, typeof value === 'string' || value == null ? cleanNullableText(value) : value]));
   const profile = clean(payload.profile as Record<string, unknown>);
   if (profile.major) profile.major = normalizeMajor(String(profile.major));
   const assignment = clean(payload.assignment);
@@ -84,10 +87,10 @@ export async function deleteStaffProfile(id: string) {
   if (error) throw error;
 }
 
-export async function importStaffRecords(rows: StaffImportRow[]) {
+export async function importStaffRecords(rows: StaffImportRow[], mode: StaffImportMode = 'full') {
   const payload = rows.map((row) => ({
-    profile: row.profile,
-    medical: row.medical,
+    profile: Object.fromEntries(Object.entries(row.profile).map(([key, value]) => [key, cleanNullableText(value)])),
+    medical: Object.fromEntries(Object.entries(row.medical).map(([key, value]) => [key, cleanNullableText(value)])),
     assignment: {
       ...row.assignment,
       role: normalizeStaffSystemRole(row.assignment.role, row.assignment.primary_role),
@@ -95,9 +98,9 @@ export async function importStaffRecords(rows: StaffImportRow[]) {
       secondary_roles: normalizeStaffSecondaryRoles(row.assignment.secondary_roles),
     },
   }));
-  const { data, error } = await supabase.rpc('import_staff_records_admin', { input_rows: payload });
+  const { data, error } = await supabase.rpc('import_staff_records_admin', { input_rows: payload, input_mode: mode });
   if (error) throw error;
-  return data as { imported: number };
+  return data as { imported?: number; updated?: number; created?: number; skipped?: number; errors?: number };
 }
 
 export async function syncStaffRoster() {

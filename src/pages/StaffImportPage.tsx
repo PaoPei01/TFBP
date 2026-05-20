@@ -14,7 +14,7 @@ import { useAsync } from '../hooks/useAsync';
 import { groupLabel } from '../lib/grouping';
 import { majorLabel } from '../lib/major';
 import { copy } from '../lib/copy';
-import { fetchAdminStaffProfiles, importStaffRecords, syncStaffRoster } from '../services/staffManagement';
+import { fetchAdminStaffProfiles, importStaffRecords, syncStaffRoster, type StaffImportMode } from '../services/staffManagement';
 import { errorMessage } from '../utils/error';
 import { parseStaffImportWorkbook, type StaffImportPreview } from '../utils/staffImport';
 
@@ -24,6 +24,7 @@ export function StaffImportPage() {
   const [preview, setPreview] = useState<StaffImportPreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [rowFilter, setRowFilter] = useState<'all' | 'warnings' | 'duplicates'>('all');
+  const [importMode, setImportMode] = useState<StaffImportMode>('full');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const [imported, setImported] = useState(false);
@@ -49,6 +50,32 @@ export function StaffImportPage() {
     }
     return rows;
   }, [duplicateKeys, preview?.rows, rowFilter]);
+  const rowStatuses = useMemo(() => {
+    const existing = existingState.data ?? [];
+    const byStudent = new Map<string, (typeof existing)[number]>();
+    const byEmail = new Map<string, (typeof existing)[number]>();
+    const byPhone = new Map<string, (typeof existing)[number]>();
+    existing.forEach((row) => {
+      if (row.student_id) byStudent.set(row.student_id.toLowerCase(), row);
+      if (row.email) byEmail.set(row.email.toLowerCase(), row);
+      if (row.phone) byPhone.set(row.phone, row);
+    });
+    return new Map((preview?.rows ?? []).map((row) => {
+      const match = (row.profile.student_id ? byStudent.get(row.profile.student_id.toLowerCase()) : undefined)
+        ?? (row.profile.email ? byEmail.get(row.profile.email.toLowerCase()) : undefined)
+        ?? (row.profile.phone ? byPhone.get(row.profile.phone) : undefined);
+      const oldMajor = match?.major ?? null;
+      const newMajor = row.profile.major ?? null;
+      const status = match
+        ? importMode === 'major_only' && oldMajor === newMajor
+          ? 'unchanged'
+          : 'will update'
+        : importMode === 'full'
+          ? 'will create'
+          : 'no match';
+      return [row.row_key, { match, oldMajor, newMajor, status }];
+    }));
+  }, [existingState.data, importMode, preview?.rows]);
 
   async function parseFile(file: File) {
     setLoading(true);
@@ -68,8 +95,9 @@ export function StaffImportPage() {
     if (!preview?.rows.length) return;
     setLoading(true);
     try {
-      const result = await importStaffRecords(preview.rows);
-      setToast({ type: 'success', message: language === 'th' ? `นำเข้าสำเร็จ ${result.imported} รายการ ขั้นต่อไปกดซิงค์ข้อมูลทีมงาน` : `Imported ${result.imported} records. Next, sync staff roster.` });
+      const result = await importStaffRecords(preview.rows, importMode);
+      const count = result.imported ?? result.updated ?? 0;
+      setToast({ type: 'success', message: language === 'th' ? `นำเข้าสำเร็จ ${count} รายการ ขั้นต่อไปกดซิงค์ข้อมูลทีมงาน` : `Imported ${count} records. Next, sync staff roster.` });
       setImported(true);
       setConfirmOpen(false);
       await existingState.reload();
@@ -160,6 +188,25 @@ export function StaffImportPage() {
         {preview ? <Button variant="secondary" icon={<Download size={18} />} onClick={downloadRejectedRows}>{language === 'th' ? 'ดาวน์โหลดแถวที่ต้องตรวจ' : 'Download flagged rows'}</Button> : null}
       </Card>
 
+      <Card className="section-card">
+        <h2>{language === 'th' ? 'โหมดนำเข้า' : 'Import mode'}</h2>
+        <div className="segmented-control compact-segments">
+          {[
+            ['full', language === 'th' ? 'นำเข้าครบ' : 'Full import'],
+            ['major_only', language === 'th' ? 'อัปเดตเฉพาะสาขา' : 'Major only'],
+            ['contact_only', language === 'th' ? 'เฉพาะช่องทางติดต่อ' : 'Contact only'],
+            ['medical_only', language === 'th' ? 'เฉพาะสุขภาพ' : 'Medical only'],
+          ].map(([mode, label]) => (
+            <button key={mode} type="button" className={importMode === mode ? 'active' : ''} onClick={() => setImportMode(mode as StaffImportMode)}>{label}</button>
+          ))}
+        </div>
+        <p className="muted">
+          {language === 'th'
+            ? 'โหมดเฉพาะสาขา/ติดต่อ/สุขภาพ จะอัปเดตเฉพาะคนที่ match จากรหัสนักศึกษา อีเมล หรือเบอร์โทร และจะไม่แตะ assignment'
+            : 'Limited modes update only matched staff by student ID, email, or phone and never touch assignments.'}
+        </p>
+      </Card>
+
       {loading || existingState.loading ? <LoadingSkeleton /> : null}
       {existingState.error ? <div className="error-state">{existingState.error}</div> : null}
 
@@ -197,6 +244,8 @@ export function StaffImportPage() {
             columns={[
               { key: 'name', header: language === 'th' ? 'ชื่อ' : 'Name', render: (row) => <div className="participant-admin-cell"><strong>{row.profile.name_th}</strong><span>{row.profile.nickname_th || row.profile.nickname || row.profile.nickname_en} · {row.profile.student_id}</span></div> },
               { key: 'nickname_en', header: language === 'th' ? 'ชื่อเล่น EN' : 'Nickname EN', render: (row) => row.profile.nickname_en || '-' },
+              { key: 'status', header: language === 'th' ? 'สถานะ' : 'Status', render: (row) => rowStatuses.get(row.row_key)?.status ?? '-' },
+              { key: 'old_major', header: language === 'th' ? 'สาขาเดิม' : 'Old major', render: (row) => majorLabel(rowStatuses.get(row.row_key)?.oldMajor ?? null, language) },
               { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => majorLabel(row.profile.major, language) },
               { key: 'position', header: language === 'th' ? 'ตำแหน่ง' : 'Position', render: (row) => row.profile.position || '-' },
               { key: 'group', header: language === 'th' ? 'กลุ่ม' : 'Group', render: (row) => groupLabel(row.assignment.main_group, row.assignment.subgroup, language) },
@@ -222,7 +271,7 @@ export function StaffImportPage() {
           <ConfirmDialog
             open={confirmOpen}
             title={language === 'th' ? 'ยืนยันการนำเข้าข้อมูลจริง' : 'Confirm staff import'}
-            message={language === 'th' ? `ระบบจะบันทึกข้อมูล ${preview.rows.length} รายการลง Supabase และอัปเดตรายการเดิมที่ตรงกับรหัสนักศึกษา อีเมล หรือเบอร์โทร` : `This will save ${preview.rows.length} records to Supabase and update existing matches by student ID, email, or phone.`}
+            message={language === 'th' ? `ระบบจะทำงานโหมด ${importMode} กับข้อมูล ${preview.rows.length} รายการ โดย match จากรหัสนักศึกษา อีเมล หรือเบอร์โทร` : `This will run ${importMode} for ${preview.rows.length} records matched by student ID, email, or phone.`}
             confirmLabel={language === 'th' ? 'นำเข้าข้อมูลจริง' : 'Commit import'}
             onConfirm={commitImport}
             onClose={() => setConfirmOpen(false)}

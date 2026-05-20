@@ -1,5 +1,5 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
-import { HeartPulse, Home, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { HeartPulse, Home, LogOut, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { RoleAwareBottomNav } from './mobile/RoleAwareBottomNav';
 import { useLanguage } from '../context/LanguageContext';
@@ -17,6 +17,7 @@ export function Layout() {
   const { language, setLanguage, t } = useLanguage();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [access, setAccess] = useState<StaffAccessContext | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let active = true;
@@ -56,6 +57,13 @@ export function Layout() {
   const canEmergency = Boolean(access?.can_view_emergency || access?.is_admin);
   const loginCopy = language === 'th' ? copy.th : copy.en;
 
+  async function signOut() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setAccess(null);
+    navigate('/');
+  }
+
   return (
     <div>
       <nav className="top-nav">
@@ -86,6 +94,7 @@ export function Layout() {
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
                   <span className="nav-menu-label">{language === 'th' ? 'ระบบเสริม' : 'More tools'}</span>
                   <NavLink to="/admin/documents">{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>
+                  <NavLink to="/admin/data-health">{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
                   <NavLink to="/admin/logs">{t.logs}</NavLink>
                 </>
               ) : null}
@@ -101,10 +110,22 @@ export function Layout() {
               {!isAdmin && !isStaff ? <span className="nav-menu-empty">{language === 'th' ? 'เข้าสู่ระบบทีมงานเพื่อดูเครื่องมือเพิ่มเติม' : 'Sign in as staff to see more tools.'}</span> : null}
             </div>
           </details>
-          <NavLink className={`staff-login-link ${user ? 'staff-login-link-active' : ''}`} to="/admin">
-            {user ? <UserCheck size={17} /> : <Shield size={17} />}
-            <span>{user ? (language === 'th' ? 'บัญชี / ออกจากระบบ' : 'Account / Sign out') : loginCopy.staffLogin}</span>
-          </NavLink>
+          {user ? (
+            <details className="account-menu">
+              <summary className="staff-login-link staff-login-link-active"><UserCheck size={17} /><span>{language === 'th' ? 'บัญชี' : 'Account'}</span></summary>
+              <div>
+                <strong>{user.email ?? user.id}</strong>
+                {isStaff ? <NavLink to="/staff">{loginCopy.staffHome}</NavLink> : null}
+                {isAdmin ? <NavLink to="/admin/dashboard">{loginCopy.adminDashboard}</NavLink> : null}
+                <button type="button" onClick={signOut}><LogOut size={16} />{language === 'th' ? 'ออกจากระบบ' : 'Sign out'}</button>
+              </div>
+            </details>
+          ) : (
+            <NavLink className="staff-login-link" to="/admin">
+              <Shield size={17} />
+              <span>{loginCopy.staffLogin}</span>
+            </NavLink>
+          )}
           <button className="language-toggle" type="button" onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}>
             {language === 'th' ? 'EN' : 'TH'}
           </button>
@@ -130,6 +151,12 @@ export function Layout() {
           <NavLink to="/edit">
             <Pencil size={19} />
             <span>{language === 'th' ? 'แก้ไขข้อมูล' : 'Edit Info'}</span>
+          </NavLink>
+        ) : null}
+        {!user && !isAdmin && !isStaff ? (
+          <NavLink to="/admin">
+            <Shield size={19} />
+            <span>{language === 'th' ? 'ทีมงาน' : 'Staff'}</span>
           </NavLink>
         ) : null}
         {isAdmin ? (
