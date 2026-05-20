@@ -9,6 +9,7 @@ import { VerifyEditPage } from './pages/VerifyEditPage';
 
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })));
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage').then((module) => ({ default: module.AdminLoginPage })));
+const AdminStaffProfilePage = lazy(() => import('./pages/AdminStaffProfilePage').then((module) => ({ default: module.AdminStaffProfilePage })));
 const ChangeLogPage = lazy(() => import('./pages/ChangeLogPage').then((module) => ({ default: module.ChangeLogPage })));
 const DataHealthPage = lazy(() => import('./pages/DataHealthPage').then((module) => ({ default: module.DataHealthPage })));
 const EmergencyDashboardPage = lazy(() => import('./pages/EmergencyDashboardPage').then((module) => ({ default: module.EmergencyDashboardPage })));
@@ -21,10 +22,13 @@ const DocumentTemplatesPage = lazy(() => import('./pages/DocumentTemplatesPage')
 const PendingRequestsPage = lazy(() => import('./pages/PendingRequestsPage').then((module) => ({ default: module.PendingRequestsPage })));
 const StaffAttendancePage = lazy(() => import('./pages/StaffAttendancePage').then((module) => ({ default: module.StaffAttendancePage })));
 const StaffDashboardPage = lazy(() => import('./pages/StaffDashboardPage').then((module) => ({ default: module.StaffDashboardPage })));
+const StaffDirectoryPage = lazy(() => import('./pages/StaffDirectoryPage').then((module) => ({ default: module.StaffDirectoryPage })));
 const StaffImportPage = lazy(() => import('./pages/StaffImportPage').then((module) => ({ default: module.StaffImportPage })));
 const StaffManagementPage = lazy(() => import('./pages/StaffManagementPage').then((module) => ({ default: module.StaffManagementPage })));
 const StaffMobilePage = lazy(() => import('./pages/StaffMobilePage').then((module) => ({ default: module.StaffMobilePage })));
 const StaffOperationsPage = lazy(() => import('./pages/StaffOperationsPage').then((module) => ({ default: module.StaffOperationsPage })));
+const StaffProfileEditPage = lazy(() => import('./pages/StaffProfileEditPage').then((module) => ({ default: module.StaffProfileEditPage })));
+const StaffProfilePage = lazy(() => import('./pages/StaffProfilePage').then((module) => ({ default: module.StaffProfilePage })));
 
 export function App() {
   return (
@@ -35,6 +39,9 @@ export function App() {
         <Route path="admin" element={<Suspense fallback={<LoadingSkeleton />}><AdminLoginPage /></Suspense>} />
         <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer', 'emergency_staff']} />}>
           <Route path="staff" element={<Suspense fallback={<LoadingSkeleton />}><StaffDashboardPage /></Suspense>} />
+          <Route path="staff/profile" element={<Suspense fallback={<LoadingSkeleton />}><StaffProfilePage /></Suspense>} />
+          <Route path="staff/profile/edit" element={<Suspense fallback={<LoadingSkeleton />}><StaffProfileEditPage /></Suspense>} />
+          <Route path="staff/directory" element={<Suspense fallback={<LoadingSkeleton />}><StaffDirectoryPage /></Suspense>} />
         </Route>
         <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer']} />}>
           <Route path="staff/my-group" element={<Suspense fallback={<LoadingSkeleton />}><StaffMobilePage /></Suspense>} />
@@ -50,6 +57,8 @@ export function App() {
           <Route path="admin/emergency" element={<Suspense fallback={<LoadingSkeleton />}><EmergencyDashboardPage /></Suspense>} />
           <Route path="admin/groups" element={<Suspense fallback={<LoadingSkeleton />}><GroupDashboardPage /></Suspense>} />
           <Route path="admin/staff" element={<Suspense fallback={<LoadingSkeleton />}><StaffManagementPage /></Suspense>} />
+          <Route path="admin/staff/:id" element={<Suspense fallback={<LoadingSkeleton />}><AdminStaffProfilePage /></Suspense>} />
+          <Route path="admin/staff/:id/profile" element={<Suspense fallback={<LoadingSkeleton />}><AdminStaffProfilePage /></Suspense>} />
           <Route path="admin/staff/import" element={<Suspense fallback={<LoadingSkeleton />}><StaffImportPage /></Suspense>} />
           <Route path="admin/staff/operations" element={<Suspense fallback={<LoadingSkeleton />}><StaffOperationsPage /></Suspense>} />
           <Route path="admin/documents" element={<Suspense fallback={<LoadingSkeleton />}><DocumentCenterPage /></Suspense>} />

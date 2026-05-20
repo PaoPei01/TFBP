@@ -165,9 +165,43 @@ export type StaffMedicalInfo = {
   updated_at: string | null;
 };
 
+export type StaffPublicProfile = {
+  staff_profile_id: string;
+  avatar_url: string | null;
+  bio: string | null;
+  hometown: string | null;
+  interests: string[] | null;
+  public_profile_enabled: boolean | null;
+  show_instagram: boolean | null;
+  show_line_id: boolean | null;
+  show_facebook: boolean | null;
+  show_phone_to_staff: boolean | null;
+  show_phone_to_public: boolean | null;
+  staff_badges: string[] | null;
+  qr_token: string | null;
+  profile_completed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type StaffEditRequest = {
+  id: string;
+  staff_profile_id: string;
+  requested_by: string | null;
+  old_data: Json | null;
+  new_data: Json | null;
+  status: 'pending' | 'approved' | 'rejected';
+  admin_note: string | null;
+  created_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+};
+
 export type StaffManagementRow = StaffProfile & {
   medical_info?: StaffMedicalInfo | null;
   assignment?: StaffAssignment | null;
+  public_profile?: StaffPublicProfile | null;
+  pending_staff_edit_requests?: number | null;
 };
 
 export type StaffQuotaAnalyticsRow = {
@@ -371,6 +405,16 @@ export type Database = {
         Insert: Partial<StaffMedicalInfo> & { staff_profile_id: string };
         Update: Partial<StaffMedicalInfo>;
       };
+      staff_public_profiles: {
+        Row: StaffPublicProfile;
+        Insert: Partial<StaffPublicProfile> & { staff_profile_id: string };
+        Update: Partial<StaffPublicProfile>;
+      };
+      staff_edit_requests: {
+        Row: StaffEditRequest;
+        Insert: Partial<StaffEditRequest> & { staff_profile_id: string };
+        Update: Partial<StaffEditRequest>;
+      };
       staff_audit_logs: {
         Row: {
           id: string;
@@ -498,6 +542,42 @@ export type Database = {
       get_staff_public_directory: {
         Args: Record<string, never>;
         Returns: Json;
+      };
+      get_my_staff_profile: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      update_my_staff_public_profile: {
+        Args: { input_data: Json };
+        Returns: Json;
+      };
+      submit_staff_edit_request: {
+        Args: { input_new_data: Json };
+        Returns: Json;
+      };
+      get_public_staff_cards: {
+        Args: { input_main_group?: string | null; input_subgroup?: string | null };
+        Returns: Json;
+      };
+      get_staff_directory: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      get_admin_staff_profile_detail: {
+        Args: { input_staff_profile_id: string };
+        Returns: Json;
+      };
+      update_staff_public_profile_admin: {
+        Args: { input_staff_profile_id: string; input_data: Json };
+        Returns: Json;
+      };
+      approve_staff_edit_request: {
+        Args: { request_id: string };
+        Returns: undefined;
+      };
+      reject_staff_edit_request: {
+        Args: { request_id: string; note: string };
+        Returns: undefined;
       };
       get_staff_quota_analytics: {
         Args: Record<string, never>;

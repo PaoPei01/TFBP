@@ -1,4 +1,4 @@
-import { AlertTriangle, ClipboardCheck, Search, ShieldAlert, UsersRound } from 'lucide-react';
+import { AlertTriangle, ClipboardCheck, Search, ShieldAlert, UserRound, UsersRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { MobileSafeAreaSpacer } from '../components/mobile/MobileSafeAreaSpacer';
@@ -45,6 +45,16 @@ export function StaffDashboardPage() {
       </div>
 
       <div className="staff-action-grid">
+        <Link className="staff-action-card" to="/staff/profile">
+          <UserRound size={28} />
+          <strong>{language === 'th' ? 'โปรไฟล์ทีมงานของฉัน' : 'My Staff Profile'}</strong>
+          <span>{language === 'th' ? 'จัดการข้อมูลที่น้องเห็นและส่งคำขอแก้ไขข้อมูลสำคัญ' : 'Manage public visibility and request sensitive changes'}</span>
+        </Link>
+        <Link className="staff-action-card" to="/staff/directory">
+          <UsersRound size={28} />
+          <strong>{language === 'th' ? 'ไดเรกทอรีทีมงาน' : 'Staff Directory'}</strong>
+          <span>{language === 'th' ? 'ค้นหาช่องทางติดต่อภายในตามสิทธิ์' : 'Find internal staff contacts based on permissions'}</span>
+        </Link>
         {!isEmergencyOnly && access.can_view_staff ? (
           <Link className="staff-action-card" to="/staff/my-group">
             <Search size={28} />

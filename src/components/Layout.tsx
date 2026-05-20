@@ -102,6 +102,8 @@ export function Layout() {
                 <>
                   <span className="nav-menu-label">{language === 'th' ? 'สตาฟ' : 'Staff'}</span>
                   <NavLink to="/staff">{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</NavLink>
+                  <NavLink to="/staff/profile">{language === 'th' ? 'โปรไฟล์ของฉัน' : 'My Profile'}</NavLink>
+                  <NavLink to="/staff/directory">{language === 'th' ? 'ไดเรกทอรีทีมงาน' : 'Staff Directory'}</NavLink>
                   {access?.can_view_staff ? <NavLink to="/staff/my-group">{language === 'th' ? 'กลุ่มของฉัน' : 'My Group'}</NavLink> : null}
                   {canAttend ? <NavLink to="/staff/attendance">{language === 'th' ? 'เช็กชื่อ' : 'Attendance'}</NavLink> : null}
                   {canEmergency ? <NavLink to="/staff/emergency">{language === 'th' ? 'สุขภาพฉุกเฉิน' : 'Staff Emergency'}</NavLink> : null}
@@ -116,6 +118,7 @@ export function Layout() {
               <div>
                 <strong>{user.email ?? user.id}</strong>
                 {isStaff ? <NavLink to="/staff">{loginCopy.staffHome}</NavLink> : null}
+                {isStaff ? <NavLink to="/staff/profile">{language === 'th' ? 'โปรไฟล์ของฉัน' : 'My Profile'}</NavLink> : null}
                 {isAdmin ? <NavLink to="/admin/dashboard">{loginCopy.adminDashboard}</NavLink> : null}
                 <button type="button" onClick={signOut}><LogOut size={16} />{language === 'th' ? 'ออกจากระบบ' : 'Sign out'}</button>
               </div>

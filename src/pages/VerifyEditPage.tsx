@@ -3,6 +3,7 @@ import { FormEvent, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ContactLinks } from '../components/ContactLinks';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PublicStaffCard } from '../components/PublicStaffCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -15,6 +16,7 @@ import { majorLabel } from '../lib/major';
 import type { EditableProfileFields, Profile } from '../lib/types';
 import { fetchVerifiedFriendRecommendations, fetchVerifiedGroupContext } from '../services/groups';
 import { createEditRequest, pickEditableFields, verifyProfileIdentity } from '../services/profiles';
+import { fetchPublicStaffCards, type PublicStaffCardData } from '../services/staffProfiles';
 import { errorMessage } from '../utils/error';
 
 export function VerifyEditPage() {
@@ -24,6 +26,7 @@ export function VerifyEditPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [form, setForm] = useState<EditableProfileFields | null>(null);
   const [groupContext, setGroupContext] = useState<Awaited<ReturnType<typeof fetchVerifiedGroupContext>>>(null);
+  const [publicStaffCards, setPublicStaffCards] = useState<PublicStaffCardData[]>([]);
   const [friends, setFriends] = useState<Awaited<ReturnType<typeof fetchVerifiedFriendRecommendations>>>([]);
   const [groupSoftMessage, setGroupSoftMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,6 +38,7 @@ export function VerifyEditPage() {
     setLoading(true);
     setToast(null);
     setGroupContext(null);
+    setPublicStaffCards([]);
     setFriends([]);
     setGroupSoftMessage('');
     try {
@@ -51,6 +55,11 @@ export function VerifyEditPage() {
         .then((context) => {
           setGroupContext(context);
           if (!context?.assignment) setGroupSoftMessage(language === 'th' ? 'ยังไม่ได้จัดกลุ่ม หรือไม่สามารถโหลดข้อมูลกลุ่มได้ในขณะนี้' : 'Group information is not available yet.');
+          if (context?.assignment) {
+            fetchPublicStaffCards(context.assignment.main_group, context.assignment.subgroup)
+              .then(setPublicStaffCards)
+              .catch(() => setPublicStaffCards([]));
+          }
         })
         .catch(() => {
           setGroupContext(null);
@@ -113,10 +122,15 @@ export function VerifyEditPage() {
                 <p>{groupContext.setting?.motto || groupMeta[groupContext.assignment.main_group].motto}</p>
               </div>
               <div className="group-details-grid">
-                <div><strong>{language === 'th' ? 'พี่สตาฟ' : 'Staff'}</strong><span>{groupContext.staff_roster?.length ? groupContext.staff_roster.map((staff) => `${staff.nickname || staff.name}`).join(', ') : groupContext.setting?.mentors || groupMeta[groupContext.assignment.main_group].mentors.join(', ')}</span></div>
+                <div><strong>{language === 'th' ? 'พี่สตาฟ' : 'Staff'}</strong><span>{publicStaffCards.length ? publicStaffCards.map((staff) => staff.nickname_th || staff.nickname || staff.nickname_en || staff.name_th).join(', ') : groupContext.staff_roster?.length ? groupContext.staff_roster.map((staff) => `${staff.nickname || staff.name}`).join(', ') : groupContext.setting?.mentors || groupMeta[groupContext.assignment.main_group].mentors.join(', ')}</span></div>
                 <div><strong>{language === 'th' ? 'เวลา' : 'Time'}</strong><span>{groupContext.setting?.schedule || groupMeta[groupContext.assignment.main_group].schedule}</span></div>
                 <div><strong>{language === 'th' ? 'จุดนัดพบ' : 'Meeting point'}</strong><span>{groupContext.setting?.meeting_point || groupMeta[groupContext.assignment.main_group].meetingPoint}</span></div>
               </div>
+              {publicStaffCards.length ? (
+                <div className="staff-card-grid full-span">
+                  {publicStaffCards.map((staff) => <PublicStaffCard key={staff.staff_profile_id} staff={staff} />)}
+                </div>
+              ) : null}
             </Card>
           ) : groupSoftMessage ? <Card className="empty-state">{groupSoftMessage}</Card> : null}
 

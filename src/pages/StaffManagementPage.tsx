@@ -1,4 +1,4 @@
-import { BarChart3, Download, FileSpreadsheet, Pencil, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { BarChart3, Download, FileSpreadsheet, Pencil, RefreshCw, Search, Trash2, UserRound } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ContactLinks } from '../components/ContactLinks';
@@ -183,6 +183,7 @@ export function StaffManagementPage() {
         mobileMeta={(row) => groupLabel(row.assignment?.main_group, row.assignment?.subgroup, language)}
         mobileActions={(row) => (
           <div className="row-actions">
+            <Link className="btn btn-secondary" to={`/admin/staff/${row.id}/profile`}><UserRound size={16} />{language === 'th' ? 'โปรไฟล์' : 'Profile'}</Link>
             <Button variant="secondary" icon={<Pencil size={16} />} onClick={() => setEditing(row)}>{language === 'th' ? 'แก้ไข' : 'Edit'}</Button>
             <Button variant="danger" icon={<Trash2 size={16} />} onClick={() => setDeleting(row)}>{language === 'th' ? 'ลบ' : 'Delete'}</Button>
           </div>
@@ -197,11 +198,13 @@ export function StaffManagementPage() {
           { key: 'phone', header: language === 'th' ? 'เบอร์' : 'Phone', render: (row) => row.phone || '-' },
           { key: 'contact', header: language === 'th' ? 'ช่องทางติดต่อ' : 'Contact', render: (row) => <ContactLinks instagram={row.instagram} lineId={row.line_id} facebook={row.facebook} other={row.other_contact} /> },
           { key: 'medical', header: language === 'th' ? 'สุขภาพ' : 'Medical', render: (row) => <HealthFlags profile={{ disease: row.medical_info?.disease ?? null, drug_allergy: row.medical_info?.drug_allergy ?? null, food_allergy: row.medical_info?.food_allergy ?? null }} detail /> },
+          { key: 'profile_status', header: language === 'th' ? 'โปรไฟล์' : 'Profile', render: (row) => row.public_profile?.public_profile_enabled ? (row.public_profile.avatar_url ? 'complete' : 'missing avatar') : 'public disabled' },
           {
             key: 'actions',
             header: language === 'th' ? 'จัดการ' : 'Actions',
             render: (row) => (
               <div className="row-actions">
+                <Link className="btn btn-secondary" to={`/admin/staff/${row.id}/profile`}><UserRound size={16} />{language === 'th' ? 'โปรไฟล์' : 'Profile'}</Link>
                 <Button variant="secondary" icon={<Pencil size={16} />} onClick={() => setEditing(row)}>{language === 'th' ? 'แก้ไข' : 'Edit'}</Button>
                 <Button variant="danger" icon={<Trash2 size={16} />} onClick={() => setDeleting(row)}>{language === 'th' ? 'ลบ' : 'Delete'}</Button>
               </div>
