@@ -3,13 +3,13 @@ alter table public.staff_assignments
   add column if not exists secondary_roles text[] not null default '{}',
   add column if not exists base_number integer;
 
-create or replace function public.clean_placeholder_text(input_value text)
+create or replace function public.clean_placeholder_text(input text)
 returns text
 language plpgsql
 immutable
 as $$
 declare
-  raw text := nullif(btrim(coalesce(input_value, '')), '');
+  raw text := nullif(btrim(coalesce(input, '')), '');
   lower_raw text;
 begin
   if raw is null then
@@ -26,13 +26,13 @@ begin
 end;
 $$;
 
-create or replace function public.normalize_phone(input_phone text)
+create or replace function public.normalize_phone(value text)
 returns text
 language plpgsql
 immutable
 as $$
 declare
-  digits text := regexp_replace(coalesce(input_phone, ''), '\D', '', 'g');
+  digits text := regexp_replace(coalesce(value, ''), '\D', '', 'g');
 begin
   if digits = '' then
     return null;
@@ -105,12 +105,12 @@ begin
 end;
 $$;
 
-create or replace function public.normalize_major_text(input_value text)
+create or replace function public.normalize_major_text(input text)
 returns text
 language sql
 immutable
 as $$
-  select public.normalize_major(input_value);
+  select public.normalize_major(input);
 $$;
 
 alter table public.staff_assignments
