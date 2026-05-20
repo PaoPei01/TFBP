@@ -1,7 +1,7 @@
 import { LogIn, LogOut, UserCheck } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -90,6 +90,11 @@ export function AdminLoginPage() {
             {language === 'th' ? 'เข้าสู่ระบบ' : 'Sign in'}
           </Button>
         </form>
+      </Card>
+      <Card className="privacy-notice">
+        <strong>{language === 'th' ? 'แก้ไขโปรไฟล์ทีมงานรายบุคคล' : 'Individual staff profile update'}</strong>
+        <span>{language === 'th' ? 'สำหรับทีมงานรายบุคคลที่ต้องการแก้ไขโปรไฟล์ ไม่จำเป็นต้องมีบัญชีเข้าสู่ระบบ' : 'For individual staff who need to update their profile. No login account required.'}</span>
+        <Link className="btn btn-secondary" to="/staff/profile/verify">{language === 'th' ? 'แก้ไขโปรไฟล์ทีมงาน' : 'Edit Staff Profile'}</Link>
       </Card>
     </section>
   );

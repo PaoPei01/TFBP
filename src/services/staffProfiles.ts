@@ -35,6 +35,13 @@ export type StaffDirectoryRow = PublicStaffCardData & {
   show_phone_to_staff: boolean | null;
 };
 
+export type VerifiedStaffProfileContext = {
+  profile: Pick<StaffProfile, 'id' | 'student_id' | 'email' | 'name_th' | 'name_en' | 'nickname' | 'nickname_th' | 'nickname_en' | 'major' | 'instagram' | 'facebook' | 'position'>;
+  public_profile: StaffPublicProfile | null;
+  assignment: Pick<StaffAssignment, 'main_group' | 'subgroup' | 'primary_role' | 'secondary_roles'> | null;
+  edit_requests: Array<Pick<StaffEditRequest, 'id' | 'status' | 'created_at' | 'admin_note'>>;
+};
+
 export type StaffPublicProfileInput = Partial<Pick<
   StaffPublicProfile,
   | 'avatar_url'
@@ -62,6 +69,12 @@ export async function fetchMyStaffProfile() {
   return data as StaffProfileContext;
 }
 
+export async function verifyStaffIdentity(email: string, phone: string) {
+  const { data, error } = await supabase.rpc('verify_staff_identity', { input_email: email, input_phone: phone });
+  if (error) throw error;
+  return data as VerifiedStaffProfileContext | null;
+}
+
 export async function updateMyStaffPublicProfile(input: StaffPublicProfileInput) {
   const { data, error } = await supabase.rpc('update_my_staff_public_profile', { input_data: cleanInput(input as Record<string, unknown>) });
   if (error) throw error;
@@ -76,6 +89,33 @@ export async function submitStaffEditRequest(input: { profile?: Record<string, u
   const { data, error } = await supabase.rpc('submit_staff_edit_request', { input_new_data: payload });
   if (error) throw error;
   return data as StaffEditRequest;
+}
+
+export async function updateStaffPublicProfileVerified(email: string, phone: string, input: StaffPublicProfileInput & { instagram?: string | null; facebook?: string | null }) {
+  const { data, error } = await supabase.rpc('update_staff_public_profile_verified', {
+    input_email: email,
+    input_phone: phone,
+    input_public_data: cleanInput(input as Record<string, unknown>),
+  });
+  if (error) throw error;
+  return data as VerifiedStaffProfileContext;
+}
+
+export async function submitStaffEditRequestVerified(email: string, phone: string, input: { profile?: Record<string, unknown>; medical?: Record<string, unknown>; assignment?: Record<string, unknown> }) {
+  const payload = {
+    profile: cleanInput(input.profile ?? {}),
+    medical: cleanInput(input.medical ?? {}),
+    assignment: input.assignment ?? {},
+  };
+  const { data, error } = await supabase.rpc('submit_staff_edit_request_verified', { input_email: email, input_phone: phone, input_new_data: payload });
+  if (error) throw error;
+  return data as Pick<StaffEditRequest, 'id' | 'status' | 'created_at'>;
+}
+
+export async function fetchAdminStaffEditRequests() {
+  const { data, error } = await supabase.rpc('get_staff_edit_requests_admin');
+  if (error) throw error;
+  return (data ?? []) as Array<StaffEditRequest & { staff_profile: StaffProfile | null }>;
 }
 
 export async function fetchPublicStaffCards(mainGroup?: string | null, subgroup?: string | null) {

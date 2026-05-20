@@ -92,6 +92,7 @@ export function Layout() {
                   <NavLink to="/admin/staff">{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
                   <NavLink to="/admin/staff/operations">{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
+                  <NavLink to="/admin/staff/requests">{language === 'th' ? 'คำขอแก้ไขทีมงาน' : 'Staff Requests'}</NavLink>
                   <span className="nav-menu-label">{language === 'th' ? 'ระบบเสริม' : 'More tools'}</span>
                   <NavLink to="/admin/documents">{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>
                   <NavLink to="/admin/data-health">{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
@@ -109,7 +110,12 @@ export function Layout() {
                   {canEmergency ? <NavLink to="/staff/emergency">{language === 'th' ? 'สุขภาพฉุกเฉิน' : 'Staff Emergency'}</NavLink> : null}
                 </>
               ) : null}
-              {!isAdmin && !isStaff ? <span className="nav-menu-empty">{language === 'th' ? 'เข้าสู่ระบบทีมงานเพื่อดูเครื่องมือเพิ่มเติม' : 'Sign in as staff to see more tools.'}</span> : null}
+              {!isAdmin && !isStaff ? (
+                <>
+                  <NavLink to="/staff/profile/verify">{language === 'th' ? 'แก้ไขโปรไฟล์ทีมงาน' : 'Edit Staff Profile'}</NavLink>
+                  <span className="nav-menu-empty">{language === 'th' ? 'เข้าสู่ระบบทีมงานเพื่อดูเครื่องมือเพิ่มเติม' : 'Sign in as staff to see more tools.'}</span>
+                </>
+              ) : null}
             </div>
           </details>
           {user ? (
@@ -160,6 +166,12 @@ export function Layout() {
           <NavLink to="/admin">
             <Shield size={19} />
             <span>{language === 'th' ? 'ทีมงาน' : 'Staff'}</span>
+          </NavLink>
+        ) : null}
+        {!user && !isAdmin && !isStaff ? (
+          <NavLink to="/staff/profile/verify">
+            <UserCheck size={19} />
+            <span>{language === 'th' ? 'โปรไฟล์' : 'Profile'}</span>
           </NavLink>
         ) : null}
         {isAdmin ? (
