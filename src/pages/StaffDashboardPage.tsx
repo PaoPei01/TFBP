@@ -27,8 +27,8 @@ export function StaffDashboardPage() {
     <section className="page-stack staff-page">
       <div className="section-heading">
         <p className="eyebrow">{language === 'th' ? 'โหมดสตาฟ' : 'Staff App Mode'}</p>
-        <h1>{language === 'th' ? 'แดชบอร์ดสตาฟ' : 'Staff Dashboard'}</h1>
-        <p>{language === 'th' ? 'โหมดมือถือสำหรับหน้างาน สิทธิ์จะแยกตาม role และไม่เปิดเครื่องมือแอดมินให้ staff' : 'Mobile-first event operations mode. Access is role-based and does not expose admin tools to staff.'}</p>
+        <h1>{language === 'th' ? 'วันนี้ต้องทำอะไร' : 'Today’s operations'}</h1>
+        <p>{language === 'th' ? 'ใช้ปุ่มด้านล่างเพื่อเข้ารายชื่อกลุ่ม เช็กชื่อ หรือเปิดเครื่องมือฉุกเฉินระหว่างกิจกรรม' : 'Use the actions below for group lookup, attendance, and emergency tools during the event.'}</p>
       </div>
 
       <div className="staff-role-strip">
@@ -38,7 +38,7 @@ export function StaffDashboardPage() {
       </div>
 
       <div className="stats-grid">
-        <DashboardStatCard label={isEmergencyOnly ? (language === 'th' ? 'ขอบเขตสุขภาพ' : 'Health scope') : (language === 'th' ? 'ในความรับผิดชอบ' : 'Assigned participants')} value={context?.participants.length ?? (isEmergencyOnly ? assignedLabel : 0)} icon={<UsersRound size={20} />} />
+        <DashboardStatCard label={isEmergencyOnly ? (language === 'th' ? 'ขอบเขตสุขภาพ' : 'Health scope') : (language === 'th' ? 'ข้อมูลกลุ่มของฉัน' : 'My group data')} value={context?.participants.length ?? (isEmergencyOnly ? assignedLabel : 0)} icon={<UsersRound size={20} />} />
         <DashboardStatCard label={language === 'th' ? 'พี่กลุ่ม' : 'Group staff'} value={context?.staff_roster.length ?? 0} />
         <DashboardStatCard label={language === 'th' ? 'ข้อมูลสุขภาพที่เห็น' : 'Medical visible'} value={medicalCount} icon={<AlertTriangle size={20} />} />
       </div>
@@ -48,7 +48,7 @@ export function StaffDashboardPage() {
           <Link className="staff-action-card" to="/staff/my-group">
             <Search size={28} />
             <strong>{language === 'th' ? 'กลุ่มของฉัน' : 'My Group'}</strong>
-            <span>{language === 'th' ? 'รายชื่อและช่องทางติดต่อในกลุ่ม' : 'Participant list and group contact details'}</span>
+            <span>{language === 'th' ? 'ค้นหารายชื่อ เบอร์ที่ได้รับอนุญาต และจุดนัดพบ' : 'Find participants, allowed contacts, and meeting point'}</span>
           </Link>
         ) : null}
         {access.can_mark_attendance ? (
@@ -61,8 +61,8 @@ export function StaffDashboardPage() {
         {access.can_view_emergency ? (
           <Link className="staff-action-card danger-card" to="/staff/emergency">
             <ShieldAlert size={28} />
-            <strong>{language === 'th' ? 'เครื่องมือสุขภาพ' : 'Health Tools'}</strong>
-            <span>{language === 'th' ? 'emergency_staff ใช้เครื่องมือสุขภาพได้เต็มรูปแบบทุกกลุ่ม' : 'emergency_staff can use full health tools across all groups'}</span>
+            <strong>{language === 'th' ? 'ปุ่มฉุกเฉิน' : 'Emergency shortcut'}</strong>
+            <span>{language === 'th' ? 'เบอร์ด่วนและข้อมูลช่วยเหลือฉุกเฉิน' : 'Hotlines and emergency support data'}</span>
           </Link>
         ) : null}
       </div>

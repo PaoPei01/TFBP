@@ -8,6 +8,7 @@ import { StickyBottomBar } from '../components/mobile/StickyBottomBar';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
@@ -49,6 +50,7 @@ export function GroupDashboardPage() {
     mentors: '',
   });
   const [toast, setToast] = useState<ToastState>(null);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const profiles = useMemo(() => state.data ?? [], [state.data]);
   const settingsByKey = useMemo(() => new Map((settingsState.data ?? []).map((setting) => [settingKey(setting.main_group, setting.subgroup), setting])), [settingsState.data]);
 
@@ -65,6 +67,7 @@ export function GroupDashboardPage() {
   const groupCounts = useMemo(() => Object.fromEntries(stats.map((item) => [item.key, item.count])), [stats]);
   const warnings = stats.flatMap((item) => item.warnings.map((warning) => `${groupLabel(item.main_group, item.subgroup, language)}: ${warning}`));
   const locked = profiles.some((profile) => profile.group_assignment?.locked);
+  const hasDrafts = Object.keys(drafts).length > 0;
 
   function generate() {
     if (locked) {
@@ -73,9 +76,9 @@ export function GroupDashboardPage() {
     }
     const existing = profiles.map(assignmentFromProfile).filter(Boolean) as Pick<GroupAssignment, 'profile_id' | 'main_group' | 'subgroup' | 'locked'>[];
     const next = autoAssignGroups(profiles, existing);
-      setDrafts(Object.fromEntries(next.map((assignment) => [assignment.profile_id, assignment])));
-      setAuditReady(false);
-    setToast({ type: 'success', message: language === 'th' ? 'สร้างกลุ่มแบบสมดุลแล้ว กดบันทึกเพื่ออัปเดต Supabase' : 'Balanced groups generated. Save to update Supabase.' });
+    setDrafts(Object.fromEntries(next.map((assignment) => [assignment.profile_id, assignment])));
+    setAuditReady(false);
+    setToast({ type: 'success', message: language === 'th' ? 'จัดกลุ่มใหม่แล้ว อย่าลืมกดบันทึก' : 'Groups generated. Remember to save.' });
   }
 
   function rebalance() {
@@ -129,12 +132,11 @@ export function GroupDashboardPage() {
   }
 
   async function clearAssignments() {
-    const confirmed = window.confirm(language === 'th' ? 'ต้องการลบข้อมูลการจัดกลุ่มทั้งหมดใช่ไหม? หลังจากนี้สามารถ Auto Generate ใหม่ได้' : 'Clear all group assignments? You can auto-generate again afterward.');
-    if (!confirmed) return;
     try {
       await clearGroupAssignments();
       setDrafts({});
       setAuditReady(false);
+      setClearDialogOpen(false);
       setToast({ type: 'success', message: language === 'th' ? 'ลบข้อมูลการจัดกลุ่มทั้งหมดแล้ว' : 'All group assignments cleared' });
       await state.reload();
     } catch (err) {
@@ -179,20 +181,27 @@ export function GroupDashboardPage() {
       </div>
 
       <Card className="group-action-panel">
+        <div className="action-hierarchy-copy">
+          <strong>{language === 'th' ? 'สถานะปัจจุบัน' : 'Current state'}</strong>
+          <span>{locked ? (language === 'th' ? 'ล็อกกลุ่มแล้ว' : 'Groups locked') : hasDrafts ? (language === 'th' ? 'มี draft ที่ยังไม่ได้บันทึก' : 'Unsaved draft changes') : (language === 'th' ? 'ข้อมูลล่าสุดถูกบันทึกแล้ว' : 'Saved')}</span>
+        </div>
         <div className="form-actions">
           <Button icon={<Shuffle size={18} />} onClick={generate} disabled={locked}>
-            Auto Generate Groups
+            {language === 'th' ? 'จัดกลุ่มอัตโนมัติ' : 'Auto Generate'}
           </Button>
-          <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={rebalance} disabled={locked || assignedCount === 0}>
-            Rebalance
-          </Button>
-          <Button variant="secondary" onClick={save} disabled={!Object.keys(drafts).length || locked}>
+          <Button variant="secondary" onClick={save} disabled={!hasDrafts || locked}>
             {language === 'th' ? 'บันทึกการจัดกลุ่ม' : 'Save assignments'}
           </Button>
-          <Button variant="danger" icon={<Lock size={18} />} onClick={lock} disabled={locked || assignedCount === 0}>
-            Lock Groups
+          <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={rebalance} disabled={locked || assignedCount === 0}>
+            {language === 'th' ? 'ปรับสมดุลใหม่' : 'Rebalance'}
           </Button>
-          <Button variant="danger" icon={<Trash2 size={18} />} onClick={clearAssignments} disabled={assignedCount === 0}>
+          <Button variant="danger" icon={<Lock size={18} />} onClick={lock} disabled={locked || assignedCount === 0}>
+            {language === 'th' ? 'ล็อกกลุ่ม' : 'Lock groups'}
+          </Button>
+          <Button variant="secondary" onClick={() => { setDrafts({}); setAuditReady(false); }} disabled={!hasDrafts || locked}>
+            {language === 'th' ? 'ย้อนกลับ draft' : 'Undo draft'}
+          </Button>
+          <Button variant="danger" icon={<Trash2 size={18} />} onClick={() => setClearDialogOpen(true)} disabled={assignedCount === 0}>
             {language === 'th' ? 'ลบการจัดกลุ่มทั้งหมด' : 'Clear all groups'}
           </Button>
           <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportGroupsCsv(profiles)}>
@@ -204,6 +213,16 @@ export function GroupDashboardPage() {
         </div>
         {locked ? <Badge status="approved">{language === 'th' ? 'ล็อกแล้ว' : 'Locked'}</Badge> : auditReady ? <Badge status="approved">{language === 'th' ? 'Audit พร้อมล็อก' : 'Audit ready'}</Badge> : <Badge status="pending">{language === 'th' ? 'ต้อง Audit ก่อนล็อก' : 'Audit required before lock'}</Badge>}
       </Card>
+
+      <ConfirmDialog
+        open={clearDialogOpen}
+        title={language === 'th' ? 'ลบการจัดกลุ่มทั้งหมด' : 'Clear all group assignments'}
+        message={language === 'th' ? 'การกระทำนี้จะลบกลุ่มของผู้เข้าร่วมทุกคนออกจากฐานข้อมูล ใช้เมื่อจะจัดกลุ่มใหม่เท่านั้น' : 'This removes every participant group assignment from the database. Use only before regenerating groups.'}
+        confirmLabel={language === 'th' ? 'ลบการจัดกลุ่มทั้งหมด' : 'Clear all groups'}
+        requireText={language === 'th' ? 'ยืนยัน' : 'RESET'}
+        onConfirm={clearAssignments}
+        onClose={() => setClearDialogOpen(false)}
+      />
 
       <MobileGroupTabs
         activeMainGroup={activeGroup.mainGroup}
@@ -377,8 +396,8 @@ export function GroupDashboardPage() {
       </Card>
 
       <StickyBottomBar label={language === 'th' ? 'ปุ่มจัดกลุ่มด่วน' : 'Quick group actions'}>
-        <Button icon={<Shuffle size={18} />} onClick={generate} disabled={locked}>Auto</Button>
-        <Button variant="secondary" onClick={save} disabled={!Object.keys(drafts).length || locked}>{language === 'th' ? 'บันทึก' : 'Save'}</Button>
+        <Button icon={<Shuffle size={18} />} onClick={generate} disabled={locked}>{language === 'th' ? 'จัดกลุ่ม' : 'Auto'}</Button>
+        <Button variant="secondary" onClick={save} disabled={!hasDrafts || locked}>{language === 'th' ? 'บันทึก' : 'Save'}</Button>
         <Button variant="secondary" icon={<Download size={18} />} onClick={exportAudit}>Audit</Button>
       </StickyBottomBar>
     </section>

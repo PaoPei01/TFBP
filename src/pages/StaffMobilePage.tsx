@@ -35,6 +35,7 @@ export function StaffMobilePage() {
     });
   }, [context?.participants, quickFilter, referenceMajor, search]);
   const primarySetting = context?.settings?.[0];
+  const lastUpdated = new Date().toLocaleString(language === 'th' ? 'th-TH' : 'en-US', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
 
   if (state.loading) return <LoadingSkeleton />;
   if (state.error) return <div className="error-state">{state.error}</div>;
@@ -51,7 +52,15 @@ export function StaffMobilePage() {
       <div className="staff-sticky-actions">
         <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าหลัก' : 'Home'}</Link>
         {context.access.can_mark_attendance ? <Link className="btn btn-primary" to="/staff/attendance"><ClipboardCheck size={18} />{language === 'th' ? 'เช็กชื่อ' : 'Attendance'}</Link> : null}
+        <span className="last-updated">{language === 'th' ? 'อัปเดต' : 'Updated'} {lastUpdated}</span>
       </div>
+
+      {canViewMedical ? (
+        <Card className="emergency-notice compact-notice">
+          <strong>{language === 'th' ? 'ข้อมูลสุขภาพเป็นความลับ' : 'Medical data is confidential'}</strong>
+          <span>{language === 'th' ? 'ใช้เฉพาะเพื่อดูแลความปลอดภัยหน้างาน ห้ามแชร์ต่อสาธารณะ' : 'Use only for event safety. Do not share publicly.'}</span>
+        </Card>
+      ) : null}
 
       <div className="staff-top-grid">
         <Card className="staff-summary-card">
@@ -100,7 +109,7 @@ export function StaffMobilePage() {
       <div className="segmented-control compact-segments" aria-label={language === 'th' ? 'ตัวกรองด่วน' : 'Quick filters'}>
         {[
           { value: 'all', label: language === 'th' ? 'ทั้งหมด' : 'All' },
-          { value: 'special', label: language === 'th' ? 'ดูแลพิเศษ' : 'Special care' },
+          { value: 'special', label: language === 'th' ? 'ต้องดูแลพิเศษ' : 'Special care' },
           { value: 'sameMajor', label: language === 'th' ? 'สาขาเดียวกัน' : 'Same major' },
         ].map((item) => (
           <button key={item.value} type="button" className={quickFilter === item.value ? 'active' : ''} onClick={() => setQuickFilter(item.value as typeof quickFilter)}>
