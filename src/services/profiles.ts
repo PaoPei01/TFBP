@@ -70,10 +70,6 @@ export async function fetchAdminProfiles(options: SearchOptions): Promise<GroupP
     );
   }
 
-  if (options.major) {
-    query = query.ilike('major', `%(${options.major})%`);
-  }
-
   const { data, error } = await query;
   if (error) throw error;
   const profiles = (data ?? []) as GroupProfile[];

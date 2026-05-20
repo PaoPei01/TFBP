@@ -16,7 +16,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { fieldLabel, fieldLabels } from '../lib/constants';
 import { groupLabel } from '../lib/grouping';
 import { groupMeta, mainGroups, subgroups } from '../lib/groups';
-import { majorCatalog, majorLabel, normalizeMajor } from '../lib/major';
+import { getMajorCode, majorCatalog, majorLabel, normalizeMajor } from '../lib/major';
 import type { GroupProfile, Profile } from '../lib/types';
 import { deleteProfile, fetchAdminMajors, fetchAdminProfiles, fetchAdminSummary, updateProfile } from '../services/profiles';
 import { exportProfilesCsv } from '../utils/csv';
@@ -38,7 +38,7 @@ export function AdminDashboardPage() {
   const profiles = useMemo(() => {
     const rows = profilesState.data ?? [];
     return rows.filter((profile) => {
-      if (major && !majorLabel(profile.major).startsWith(major)) return false;
+      if (major && getMajorCode(profile.major) !== major) return false;
       if (group && profile.group_assignment?.main_group !== group) return false;
       if (subgroup && profile.group_assignment?.subgroup !== subgroup) return false;
       if (healthFilter === 'any' && !hasHealthFlag(profile)) return false;
