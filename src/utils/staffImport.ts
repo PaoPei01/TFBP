@@ -32,6 +32,8 @@ export type StaffImportRow = {
     role: StaffRole | null;
     main_group: MainGroup | null;
     subgroup: Subgroup | null;
+    primary_role: string | null;
+    secondary_roles: string[];
   };
   contact_preview: {
     raw: string | null;
@@ -222,6 +224,11 @@ function rowToStaff(row: Record<string, string | null>, sourceSheet: string, sou
     role: normalizeRole(get(row, ['role', 'ยศ', 'สิทธิ์'])),
     main_group: normalizeGroup(get(row, ['main_group', 'สี', 'กลุ่มสี'])),
     subgroup: normalizeSubgroup(get(row, ['subgroup', 'กลุ่มย่อย'])),
+    primary_role: get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position ?? null,
+    secondary_roles: (get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม']) ?? '')
+      .split(/[,/|]+/)
+      .map((item) => item.trim())
+      .filter(Boolean),
   };
   const medical = {
     disease: get(row, ['disease', 'โรคประจำตัว']),

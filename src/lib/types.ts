@@ -126,6 +126,8 @@ export type StaffAssignment = {
   main_group: MainGroup | null;
   subgroup: Subgroup | null;
   role: StaffRole | null;
+  primary_role: string | null;
+  secondary_roles: string[] | null;
   created_at: string | null;
 };
 
@@ -166,6 +168,54 @@ export type StaffMedicalInfo = {
 export type StaffManagementRow = StaffProfile & {
   medical_info?: StaffMedicalInfo | null;
   assignment?: StaffAssignment | null;
+};
+
+export type StaffQuotaAnalyticsRow = {
+  role_name: string;
+  target_count: number;
+  current_primary_count: number;
+  current_secondary_count: number;
+  unique_staff_count: number;
+  shortage_count: number;
+  overflow_count: number;
+  health_status: 'green' | 'yellow' | 'red';
+  overlap_count: number;
+  missing_assignment_count: number;
+};
+
+export type StaffQuotaAnalytics = {
+  rows: StaffQuotaAnalyticsRow[];
+  total_staff: number;
+  unique_staff: number;
+  active_assignments: number;
+  duplicate_record_count: number;
+};
+
+export type StaffRoleConflict = {
+  staff_id: string;
+  name: string;
+  detected_conflicts: string[];
+  severity: 'yellow' | 'red';
+};
+
+export type StaffStructureValidation = {
+  warnings: string[];
+  errors: string[];
+  readiness_score: number;
+};
+
+export type StaffAssignmentRecommendation = {
+  recommendation_type: string;
+  source_role: string | null;
+  target_role: string;
+  suggested_staff: Array<{
+    id: string;
+    name: string;
+    phone: string | null;
+    primary_role: string | null;
+    secondary_roles: string[] | null;
+  }>;
+  reason: string;
 };
 
 export type StaffAccessContext = {
@@ -445,6 +495,22 @@ export type Database = {
         Returns: Json;
       };
       get_staff_public_directory: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      get_staff_quota_analytics: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      detect_staff_role_conflicts: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      validate_staff_structure: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      get_staff_assignment_recommendations: {
         Args: Record<string, never>;
         Returns: Json;
       };

@@ -236,6 +236,11 @@ function rowToStaff(row, sourceSheet, index) {
     role: normalizeRole(get(row, ['role', 'ยศ', 'สิทธิ์'])),
     main_group: normalizeGroup(get(row, ['main_group', 'สี', 'กลุ่มสี'])),
     subgroup: normalizeSubgroup(get(row, ['subgroup', 'กลุ่มย่อย'])),
+    primary_role: get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position ?? null,
+    secondary_roles: (get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม']) ?? '')
+      .split(/[,/|]+/)
+      .map((item) => item.trim())
+      .filter(Boolean),
   };
   const auxiliarySheet = /medical|group_assignments/i.test(sourceSheet);
   const warnings = auxiliarySheet ? [] : [!profile.student_id ? 'missing_student_id' : '', !profile.name_th ? 'missing_name' : '', !profile.phone ? 'missing_phone' : ''].filter(Boolean);
@@ -314,6 +319,8 @@ for (const row of rows) {
       role,
       main_group: role === 'emergency_staff' ? null : row.assignment.main_group,
       subgroup: role === 'emergency_staff' ? null : row.assignment.subgroup,
+      primary_role: row.assignment.primary_role ?? row.profile.position ?? 'ทีมงาน',
+      secondary_roles: row.assignment.secondary_roles ?? [],
     }, { onConflict: 'staff_profile_id' });
     if (error) throw error;
   }

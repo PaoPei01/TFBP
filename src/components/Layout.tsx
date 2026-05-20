@@ -77,6 +77,7 @@ export function Layout() {
                   <NavLink to="/admin/dashboard">{t.dashboard}</NavLink>
                   <NavLink to="/admin/groups">{t.groups}</NavLink>
                   <NavLink to="/admin/staff">{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
+                  <NavLink to="/admin/staff/operations">{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
                   <NavLink to="/admin/requests">{t.requests}</NavLink>
                   <NavLink to="/admin/logs">{t.logs}</NavLink>

@@ -1,4 +1,4 @@
-import { Download, FileSpreadsheet, Pencil, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { BarChart3, Download, FileSpreadsheet, Pencil, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ContactLinks } from '../components/ContactLinks';
@@ -23,9 +23,10 @@ import { errorMessage } from '../utils/error';
 import { exportStaffCsv, exportStaffXlsx } from '../utils/staffExport';
 
 const roles: StaffRole[] = ['staff', 'mentor', 'emergency_staff', 'viewer'];
+const operationalRoles = ['วางแผน (ทีมบอ)', 'พี่กลุ่ม', 'พี่ฐาน', 'ไทม์เมอร์', 'พยาบาล', 'จราจร', 'สวัสดิการ', 'สตาฟให้ความบันเทิง', 'โฟโต้'];
 
 function blankAssignment(staffProfileId: string): StaffAssignment {
-  return { id: '', user_id: null, staff_profile_id: staffProfileId, role: null, main_group: null, subgroup: null, created_at: null };
+  return { id: '', user_id: null, staff_profile_id: staffProfileId, role: null, main_group: null, subgroup: null, primary_role: null, secondary_roles: [], created_at: null };
 }
 
 function blankMedical(staffProfileId: string): StaffMedicalInfo {
@@ -79,6 +80,8 @@ export function StaffManagementPage() {
           role: editing.assignment?.role ?? null,
           main_group: editing.assignment?.main_group ?? null,
           subgroup: editing.assignment?.subgroup ?? null,
+          primary_role: editing.assignment?.primary_role ?? editing.position ?? null,
+          secondary_roles: editing.assignment?.secondary_roles ?? [],
         },
       });
       setToast({ type: 'success', message: language === 'th' ? 'บันทึกข้อมูลสตาฟแล้ว' : 'Staff profile saved' });
@@ -139,6 +142,7 @@ export function StaffManagementPage() {
       <Card className="group-action-panel">
         <div className="form-actions">
           <Link className="btn btn-primary" to="/admin/staff/import"><FileSpreadsheet size={18} />{language === 'th' ? 'นำเข้า Excel' : 'Import Excel'}</Link>
+          <Link className="btn btn-secondary" to="/admin/staff/operations"><BarChart3 size={18} />{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</Link>
           <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={syncRoster} disabled={syncing}>{language === 'th' ? 'ซิงค์ข้อมูลพี่กลุ่ม' : 'Sync Staff Roster'}</Button>
           <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportStaffCsv(rows)}>CSV</Button>
           <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportStaffXlsx(rows)}>Excel</Button>
@@ -178,6 +182,7 @@ export function StaffManagementPage() {
           { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => majorLabel(row.major, language) },
           { key: 'position', header: language === 'th' ? 'ตำแหน่ง' : 'Position', render: (row) => row.position || '-' },
           { key: 'role', header: language === 'th' ? 'สิทธิ์' : 'Role', render: (row) => row.assignment?.role || '-' },
+          { key: 'ops_role', header: language === 'th' ? 'หน้าที่' : 'Ops role', render: (row) => <div className="participant-admin-cell"><strong>{row.assignment?.primary_role || row.position || '-'}</strong><span>{row.assignment?.secondary_roles?.join(', ') || '-'}</span></div> },
           { key: 'group', header: language === 'th' ? 'กลุ่ม' : 'Group', render: (row) => groupLabel(row.assignment?.main_group, row.assignment?.subgroup, language) },
           { key: 'phone', header: language === 'th' ? 'เบอร์' : 'Phone', render: (row) => row.phone || '-' },
           { key: 'contact', header: language === 'th' ? 'ช่องทางติดต่อ' : 'Contact', render: (row) => <ContactLinks instagram={row.instagram} lineId={row.line_id} facebook={row.facebook} other={row.other_contact} /> },
@@ -214,6 +219,8 @@ export function StaffManagementPage() {
             <Input label={language === 'th' ? 'ช่องทางอื่น' : 'Other contact'} value={editing.other_contact ?? ''} onChange={(event) => patchEditing({ other_contact: event.target.value })} />
             <Input label={language === 'th' ? 'ตำแหน่ง' : 'Position'} value={editing.position ?? ''} onChange={(event) => patchEditing({ position: event.target.value })} />
             <Select label={language === 'th' ? 'สิทธิ์' : 'Role'} value={editing.assignment?.role ?? ''} options={roles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), role: (event.target.value || null) as StaffRole | null } })} />
+            <Select label={language === 'th' ? 'หน้าที่หลัก' : 'Primary role'} value={editing.assignment?.primary_role ?? editing.position ?? ''} options={operationalRoles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), primary_role: event.target.value || null } })} />
+            <Input label={language === 'th' ? 'หน้าที่เสริม' : 'Secondary roles'} value={editing.assignment?.secondary_roles?.join(', ') ?? ''} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), secondary_roles: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) } })} />
             <Select label={language === 'th' ? 'สี' : 'Color'} value={editing.assignment?.main_group ?? ''} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), main_group: (event.target.value || null) as MainGroup | null } })} />
             <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={editing.assignment?.subgroup ?? ''} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), subgroup: (event.target.value || null) as Subgroup | null } })} />
             <Input label={language === 'th' ? 'โรคประจำตัว' : 'Disease'} value={editing.medical_info?.disease ?? ''} onChange={(event) => patchEditing({ medical_info: { ...(editing.medical_info ?? blankMedical(editing.id)), disease: event.target.value } })} />

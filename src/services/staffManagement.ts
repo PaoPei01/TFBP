@@ -1,6 +1,6 @@
 import { getMajorCode, normalizeMajor } from '../lib/major';
 import { supabase } from '../lib/supabase';
-import type { MainGroup, StaffManagementRow, StaffProfile, StaffRole, Subgroup } from '../lib/types';
+import type { MainGroup, StaffAssignmentRecommendation, StaffManagementRow, StaffProfile, StaffQuotaAnalytics, StaffRole, StaffRoleConflict, StaffStructureValidation, Subgroup } from '../lib/types';
 import type { StaffImportRow } from '../utils/staffImport';
 
 export type StaffFilters = {
@@ -23,6 +23,8 @@ export type StaffUpdatePayload = {
     role?: StaffRole | null;
     main_group?: MainGroup | null;
     subgroup?: Subgroup | null;
+    primary_role?: string | null;
+    secondary_roles?: string[] | null;
   };
 };
 
@@ -46,6 +48,8 @@ export async function fetchAdminStaffProfiles(filters: StaffFilters = {}): Promi
         row.position,
         row.assignment?.main_group,
         row.assignment?.subgroup,
+        row.assignment?.primary_role,
+        ...(row.assignment?.secondary_roles ?? []),
       ].filter(Boolean).join(' ').toLowerCase();
       if (!haystack.includes(term)) return false;
     }
@@ -90,4 +94,24 @@ export async function syncStaffRoster() {
   const { data, error } = await supabase.rpc('rebuild_staff_roster_sync');
   if (error) throw error;
   return data as { synced?: number; groups?: number };
+}
+
+export async function fetchStaffOperationsAnalytics() {
+  const [quota, conflicts, validation, recommendations] = await Promise.all([
+    supabase.rpc('get_staff_quota_analytics'),
+    supabase.rpc('detect_staff_role_conflicts'),
+    supabase.rpc('validate_staff_structure'),
+    supabase.rpc('get_staff_assignment_recommendations'),
+  ]);
+  if (quota.error) throw quota.error;
+  if (conflicts.error) throw conflicts.error;
+  if (validation.error) throw validation.error;
+  if (recommendations.error) throw recommendations.error;
+  return {
+    quota: quota.data as StaffQuotaAnalytics,
+    conflicts: (conflicts.data ?? []) as StaffRoleConflict[],
+    validation: validation.data as StaffStructureValidation,
+    recommendations: (recommendations.data ?? []) as StaffAssignmentRecommendation[],
+    staff: await fetchAdminStaffProfiles(),
+  };
 }

@@ -1288,6 +1288,141 @@ th {
   gap: 0.35rem;
 }
 
+.staff-operations-page {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.quota-progress-panel,
+.operations-alert-card {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.quota-progress-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.quota-progress-row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.quota-progress-row > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.quota-progress-row span,
+.recommendation-row span {
+  color: var(--text-soft);
+  font-weight: 800;
+}
+
+.quota-bar {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(132, 155, 190, 0.18);
+}
+
+.quota-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.quota-fill.status-green {
+  background: #16a34a;
+}
+
+.quota-fill.status-yellow {
+  background: #f59e0b;
+}
+
+.quota-fill.status-red {
+  background: #dc2626;
+}
+
+.operations-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ops-alert-row,
+.recommendation-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid rgba(132, 155, 190, 0.18);
+  border-radius: 18px;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.ops-alert-row > div,
+.recommendation-row > div:first-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ops-alert-row.severity-red {
+  border-color: rgba(220, 38, 38, 0.22);
+  background: rgba(254, 242, 242, 0.86);
+}
+
+.ops-alert-row.severity-yellow {
+  border-color: rgba(245, 158, 11, 0.22);
+  background: rgba(255, 251, 235, 0.86);
+}
+
+.recommendation-row {
+  justify-content: space-between;
+}
+
+.recommendation-staff-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.recommendation-staff-list a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(40, 104, 232, 0.18);
+  border-radius: 999px;
+  padding: 0.45rem 0.65rem;
+  background: rgba(40, 104, 232, 0.08);
+  color: var(--accent-strong);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.distribution-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.distribution-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 14px;
+  padding: 0.65rem 0.75rem;
+  background: rgba(248, 251, 255, 0.86);
+}
+
+.distribution-list span {
+  color: var(--text-soft);
+  font-weight: 800;
+}
+
 .emergency-page {
   max-width: 1080px;
   margin: 0 auto;
@@ -2310,8 +2445,29 @@ th {
     max-width: none;
   }
 
+  .staff-operations-page {
+    max-width: none;
+  }
+
   .staff-action-grid {
     grid-template-columns: 1fr;
+  }
+
+  .operations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-row {
+    display: grid;
+  }
+
+  .recommendation-staff-list {
+    justify-content: stretch;
+  }
+
+  .recommendation-staff-list a {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .attendance-card {
