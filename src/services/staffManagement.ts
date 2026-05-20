@@ -1,4 +1,5 @@
 import { getMajorCode, normalizeMajor } from '../lib/major';
+import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles } from '../lib/staffRoles';
 import { supabase } from '../lib/supabase';
 import type { MainGroup, StaffAssignmentRecommendation, StaffManagementRow, StaffProfile, StaffQuotaAnalytics, StaffRole, StaffRoleConflict, StaffStructureValidation, Subgroup } from '../lib/types';
 import type { StaffImportRow } from '../utils/staffImport';
@@ -65,11 +66,14 @@ export async function updateStaffProfile(id: string, payload: StaffUpdatePayload
   const clean = (object: Record<string, unknown>) => Object.fromEntries(Object.entries(object).map(([key, value]) => [key, value === '' ? null : value]));
   const profile = clean(payload.profile as Record<string, unknown>);
   if (profile.major) profile.major = normalizeMajor(String(profile.major));
+  const assignment = clean(payload.assignment);
+  if (assignment.primary_role) assignment.primary_role = normalizeStaffOperationalRole(String(assignment.primary_role));
+  if (assignment.secondary_roles) assignment.secondary_roles = normalizeStaffSecondaryRoles(assignment.secondary_roles as string[]);
   const { error } = await supabase.rpc('update_staff_profile_admin', {
     input_staff_profile_id: id,
     input_profile: profile,
     input_medical: clean(payload.medical),
-    input_assignment: clean(payload.assignment),
+    input_assignment: assignment,
   });
   if (error) throw error;
 }

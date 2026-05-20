@@ -86,6 +86,38 @@ function normalizeMajor(value) {
   return found ? `${found[1]} (${found[0] === 'IGME' ? 'IGE international' : found[0]})` : raw;
 }
 
+function getMajorCode(value) {
+  const raw = clean(value);
+  if (!raw) return null;
+  const normalized = normalizeMajor(raw);
+  return normalized === raw ? null : normalized.match(/\(([^)]+)\)\s*$/)?.[1] ?? null;
+}
+
+function looksLikeMajor(value) {
+  return Boolean(getMajorCode(value) || /วิศวกรรม|engineering/i.test(String(value ?? '')));
+}
+
+function normalizeOperationalRole(value) {
+  const raw = clean(value);
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+  if (lower.includes('ทีมบอ') || lower.includes('วางแผน') || lower.includes('planner') || lower.includes('plan')) return 'วางแผน (ทีมบอ)';
+  if (lower.includes('พี่กลุ่ม') || lower.includes('mentor') || lower.includes('group staff')) return 'พี่กลุ่ม';
+  if (lower.includes('พี่ฐาน') || lower.includes('ฐาน') || lower.includes('base')) return 'พี่ฐาน';
+  if (lower.includes('ไทม์') || lower.includes('timer')) return 'ไทม์เมอร์';
+  if (lower.includes('พยาบาล') || lower.includes('medic') || lower.includes('medical') || lower.includes('nurse')) return 'พยาบาล';
+  if (lower.includes('จราจร') || lower.includes('traffic')) return 'จราจร';
+  if (lower.includes('สวัสดิการ') || lower.includes('welfare')) return 'สวัสดิการ';
+  if (lower.includes('บันเทิง') || lower.includes('สันทนาการ') || lower.includes('entertain')) return 'สตาฟให้ความบันเทิง';
+  if (lower.includes('โฟโต้') || lower.includes('photo') || lower.includes('photographer')) return 'โฟโต้';
+  if (lower.includes('พิธีกร') || lower.includes('mc')) return 'พิธีกร';
+  return raw;
+}
+
+function normalizeSecondaryRoles(value) {
+  return [...new Set(String(value ?? '').split(/[,/|]+/).map(normalizeOperationalRole).filter(Boolean))];
+}
+
 function tagAttr(tag, name) {
   return tag.match(new RegExp(`(?:^|\\s)(?:\\w+:)?${name}="([^"]*)"`))?.[1] ?? '';
 }
@@ -222,6 +254,10 @@ function rowToStaff(row, sourceSheet, index) {
     other_contact: get(row, ['other_contact']) ?? parsedContact.other_contact,
     position: get(row, ['position', 'ตำแหน่ง']),
   };
+  if (!profile.major && looksLikeMajor(profile.facebook)) {
+    profile.major = normalizeMajor(profile.facebook);
+    profile.facebook = null;
+  }
   if (profile.line_id && /พี่กลุ่ม|ทีมงาน|สตาฟ|staff/i.test(profile.line_id) && !profile.position) {
     profile.position = profile.line_id;
     profile.line_id = null;
@@ -236,11 +272,8 @@ function rowToStaff(row, sourceSheet, index) {
     role: normalizeRole(get(row, ['role', 'ยศ', 'สิทธิ์'])),
     main_group: normalizeGroup(get(row, ['main_group', 'สี', 'กลุ่มสี'])),
     subgroup: normalizeSubgroup(get(row, ['subgroup', 'กลุ่มย่อย'])),
-    primary_role: get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position ?? null,
-    secondary_roles: (get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม']) ?? '')
-      .split(/[,/|]+/)
-      .map((item) => item.trim())
-      .filter(Boolean),
+    primary_role: normalizeOperationalRole(get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position),
+    secondary_roles: normalizeSecondaryRoles(get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม'])),
   };
   const auxiliarySheet = /medical|group_assignments/i.test(sourceSheet);
   const warnings = auxiliarySheet ? [] : [!profile.student_id ? 'missing_student_id' : '', !profile.name_th ? 'missing_name' : '', !profile.phone ? 'missing_phone' : ''].filter(Boolean);
@@ -311,7 +344,7 @@ for (const row of rows) {
     if (error) throw error;
   }
 
-  if (row.assignment.role === 'emergency_staff' || row.assignment.main_group) {
+  if (row.assignment.role === 'emergency_staff' || row.assignment.main_group || row.assignment.primary_role) {
     const role = row.assignment.role ?? 'staff';
     const { error } = await supabase.from('staff_assignments').upsert({
       staff_profile_id: profile.id,
@@ -319,7 +352,7 @@ for (const row of rows) {
       role,
       main_group: role === 'emergency_staff' ? null : row.assignment.main_group,
       subgroup: role === 'emergency_staff' ? null : row.assignment.subgroup,
-      primary_role: row.assignment.primary_role ?? row.profile.position ?? 'ทีมงาน',
+      primary_role: row.assignment.primary_role ?? normalizeOperationalRole(row.profile.position) ?? 'ทีมงาน',
       secondary_roles: row.assignment.secondary_roles ?? [],
     }, { onConflict: 'staff_profile_id' });
     if (error) throw error;

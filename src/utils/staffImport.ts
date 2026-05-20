@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
-import { normalizeMajor } from '../lib/major';
+import { getMajorCode, normalizeMajor } from '../lib/major';
+import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles } from '../lib/staffRoles';
 import type { MainGroup, StaffRole, Subgroup } from '../lib/types';
 
 export type StaffImportRow = {
@@ -194,6 +195,10 @@ function normalizeSubgroup(value: string | null): Subgroup | null {
   return match === 'A' || match === 'B' ? match : null;
 }
 
+function looksLikeMajor(value: string | null) {
+  return Boolean(value && getMajorCode(value) !== value);
+}
+
 function rowToStaff(row: Record<string, string | null>, sourceSheet: string, sourceRow: number): StaffImportRow {
   const contact = get(row, ['ช่องทางการติดต่อ', 'contact', 'contact_channel', 'ช่องทางติดต่อ']);
   const parsed = parseStaffContact(contact);
@@ -216,6 +221,10 @@ function rowToStaff(row: Record<string, string | null>, sourceSheet: string, sou
     other_contact: get(row, ['other_contact']) ?? parsed.other_contact,
     position: get(row, ['position', 'ตำแหน่ง']),
   };
+  if (!profile.major && looksLikeMajor(profile.facebook)) {
+    profile.major = normalizeMajor(profile.facebook);
+    profile.facebook = null;
+  }
   if (profile.line_id && /พี่กลุ่ม|ทีมงาน|สตาฟ|staff/i.test(profile.line_id) && !profile.position) {
     profile.position = profile.line_id;
     profile.line_id = null;
@@ -224,11 +233,8 @@ function rowToStaff(row: Record<string, string | null>, sourceSheet: string, sou
     role: normalizeRole(get(row, ['role', 'ยศ', 'สิทธิ์'])),
     main_group: normalizeGroup(get(row, ['main_group', 'สี', 'กลุ่มสี'])),
     subgroup: normalizeSubgroup(get(row, ['subgroup', 'กลุ่มย่อย'])),
-    primary_role: get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position ?? null,
-    secondary_roles: (get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม']) ?? '')
-      .split(/[,/|]+/)
-      .map((item) => item.trim())
-      .filter(Boolean),
+    primary_role: normalizeStaffOperationalRole(get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position),
+    secondary_roles: normalizeStaffSecondaryRoles(get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม'])),
   };
   const medical = {
     disease: get(row, ['disease', 'โรคประจำตัว']),

@@ -17,13 +17,14 @@ import { useAsync } from '../hooks/useAsync';
 import { groupLabel } from '../lib/grouping';
 import { groupMeta, mainGroups, subgroups } from '../lib/groups';
 import { majorCatalog, majorCodeOptions, majorLabel, normalizeMajor } from '../lib/major';
+import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles, staffOperationalRoles } from '../lib/staffRoles';
 import type { MainGroup, StaffAssignment, StaffManagementRow, StaffMedicalInfo, StaffRole, Subgroup } from '../lib/types';
 import { deleteStaffProfile, fetchAdminStaffProfiles, syncStaffRoster, updateStaffProfile } from '../services/staffManagement';
 import { errorMessage } from '../utils/error';
 import { exportStaffCsv, exportStaffXlsx } from '../utils/staffExport';
 
 const roles: StaffRole[] = ['staff', 'mentor', 'emergency_staff', 'viewer'];
-const operationalRoles = ['วางแผน (ทีมบอ)', 'พี่กลุ่ม', 'พี่ฐาน', 'ไทม์เมอร์', 'พยาบาล', 'จราจร', 'สวัสดิการ', 'สตาฟให้ความบันเทิง', 'โฟโต้'];
+const operationalRoles = staffOperationalRoles;
 
 function blankAssignment(staffProfileId: string): StaffAssignment {
   return { id: '', user_id: null, staff_profile_id: staffProfileId, role: null, main_group: null, subgroup: null, primary_role: null, secondary_roles: [], created_at: null };
@@ -80,8 +81,8 @@ export function StaffManagementPage() {
           role: editing.assignment?.role ?? null,
           main_group: editing.assignment?.main_group ?? null,
           subgroup: editing.assignment?.subgroup ?? null,
-          primary_role: editing.assignment?.primary_role ?? editing.position ?? null,
-          secondary_roles: editing.assignment?.secondary_roles ?? [],
+          primary_role: normalizeStaffOperationalRole(editing.assignment?.primary_role ?? editing.position),
+          secondary_roles: normalizeStaffSecondaryRoles(editing.assignment?.secondary_roles),
         },
       });
       setToast({ type: 'success', message: language === 'th' ? 'บันทึกข้อมูลสตาฟแล้ว' : 'Staff profile saved' });
@@ -219,8 +220,8 @@ export function StaffManagementPage() {
             <Input label={language === 'th' ? 'ช่องทางอื่น' : 'Other contact'} value={editing.other_contact ?? ''} onChange={(event) => patchEditing({ other_contact: event.target.value })} />
             <Input label={language === 'th' ? 'ตำแหน่ง' : 'Position'} value={editing.position ?? ''} onChange={(event) => patchEditing({ position: event.target.value })} />
             <Select label={language === 'th' ? 'สิทธิ์' : 'Role'} value={editing.assignment?.role ?? ''} options={roles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), role: (event.target.value || null) as StaffRole | null } })} />
-            <Select label={language === 'th' ? 'หน้าที่หลัก' : 'Primary role'} value={editing.assignment?.primary_role ?? editing.position ?? ''} options={operationalRoles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), primary_role: event.target.value || null } })} />
-            <Input label={language === 'th' ? 'หน้าที่เสริม' : 'Secondary roles'} value={editing.assignment?.secondary_roles?.join(', ') ?? ''} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), secondary_roles: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) } })} />
+            <Select label={language === 'th' ? 'หน้าที่หลัก' : 'Primary role'} value={normalizeStaffOperationalRole(editing.assignment?.primary_role ?? editing.position) ?? ''} options={operationalRoles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), primary_role: event.target.value || null } })} />
+            <Input label={language === 'th' ? 'หน้าที่เสริม' : 'Secondary roles'} value={editing.assignment?.secondary_roles?.join(', ') ?? ''} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), secondary_roles: normalizeStaffSecondaryRoles(event.target.value) } })} />
             <Select label={language === 'th' ? 'สี' : 'Color'} value={editing.assignment?.main_group ?? ''} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), main_group: (event.target.value || null) as MainGroup | null } })} />
             <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={editing.assignment?.subgroup ?? ''} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), subgroup: (event.target.value || null) as Subgroup | null } })} />
             <Input label={language === 'th' ? 'โรคประจำตัว' : 'Disease'} value={editing.medical_info?.disease ?? ''} onChange={(event) => patchEditing({ medical_info: { ...(editing.medical_info ?? blankMedical(editing.id)), disease: event.target.value } })} />
