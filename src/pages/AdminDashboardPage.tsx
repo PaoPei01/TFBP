@@ -1,5 +1,5 @@
 import { Download, HeartPulse, Pencil, Trash2, UsersRound } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { ContactLinks } from '../components/ContactLinks';
 import { HealthFlags, hasHealthFlag } from '../components/HealthFlags';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
@@ -8,6 +8,8 @@ import { Card } from '../components/ui/Card';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
+import { PageHeader } from '../components/ui/PageHeader';
+import { FilterPanel } from '../components/ui/FilterPanel';
 import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Select } from '../components/ui/Select';
 import { Toast, ToastState } from '../components/ui/Toast';
@@ -17,7 +19,7 @@ import { fieldLabel, fieldLabels } from '../lib/constants';
 import { groupLabel } from '../lib/grouping';
 import { groupMeta, mainGroups, subgroups } from '../lib/groups';
 import { getMajorCode, majorCatalog, majorLabel, normalizeMajor } from '../lib/major';
-import type { GroupProfile, Profile } from '../lib/types';
+import type { GroupProfile, MainGroup, Profile } from '../lib/types';
 import { deleteProfile, fetchAdminMajors, fetchAdminProfiles, fetchAdminSummary, updateProfile } from '../services/profiles';
 import { exportProfilesCsv, exportProfilesXlsx } from '../utils/csv';
 import { errorMessage } from '../utils/error';
@@ -56,6 +58,21 @@ export function AdminDashboardPage() {
     { value: 'drug_allergy', label: language === 'th' ? 'แพ้ยา' : 'Drug allergy' },
     { value: 'food_allergy', label: language === 'th' ? 'แพ้อาหาร' : 'Food allergy' },
   ];
+  const activeFilterChips = [
+    search ? `${language === 'th' ? 'ค้นหา' : 'Search'}: ${search}` : '',
+    major ? majorLabel(`(${major})`, language) : '',
+    group ? groupLabel(group as MainGroup, null, language) : '',
+    subgroup ? `Group ${subgroup}` : '',
+    healthFilter ? healthOptions.find((item) => item.value === healthFilter)?.label : '',
+  ].filter(Boolean);
+
+  function clearFilters() {
+    setSearch('');
+    setMajor('');
+    setGroup('');
+    setSubgroup('');
+    setHealthFilter('');
+  }
 
   async function saveProfile() {
     if (!editing) return;
@@ -84,11 +101,17 @@ export function AdminDashboardPage() {
   return (
     <section className="page-stack">
       <Toast toast={toast} />
-      <div className="section-heading">
-        <p className="eyebrow">Dashboard</p>
-        <h1>{t.dashboard}</h1>
-        <p>{t.adminOnly}</p>
-      </div>
+      <PageHeader
+        eyebrow="Dashboard"
+        title={t.dashboard}
+        description={t.adminOnly}
+        actions={(
+          <>
+            <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportProfilesCsv(profiles)}>CSV</Button>
+            <Button variant="secondary" icon={<Download size={18} />} onClick={() => void exportProfilesXlsx(profiles)}>Excel</Button>
+          </>
+        )}
+      />
 
       {summaryState.loading ? <LoadingSkeleton count={2} /> : null}
       {summaryState.data ? (
@@ -105,31 +128,36 @@ export function AdminDashboardPage() {
       ) : null}
 
       {summaryState.data ? (
-        <Card className="major-summary">
-          <h2>{language === 'th' ? 'สรุปตามสาขา' : 'Major summary'}</h2>
-          <div>
-            {Object.entries(summaryState.data.byMajor).map(([name, count]) => (
-              <span key={name}>
-                {majorLabel(`(${name})`, language)} <strong>{count}</strong>
-              </span>
-            ))}
-          </div>
-        </Card>
+        <details className="filter-disclosure major-summary-disclosure">
+          <summary>{language === 'th' ? 'สรุปตามสาขา' : 'Major summary'}</summary>
+          <Card className="major-summary" variant="soft">
+            <div>
+              {Object.entries(summaryState.data.byMajor).map(([name, count]) => (
+                <span key={name}>
+                  {majorLabel(`(${name})`, language)} <strong>{count}</strong>
+                </span>
+              ))}
+            </div>
+          </Card>
+        </details>
       ) : null}
 
-      <div className="toolbar">
+      <FilterPanel
+        title={language === 'th' ? 'ค้นหาและตัวกรอง' : 'Search and filters'}
+        description={language === 'th' ? `แสดงผล ${profiles.length.toLocaleString('th-TH')} รายการ` : `${profiles.length.toLocaleString('en-US')} results`}
+        actions={<Button variant="ghost" onClick={clearFilters}>{language === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}</Button>}
+        chips={activeFilterChips.length ? (
+          <div className="filter-chip-row">
+            {activeFilterChips.map((chip) => <span className="filter-chip" key={chip}>{chip}</span>)}
+          </div>
+        ) : null}
+      >
         <Input label={t.searchParticipants} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={language === 'th' ? 'ชื่อ อีเมล เบอร์ Line IG Facebook' : 'Name, email, phone, Line, IG, Facebook'} />
         <Select label={t.filterMajor} value={major} onChange={(event) => setMajor(event.target.value)} options={majorOptions} />
         <Select label={t.filterGroup} value={group} onChange={(event) => setGroup(event.target.value)} options={groupOptions} />
         <Select label={t.filterSubgroup} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
         <Select label={t.filterHealth} value={healthFilter} onChange={(event) => setHealthFilter(event.target.value)} options={healthOptions} />
-        <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportProfilesCsv(profiles)}>
-          Export CSV
-        </Button>
-        <Button variant="secondary" icon={<Download size={18} />} onClick={() => void exportProfilesXlsx(profiles)}>
-          Export Excel
-        </Button>
-      </div>
+      </FilterPanel>
 
       {profilesState.loading ? <LoadingSkeleton /> : null}
       {profilesState.error ? <div className="error-state">{profilesState.error}</div> : null}
@@ -152,6 +180,8 @@ export function AdminDashboardPage() {
             </Button>
           </div>
         )}
+        density="compact"
+        ariaLabel={language === 'th' ? 'ตารางรายชื่อผู้เข้าร่วมสำหรับแอดมิน' : 'Admin participant table'}
         columns={[
           {
             key: 'name',
@@ -189,8 +219,39 @@ export function AdminDashboardPage() {
       <Modal open={Boolean(editing)} title={language === 'th' ? 'แก้ไขข้อมูลผู้เข้าร่วม' : 'Edit participant'} onClose={() => setEditing(null)}>
         {editing ? (
           <div className="form-grid two-col modal-body">
+            <h3 className="full-span form-section-title">{language === 'th' ? 'ข้อมูลระบุตัวตน' : 'Identity'}</h3>
             {Object.keys(fieldLabels).map((field) =>
-              field === 'major' ? (
+              field === 'phone' ? (
+                <Fragment key={field}>
+                  <h3 className="full-span form-section-title">{language === 'th' ? 'ช่องทางติดต่อ' : 'Contact'}</h3>
+                  <Input
+                    label={fieldLabel(field, language)}
+                    value={String(editing[field as keyof Profile] ?? '')}
+                    onChange={(event) => setEditing({ ...editing, [field]: event.target.value })}
+                  />
+                </Fragment>
+              ) : field === 'food_allergy' ? (
+                <Fragment key={field}>
+                  <h3 className="full-span form-section-title">{language === 'th' ? 'ข้อมูลสุขภาพ' : 'Health'}</h3>
+                  <Input
+                    label={fieldLabel(field, language)}
+                    value={String(editing[field as keyof Profile] ?? '')}
+                    onChange={(event) => setEditing({ ...editing, [field]: event.target.value })}
+                  />
+                </Fragment>
+              ) : field === 'public_profile' ? (
+                <Fragment key={field}>
+                  <h3 className="full-span form-section-title">{language === 'th' ? 'การแสดงผลสาธารณะ' : 'Public profile / consent'}</h3>
+                  <label className="check-field">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editing[field as keyof Profile])}
+                      onChange={(event) => setEditing({ ...editing, [field]: event.target.checked })}
+                    />
+                    <span>{fieldLabel(field, language)}</span>
+                  </label>
+                </Fragment>
+              ) : field === 'major' ? (
                 <Select
                   key={field}
                   label={fieldLabel(field, language)}

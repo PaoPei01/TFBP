@@ -8,7 +8,7 @@ export type ToastState = {
 export function Toast({ toast }: { toast: ToastState }) {
   if (!toast) return null;
   return (
-    <div className={`toast toast-${toast.type}`} role="status">
+    <div className={`toast toast-${toast.type}`} role="status" aria-live={toast.type === 'error' ? 'assertive' : 'polite'}>
       {toast.message}
     </div>
   );

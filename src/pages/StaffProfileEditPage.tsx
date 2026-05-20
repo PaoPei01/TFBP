@@ -3,6 +3,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
 import { StickyActionBar } from '../components/mobile/StickyActionBar';
+import { AvatarUploadCard } from '../components/ui/AvatarUploadCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -118,17 +119,24 @@ export function StaffProfileEditPage() {
           </Card>
           <Card>
             <form className="form-grid" onSubmit={save}>
-              <label className="field">
-                <span>{language === 'th' ? 'รูปโปรไฟล์' : 'Profile photo'}</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadAvatar(event.target.files?.[0] ?? null)} />
-                <small>{uploadingAvatar ? (language === 'th' ? 'กำลังอัปโหลด...' : 'Uploading...') : (language === 'th' ? 'รองรับ JPG, PNG, WebP ขนาดไม่เกิน 2 MB' : 'JPG, PNG, WebP up to 2 MB')}</small>
-              </label>
+              <AvatarUploadCard
+                imageUrl={mergedForm.avatar_url}
+                displayName={staffDisplayName(state.data.profile)}
+                uploading={uploadingAvatar}
+                helperText={language === 'th' ? 'JPG, PNG, WebP ขนาดไม่เกิน 2 MB' : 'JPG, PNG, WebP up to 2 MB'}
+                uploadLabel={language === 'th' ? 'อัปโหลดรูป' : 'Upload photo'}
+                removeLabel={language === 'th' ? 'ลบรูป' : 'Remove'}
+                onFile={(file) => void uploadAvatar(file)}
+                onRemove={() => patch({ avatar_url: null })}
+              />
+              <h3 className="full-span form-section-title">{language === 'th' ? 'โปรไฟล์สาธารณะ' : 'Public profile'}</h3>
               <label className="field">
                 <span>{language === 'th' ? 'Bio' : 'Bio'}</span>
                 <textarea value={mergedForm.bio ?? ''} onChange={(event) => patch({ bio: event.target.value })} rows={4} />
               </label>
               <Input label={language === 'th' ? 'ภูมิลำเนา' : 'Hometown'} value={mergedForm.hometown ?? ''} onChange={(event) => patch({ hometown: event.target.value })} />
               <Input label={language === 'th' ? 'ความสนใจ (คั่นด้วย comma)' : 'Interests (comma separated)'} value={(mergedForm.interests ?? []).join(', ')} onChange={(event) => patch({ interests: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} />
+              <h3 className="full-span form-section-title">{language === 'th' ? 'การมองเห็นข้อมูล' : 'Visibility'}</h3>
               {[
                 ['public_profile_enabled', language === 'th' ? 'เปิดโปรไฟล์ให้น้องเห็น' : 'Enable public profile'],
                 ['show_instagram', 'Show Instagram'],

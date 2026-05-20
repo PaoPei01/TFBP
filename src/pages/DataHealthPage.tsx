@@ -56,6 +56,9 @@ export function DataHealthPage() {
   const [confirmAction, setConfirmAction] = useState<(typeof repairActions)[number] | null>(null);
   const data = state.data;
   const issueRows: DataHealthIssue[] = [...(data?.errors ?? []), ...(data?.warnings ?? [])];
+  const errorCount = data?.errors.reduce((sum, issue) => sum + issue.count, 0) ?? 0;
+  const warningCount = data?.warnings.reduce((sum, issue) => sum + issue.count, 0) ?? 0;
+  const status = errorCount ? 'critical' : warningCount ? 'review' : 'healthy';
   const detailRows: DetailRow[] = Object.entries(data?.details ?? {}).flatMap(([type, rows]) =>
     rows.map((row, index) => ({ id: `${type}-${index}`, type, ...row })),
   );
@@ -99,13 +102,25 @@ export function DataHealthPage() {
 
       {data ? (
         <>
+          <Card className={`data-health-status status-${status}`} variant={errorCount ? 'danger' : warningCount ? 'warning' : 'success'}>
+            <div>
+              <p className="eyebrow">{language === 'th' ? 'สถานะโดยรวม' : 'Overall status'}</p>
+              <h2>{status === 'critical' ? (language === 'th' ? 'มีปัญหาสำคัญ' : 'Critical issues') : status === 'review' ? (language === 'th' ? 'ควรตรวจสอบ' : 'Needs review') : (language === 'th' ? 'ข้อมูลพร้อมใช้งาน' : 'Healthy')}</h2>
+              <span>{language === 'th' ? `Errors ${errorCount} · Warnings ${warningCount}` : `${errorCount} errors · ${warningCount} warnings`}</span>
+            </div>
+            <ShieldCheck size={30} />
+          </Card>
           <div className="stats-grid">
             {Object.entries(summaryLabels).map(([key, label]) => (
               <DashboardStatCard key={key} label={language === 'th' ? label.th : label.en} value={data.summary[key] ?? 0} icon={<ShieldCheck size={20} />} />
             ))}
           </div>
 
-          <Card className="form-actions">
+          <Card className="repair-action-panel" variant="soft">
+            <div className="repair-action-head">
+              <strong>{language === 'th' ? 'เครื่องมือซ่อมข้อมูล' : 'Repair tools'}</strong>
+              <span>{language === 'th' ? 'ทุก action จะเขียน audit log ก่อน/หลังซ่อมข้อมูล' : 'Every action writes audit logs before/after repair.'}</span>
+            </div>
             {repairActions.map((action) => (
               <Button key={action.key} variant={action.key === 'repair_orphans' ? 'danger' : 'secondary'} icon={<Wrench size={18} />} onClick={() => setConfirmAction(action)}>
                 {language === 'th' ? action.th : action.en}

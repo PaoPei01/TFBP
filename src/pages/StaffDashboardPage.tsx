@@ -5,6 +5,7 @@ import { MobileSafeAreaSpacer } from '../components/mobile/MobileSafeAreaSpacer'
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
+import { PageHeader } from '../components/ui/PageHeader';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
 import { groupLabel } from '../lib/grouping';
@@ -26,16 +27,22 @@ export function StaffDashboardPage() {
 
   return (
     <section className="page-stack staff-page">
-      <div className="section-heading">
-        <p className="eyebrow">{language === 'th' ? 'โหมดสตาฟ' : 'Staff App Mode'}</p>
-        <h1>{language === 'th' ? 'วันนี้ต้องทำอะไร' : 'Today’s operations'}</h1>
-        <p>{language === 'th' ? 'ใช้ปุ่มด้านล่างเพื่อเข้ารายชื่อกลุ่ม เช็กชื่อ หรือเปิดเครื่องมือฉุกเฉินระหว่างกิจกรรม' : 'Use the actions below for group lookup, attendance, and emergency tools during the event.'}</p>
-      </div>
+      <PageHeader
+        eyebrow={language === 'th' ? 'โหมดสตาฟ' : 'Staff App Mode'}
+        title={language === 'th' ? 'วันนี้ต้องทำอะไร' : 'Today’s operations'}
+        description={language === 'th' ? 'เลือกงานที่ต้องใช้หน้างานได้เร็วใน 1-2 แตะ' : 'Fast one-handed access to live event tools.'}
+        meta={<Badge status="approved">{access.is_admin ? 'admin' : access.roles.join(', ')}</Badge>}
+        compact
+      />
 
       <div className="staff-role-strip">
-        <Badge status="approved">{access.is_admin ? 'admin' : access.roles.join(', ')}</Badge>
         <span>{assignedLabel}</span>
         {access.read_only ? <span>Read-only</span> : null}
+      </div>
+
+      <div className="today-action-strip">
+        {access.can_mark_attendance ? <Link className="today-primary-action" to="/staff/attendance"><ClipboardCheck size={24} /><strong>{language === 'th' ? 'เริ่มเช็กชื่อ' : 'Start attendance'}</strong><span>{language === 'th' ? 'ปุ่มหลักสำหรับหน้างาน' : 'Primary live-operation action'}</span></Link> : null}
+        {access.can_view_emergency ? <Link className="today-primary-action emergency" to="/staff/emergency"><ShieldAlert size={24} /><strong>{language === 'th' ? 'เปิดฉุกเฉิน' : 'Open emergency'}</strong><span>{language === 'th' ? 'เบอร์ด่วนและข้อมูลสุขภาพ' : 'Hotlines and health data'}</span></Link> : null}
       </div>
 
       <div className="stats-grid">

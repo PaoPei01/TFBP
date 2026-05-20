@@ -5,10 +5,11 @@ type PageHeaderProps = {
   title: string;
   description?: ReactNode;
   meta?: ReactNode;
+  actions?: ReactNode;
   compact?: boolean;
 };
 
-export function PageHeader({ eyebrow, title, description, meta, compact = false }: PageHeaderProps) {
+export function PageHeader({ eyebrow, title, description, meta, actions, compact = false }: PageHeaderProps) {
   return (
     <header className={`page-header ${compact ? 'page-header-compact' : ''}`}>
       <div>
@@ -16,7 +17,7 @@ export function PageHeader({ eyebrow, title, description, meta, compact = false 
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
       </div>
-      {meta ? <div className="page-header-meta">{meta}</div> : null}
+      {meta || actions ? <div className="page-header-meta">{meta}{actions ? <div className="page-header-actions">{actions}</div> : null}</div> : null}
     </header>
   );
 }

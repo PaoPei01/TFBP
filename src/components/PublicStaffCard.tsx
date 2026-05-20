@@ -1,4 +1,5 @@
-import { Facebook, Instagram, Phone, UserRound } from 'lucide-react';
+import { Facebook, Instagram, Phone } from 'lucide-react';
+import { AvatarPlaceholder } from './ui/AvatarPlaceholder';
 import { groupLabel } from '../lib/grouping';
 import { useLanguage } from '../context/LanguageContext';
 import type { PublicStaffCardData } from '../services/staffProfiles';
@@ -15,9 +16,7 @@ export function PublicStaffCard({ staff, internal = false }: PublicStaffCardProp
   const role = staff.primary_role || staff.position || (language === 'th' ? 'ทีมงาน' : 'Staff');
   return (
     <article className="public-staff-card">
-      <div className="staff-avatar" aria-hidden="true">
-        {staff.avatar_url ? <img src={staff.avatar_url} alt="" loading="lazy" /> : <UserRound size={24} />}
-      </div>
+      <AvatarPlaceholder src={staff.avatar_url} name={displayName} />
       <div className="public-staff-body">
         <div>
           <strong>{displayName}</strong>

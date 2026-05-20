@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Bell, HeartPulse, Home, LogOut, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
+import { Bell, FileText, HeartPulse, Home, LogOut, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { MobileMoreMenu } from './mobile/MobileMoreMenu';
 import { RoleAwareBottomNav } from './mobile/RoleAwareBottomNav';
 import { useLanguage } from '../context/LanguageContext';
 import { copy } from '../lib/copy';
@@ -17,6 +18,7 @@ export function Layout() {
   const { language, setLanguage, t } = useLanguage();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [access, setAccess] = useState<StaffAccessContext | null>(null);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -192,10 +194,10 @@ export function Layout() {
               <HeartPulse size={19} />
               <span>{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</span>
             </NavLink>
-            <NavLink to="/admin">
+            <button type="button" onClick={() => setMobileMoreOpen(true)}>
               <Menu size={19} />
               <span>{language === 'th' ? 'เพิ่มเติม' : 'More'}</span>
-            </NavLink>
+            </button>
           </>
         ) : null}
         {!isAdmin && isStaff ? (
@@ -222,9 +224,46 @@ export function Layout() {
                 <span>{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</span>
               </NavLink>
             ) : null}
+            <button type="button" onClick={() => setMobileMoreOpen(true)}>
+              <Menu size={19} />
+              <span>{language === 'th' ? 'เพิ่มเติม' : 'More'}</span>
+            </button>
           </>
         ) : null}
       </RoleAwareBottomNav>
+      <MobileMoreMenu open={mobileMoreOpen} title={language === 'th' ? 'เมนูเพิ่มเติม' : 'More'} onClose={() => setMobileMoreOpen(false)}>
+        {isAdmin ? (
+          <>
+            <NavLink to="/admin/dashboard"><Shield size={18} />{language === 'th' ? 'แดชบอร์ด' : 'Dashboard'}</NavLink>
+            <NavLink to="/admin/groups"><UsersRound size={18} />{language === 'th' ? 'จัดกลุ่ม' : 'Groups'}</NavLink>
+            <NavLink to="/admin/staff"><UserCheck size={18} />{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
+            <NavLink to="/admin/staff/operations"><UsersRound size={18} />{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
+            <NavLink to="/admin/staff/requests"><Pencil size={18} />{language === 'th' ? 'คำขอทีมงาน' : 'Staff Requests'}</NavLink>
+            <NavLink to="/admin/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
+            <NavLink to="/admin/emergency"><HeartPulse size={18} />{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</NavLink>
+            <NavLink to="/admin/documents"><FileText size={18} />{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>
+            <NavLink to="/admin/data-health"><ShieldCheck size={18} />{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
+            <NavLink to="/admin/logs"><Search size={18} />{language === 'th' ? 'ประวัติ' : 'Logs'}</NavLink>
+          </>
+        ) : isStaff ? (
+          <>
+            <NavLink to="/staff"><Shield size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</NavLink>
+            <NavLink to="/staff/profile"><UserCheck size={18} />{language === 'th' ? 'โปรไฟล์ของฉัน' : 'My Profile'}</NavLink>
+            <NavLink to="/staff/directory"><UsersRound size={18} />{language === 'th' ? 'ไดเรกทอรีทีมงาน' : 'Staff Directory'}</NavLink>
+            {access?.can_view_staff ? <NavLink to="/staff/my-group"><UsersRound size={18} />{language === 'th' ? 'กลุ่มของฉัน' : 'My Group'}</NavLink> : null}
+            {canAttend ? <NavLink to="/staff/attendance"><UserCheck size={18} />{language === 'th' ? 'เช็กชื่อ' : 'Attendance'}</NavLink> : null}
+            {canEmergency ? <NavLink to="/staff/emergency"><HeartPulse size={18} />{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</NavLink> : null}
+          </>
+        ) : (
+          <>
+            <NavLink to="/"><Home size={18} />{language === 'th' ? 'รายชื่อผู้เข้าร่วม' : 'Participants'}</NavLink>
+            <NavLink to="/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
+            <NavLink to="/edit"><Pencil size={18} />{language === 'th' ? 'แก้ไขข้อมูล' : 'Edit Info'}</NavLink>
+            <NavLink to="/staff/profile/verify"><UserCheck size={18} />{language === 'th' ? 'แก้โปรไฟล์ทีมงาน' : 'Staff Profile Verify'}</NavLink>
+            <NavLink to="/admin"><Shield size={18} />{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff/Admin Login'}</NavLink>
+          </>
+        )}
+      </MobileMoreMenu>
     </div>
   );
 }

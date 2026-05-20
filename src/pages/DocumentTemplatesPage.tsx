@@ -80,16 +80,24 @@ export function DocumentTemplatesPage() {
     <section className="page-stack">
       <Toast toast={toast} />
       <PageHeader eyebrow="Document Center" title="DOCX Templates" description="ใช้ docxtemplater syntax ตัวพิมพ์เล็ก เช่น {project_name}, {event_date_th}, {#schedule_items}{time_range} {title}{/schedule_items}" />
+      <Card className="template-upload-card" variant="soft">
+        <div>
+          <p className="eyebrow">Template Upload</p>
+          <h2>อัปโหลดไฟล์ .docx</h2>
+          <span>ระบบจะอ่าน placeholder และเก็บไฟล์ไว้ใน private Supabase Storage</span>
+        </div>
+        <label className="file-drop-zone">
+          <FileUp size={28} />
+          <strong>{file?.name ?? 'เลือกไฟล์ DOCX'}</strong>
+          <span>รองรับเฉพาะ .docx เท่านั้น</span>
+          <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(event) => void inspectFile(event.target.files?.[0] ?? null)} />
+        </label>
+      </Card>
       <Card className="form-grid two-col">
         <Input label="ชื่อ template" value={name} onChange={(event) => setName(event.target.value)} placeholder="เช่น หนังสือขอใช้สถานที่" />
         <Select label="ประเภทเอกสาร" value={documentType} options={documentTypeOptions} onChange={(event) => setDocumentType(event.target.value as DocumentType)} />
         <Input label="คำอธิบาย" value={description} onChange={(event) => setDescription(event.target.value)} />
         <label className="field checkbox-field"><span>เปิดใช้งาน</span><input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} /></label>
-        <label className="field full-span">
-          <span>ไฟล์ DOCX</span>
-          <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(event) => void inspectFile(event.target.files?.[0] ?? null)} />
-          <small>{file?.name ?? 'รองรับเฉพาะ .docx template และเก็บใน private Supabase Storage'}</small>
-        </label>
         {detectedPlaceholders.length ? (
           <div className="full-span">
             <strong>Detected placeholders</strong>

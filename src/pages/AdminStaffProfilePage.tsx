@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
+import { AvatarUploadCard } from '../components/ui/AvatarUploadCard';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -112,11 +113,16 @@ export function AdminStaffProfilePage() {
             <Card>
               <h2>{language === 'th' ? 'Public Profile' : 'Public Profile'}</h2>
               {publicCard ? <PublicStaffCard staff={publicCard} /> : null}
-              <label className="field">
-                <span>{language === 'th' ? 'รูปโปรไฟล์' : 'Profile photo'}</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadAvatar(event.target.files?.[0] ?? null)} />
-                <small>{uploadingAvatar ? (language === 'th' ? 'กำลังอัปโหลด...' : 'Uploading...') : (language === 'th' ? 'รองรับ JPG, PNG, WebP ขนาดไม่เกิน 2 MB' : 'JPG, PNG, WebP up to 2 MB')}</small>
-              </label>
+              <AvatarUploadCard
+                imageUrl={mergedPublic.avatar_url}
+                displayName={staffDisplayName(data.profile)}
+                uploading={uploadingAvatar}
+                helperText={language === 'th' ? 'JPG, PNG, WebP ขนาดไม่เกิน 2 MB' : 'JPG, PNG, WebP up to 2 MB'}
+                uploadLabel={language === 'th' ? 'อัปโหลดรูป' : 'Upload photo'}
+                removeLabel={language === 'th' ? 'ลบรูป' : 'Remove'}
+                onFile={(file) => void uploadAvatar(file)}
+                onRemove={() => setPublicPatch({ ...publicPatch, avatar_url: null })}
+              />
               <Input label="Bio" value={mergedPublic.bio ?? ''} onChange={(event) => setPublicPatch({ ...publicPatch, bio: event.target.value })} />
               <Input label={language === 'th' ? 'ภูมิลำเนา' : 'Hometown'} value={mergedPublic.hometown ?? ''} onChange={(event) => setPublicPatch({ ...publicPatch, hometown: event.target.value })} />
               <Input label={language === 'th' ? 'ความสนใจ' : 'Interests'} value={(mergedPublic.interests ?? []).join(', ')} onChange={(event) => setPublicPatch({ ...publicPatch, interests: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} />
