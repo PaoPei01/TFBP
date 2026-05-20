@@ -18,6 +18,7 @@ const statusMap = {
   green: 'approved',
   yellow: 'pending',
   red: 'rejected',
+  neutral: 'pending',
 } as const;
 
 export function StaffOperationsPage() {
@@ -29,8 +30,9 @@ export function StaffOperationsPage() {
     const term = search.trim().toLowerCase();
     return (state.data?.quota.rows ?? []).filter((row) => !term || row.role_name.toLowerCase().includes(term));
   }, [search, state.data?.quota.rows]);
-  const quotaCompletion = state.data?.quota.rows?.length
-    ? Math.round((state.data.quota.rows.reduce((sum, row) => sum + Math.min(row.unique_staff_count, row.target_count), 0) / state.data.quota.rows.reduce((sum, row) => sum + row.target_count, 0)) * 100)
+  const quotaRowsWithTargets = useMemo(() => (state.data?.quota.rows ?? []).filter((row) => row.target_count > 0), [state.data?.quota.rows]);
+  const quotaCompletion = quotaRowsWithTargets.length
+    ? Math.round((quotaRowsWithTargets.reduce((sum, row) => sum + Math.min(row.unique_staff_count, row.target_count), 0) / quotaRowsWithTargets.reduce((sum, row) => sum + row.target_count, 0)) * 100)
     : 0;
   const distribution = useMemo(() => {
     const roleCounts = new Map<string, number>();
@@ -110,7 +112,7 @@ export function StaffOperationsPage() {
               <div className="quota-progress-row" key={row.role_name}>
                 <div>
                   <strong>{row.role_name}</strong>
-                  <span>{row.unique_staff_count} / {row.target_count}</span>
+                  <span>{row.target_count ? `${row.unique_staff_count} / ${row.target_count}` : `${row.unique_staff_count} ${language === 'th' ? 'คน ไม่กำหนดโควต้า' : 'staff, no quota'}`}</span>
                 </div>
                 <div className="quota-bar" aria-label={`${row.role_name} ${percent}%`}>
                   <span className={`quota-fill status-${row.health_status}`} style={{ width: `${percent}%` }} />
@@ -126,12 +128,12 @@ export function StaffOperationsPage() {
         getKey={(row) => row.role_name}
         emptyText={language === 'th' ? 'ไม่พบข้อมูลโควตา' : 'No quota rows'}
         mobileTitle={(row) => row.role_name}
-        mobileSubtitle={(row) => `${row.unique_staff_count} / ${row.target_count}`}
+        mobileSubtitle={(row) => row.target_count ? `${row.unique_staff_count} / ${row.target_count}` : `${row.unique_staff_count} ${language === 'th' ? 'คน ไม่กำหนดโควต้า' : 'staff, no quota'}`}
         mobileMeta={(row) => <Badge status={statusMap[row.health_status]}>{row.health_status}</Badge>}
         mobileDetailsLabel={language === 'th' ? 'รายละเอียดโควตา' : 'Quota details'}
         columns={[
           { key: 'role', header: language === 'th' ? 'หน้าที่' : 'Role', render: (row) => row.role_name },
-          { key: 'target', header: language === 'th' ? 'เป้า' : 'Target', render: (row) => row.target_count },
+          { key: 'target', header: language === 'th' ? 'เป้า' : 'Target', render: (row) => row.target_count || (language === 'th' ? 'ไม่กำหนด' : 'No quota') },
           { key: 'current', header: language === 'th' ? 'ปัจจุบัน' : 'Current', render: (row) => `${row.unique_staff_count} (${language === 'th' ? 'หลัก' : 'primary'} ${row.current_primary_count}, ${language === 'th' ? 'เสริม' : 'secondary'} ${row.current_secondary_count})` },
           { key: 'diff', header: language === 'th' ? 'ต่าง' : 'Difference', render: (row) => row.shortage_count ? `-${row.shortage_count}` : row.overflow_count ? `+${row.overflow_count}` : '0' },
           { key: 'overlap', header: language === 'th' ? 'ซ้อน' : 'Overlap', render: (row) => row.overlap_count },

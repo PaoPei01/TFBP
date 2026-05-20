@@ -98,6 +98,15 @@ export function StaffManagementPage() {
     setEditing({ ...editing, ...values });
   }
 
+  function toggleSecondaryDuty(roleName: string) {
+    if (!editing) return;
+    const assignment = editing.assignment ?? blankAssignment(editing.id);
+    const current = new Set(assignment.secondary_roles ?? []);
+    if (current.has(roleName)) current.delete(roleName);
+    else current.add(roleName);
+    patchEditing({ assignment: { ...assignment, secondary_roles: normalizeStaffSecondaryRoles([...current]) } });
+  }
+
   async function confirmDelete() {
     if (!deleting) return;
     try {
@@ -182,7 +191,7 @@ export function StaffManagementPage() {
           { key: 'name', header: language === 'th' ? 'ชื่อ' : 'Name', render: (row) => <div className="participant-admin-cell"><strong>{row.name_th || row.name_en}</strong><span>{row.nickname_th || row.nickname || row.nickname_en} · {row.student_id}</span></div> },
           { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => majorLabel(row.major, language) },
           { key: 'position', header: language === 'th' ? 'ตำแหน่ง' : 'Position', render: (row) => row.position || '-' },
-          { key: 'role', header: language === 'th' ? 'สิทธิ์' : 'Role', render: (row) => row.assignment?.role || '-' },
+          { key: 'role', header: language === 'th' ? 'สิทธิ์ระบบ' : 'System role', render: (row) => row.assignment?.role || '-' },
           { key: 'ops_role', header: language === 'th' ? 'หน้าที่' : 'Ops role', render: (row) => <div className="participant-admin-cell"><strong>{row.assignment?.primary_role || row.position || '-'}</strong><span>{row.assignment?.secondary_roles?.join(', ') || '-'}</span></div> },
           { key: 'group', header: language === 'th' ? 'กลุ่ม' : 'Group', render: (row) => groupLabel(row.assignment?.main_group, row.assignment?.subgroup, language) },
           { key: 'phone', header: language === 'th' ? 'เบอร์' : 'Phone', render: (row) => row.phone || '-' },
@@ -219,9 +228,19 @@ export function StaffManagementPage() {
             <Input label="Facebook" value={editing.facebook ?? ''} onChange={(event) => patchEditing({ facebook: event.target.value })} />
             <Input label={language === 'th' ? 'ช่องทางอื่น' : 'Other contact'} value={editing.other_contact ?? ''} onChange={(event) => patchEditing({ other_contact: event.target.value })} />
             <Input label={language === 'th' ? 'ตำแหน่ง' : 'Position'} value={editing.position ?? ''} onChange={(event) => patchEditing({ position: event.target.value })} />
-            <Select label={language === 'th' ? 'สิทธิ์' : 'Role'} value={editing.assignment?.role ?? ''} options={roles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), role: (event.target.value || null) as StaffRole | null } })} />
-            <Select label={language === 'th' ? 'หน้าที่หลัก' : 'Primary role'} value={normalizeStaffOperationalRole(editing.assignment?.primary_role ?? editing.position) ?? ''} options={operationalRoles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), primary_role: event.target.value || null } })} />
-            <Input label={language === 'th' ? 'หน้าที่เสริม' : 'Secondary roles'} value={editing.assignment?.secondary_roles?.join(', ') ?? ''} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), secondary_roles: normalizeStaffSecondaryRoles(event.target.value) } })} />
+            <Select label={language === 'th' ? 'สิทธิ์ระบบ' : 'System Role'} value={editing.assignment?.role ?? ''} options={roles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), role: (event.target.value || null) as StaffRole | null } })} />
+            <Select label={language === 'th' ? 'หน้าที่หลัก' : 'Primary Duty'} value={normalizeStaffOperationalRole(editing.assignment?.primary_role ?? editing.position) ?? ''} options={operationalRoles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), primary_role: event.target.value || null } })} />
+            <div className="field full-span">
+              <span>{language === 'th' ? 'หน้าที่เสริม' : 'Secondary Duties'}</span>
+              <div className="duty-checkbox-grid">
+                {operationalRoles.map((roleName) => (
+                  <label key={roleName}>
+                    <input type="checkbox" checked={Boolean(editing.assignment?.secondary_roles?.includes(roleName))} onChange={() => toggleSecondaryDuty(roleName)} />
+                    <span>{roleName}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             <Select label={language === 'th' ? 'สี' : 'Color'} value={editing.assignment?.main_group ?? ''} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), main_group: (event.target.value || null) as MainGroup | null } })} />
             <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={editing.assignment?.subgroup ?? ''} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), subgroup: (event.target.value || null) as Subgroup | null } })} />
             <Input label={language === 'th' ? 'โรคประจำตัว' : 'Disease'} value={editing.medical_info?.disease ?? ''} onChange={(event) => patchEditing({ medical_info: { ...(editing.medical_info ?? blankMedical(editing.id)), disease: event.target.value } })} />

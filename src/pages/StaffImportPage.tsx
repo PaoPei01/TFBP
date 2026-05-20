@@ -84,7 +84,7 @@ export function StaffImportPage() {
   }
 
   function downloadTemplate() {
-    const headers = ['student_id', 'email', 'name_th', 'name_en', 'nickname_th', 'nickname_en', 'phone', 'instagram', 'line_id', 'facebook', 'major', 'position', 'primary_role', 'secondary_roles', 'main_group', 'subgroup'];
+    const headers = ['student_id', 'email', 'name_th', 'name_en', 'nickname_th', 'nickname_en', 'phone', 'instagram', 'line_id', 'facebook', 'major', 'position', 'role', 'primary_role', 'secondary_roles', 'main_group', 'subgroup'];
     const blob = new Blob([`\uFEFF${headers.join(',')}\n`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

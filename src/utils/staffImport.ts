@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { getMajorCode, normalizeMajor } from '../lib/major';
-import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles } from '../lib/staffRoles';
+import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles, normalizeStaffSystemRole } from '../lib/staffRoles';
 import type { MainGroup, StaffRole, Subgroup } from '../lib/types';
 
 export type StaffImportRow = {
@@ -159,15 +159,6 @@ function parseStaffContact(raw: string | null) {
   return { raw, instagram: clean(instagram), line_id: clean(line), facebook: clean(facebook), other_contact: clean(other) };
 }
 
-function normalizeRole(value: string | null): StaffRole | null {
-  const raw = value?.toLowerCase() ?? '';
-  if (raw.includes('mentor')) return 'mentor';
-  if (raw.includes('emergency')) return 'emergency_staff';
-  if (raw.includes('viewer')) return 'viewer';
-  if (raw.includes('staff') || raw.includes('สตาฟ') || raw.includes('พี่กลุ่ม')) return 'staff';
-  return value ? 'staff' : null;
-}
-
 const groupMap: Record<string, MainGroup> = {
   แดง: 'Red',
   red: 'Red',
@@ -229,11 +220,13 @@ function rowToStaff(row: Record<string, string | null>, sourceSheet: string, sou
     profile.position = profile.line_id;
     profile.line_id = null;
   }
+  const rawRole = get(row, ['role', 'ยศ', 'สิทธิ์']);
+  const primaryRole = normalizeStaffOperationalRole(get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก', 'duty', 'หน้าที่']) ?? profile.position ?? rawRole);
   const assignment = {
-    role: normalizeRole(get(row, ['role', 'ยศ', 'สิทธิ์'])),
+    role: normalizeStaffSystemRole(rawRole, primaryRole),
     main_group: normalizeGroup(get(row, ['main_group', 'สี', 'กลุ่มสี'])),
     subgroup: normalizeSubgroup(get(row, ['subgroup', 'กลุ่มย่อย'])),
-    primary_role: normalizeStaffOperationalRole(get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position),
+    primary_role: primaryRole,
     secondary_roles: normalizeStaffSecondaryRoles(get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม'])),
   };
   const medical = {

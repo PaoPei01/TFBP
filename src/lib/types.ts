@@ -178,9 +178,10 @@ export type StaffQuotaAnalyticsRow = {
   unique_staff_count: number;
   shortage_count: number;
   overflow_count: number;
-  health_status: 'green' | 'yellow' | 'red';
+  health_status: 'green' | 'yellow' | 'red' | 'neutral';
   overlap_count: number;
   missing_assignment_count: number;
+  has_quota?: boolean;
 };
 
 export type StaffQuotaAnalytics = {

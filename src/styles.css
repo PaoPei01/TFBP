@@ -1385,6 +1385,30 @@ th {
   gap: 1rem;
 }
 
+.duty-checkbox-grid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.duty-checkbox-grid label {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+
+.duty-checkbox-grid input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
 .import-stepper {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

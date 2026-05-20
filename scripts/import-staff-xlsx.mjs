@@ -101,6 +101,7 @@ function normalizeOperationalRole(value) {
   const raw = clean(value);
   if (!raw) return null;
   const lower = raw.toLowerCase();
+  if (['staff', 'mentor', 'viewer', 'emergency_staff'].includes(lower)) return null;
   if (lower.includes('ทีมบอ') || lower.includes('วางแผน') || lower.includes('planner') || lower.includes('plan')) return 'วางแผน (ทีมบอ)';
   if (lower.includes('พี่กลุ่ม') || lower.includes('mentor') || lower.includes('group staff')) return 'พี่กลุ่ม';
   if (lower.includes('พี่ฐาน') || lower.includes('ฐาน') || lower.includes('base')) return 'พี่ฐาน';
@@ -108,6 +109,7 @@ function normalizeOperationalRole(value) {
   if (lower.includes('พยาบาล') || lower.includes('medic') || lower.includes('medical') || lower.includes('nurse')) return 'พยาบาล';
   if (lower.includes('จราจร') || lower.includes('traffic')) return 'จราจร';
   if (lower.includes('สวัสดิการ') || lower.includes('welfare')) return 'สวัสดิการ';
+  if (lower.includes('โสต') || lower.includes('av') || lower.includes('audio') || lower.includes('visual')) return 'โสตทัศนูปกรณ์';
   if (lower.includes('บันเทิง') || lower.includes('สันทนาการ') || lower.includes('entertain')) return 'สตาฟให้ความบันเทิง';
   if (lower.includes('โฟโต้') || lower.includes('photo') || lower.includes('photographer')) return 'โฟโต้';
   if (lower.includes('พิธีกร') || lower.includes('mc')) return 'พิธีกร';
@@ -224,13 +226,14 @@ function normalizeSubgroup(value) {
   return match === 'A' || match === 'B' ? match : null;
 }
 
-function normalizeRole(value) {
+function normalizeRole(value, primaryRole) {
   const raw = String(value ?? '').toLowerCase();
+  const duty = normalizeOperationalRole(primaryRole ?? value);
   if (raw.includes('mentor')) return 'mentor';
-  if (raw.includes('emergency')) return 'emergency_staff';
+  if (raw.includes('emergency') || duty === 'พยาบาล') return 'emergency_staff';
   if (raw.includes('viewer')) return 'viewer';
   if (raw.includes('staff') || raw.includes('สตาฟ') || raw.includes('พี่กลุ่ม')) return 'staff';
-  return value ? 'staff' : null;
+  return value || duty ? 'staff' : null;
 }
 
 function rowToStaff(row, sourceSheet, index) {
@@ -268,11 +271,13 @@ function rowToStaff(row, sourceSheet, index) {
     food_allergy: get(row, ['food_allergy', 'อาหารที่แพ้']),
     medical_note: get(row, ['medical_note', 'หมายเหตุสุขภาพ']),
   };
+  const rawRole = get(row, ['role', 'ยศ', 'สิทธิ์']);
+  const primaryRole = normalizeOperationalRole(get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก', 'duty', 'หน้าที่']) ?? profile.position ?? rawRole);
   const assignment = {
-    role: normalizeRole(get(row, ['role', 'ยศ', 'สิทธิ์'])),
+    role: normalizeRole(rawRole, primaryRole),
     main_group: normalizeGroup(get(row, ['main_group', 'สี', 'กลุ่มสี'])),
     subgroup: normalizeSubgroup(get(row, ['subgroup', 'กลุ่มย่อย'])),
-    primary_role: normalizeOperationalRole(get(row, ['primary_role', 'บทบาทหลัก', 'หน้าที่หลัก']) ?? profile.position),
+    primary_role: primaryRole,
     secondary_roles: normalizeSecondaryRoles(get(row, ['secondary_roles', 'บทบาทเสริม', 'หน้าที่เสริม'])),
   };
   const auxiliarySheet = /medical|group_assignments/i.test(sourceSheet);
