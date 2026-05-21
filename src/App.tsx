@@ -45,6 +45,7 @@ export function App() {
         <Route path="announcements/:id" element={<Suspense fallback={<LoadingSkeleton />}><AnnouncementDetailPage /></Suspense>} />
         <Route path="edit" element={<VerifyEditPage />} />
         <Route path="staff/profile/verify" element={<Suspense fallback={<LoadingSkeleton />}><StaffProfileVerifyPage /></Suspense>} />
+        <Route path="login" element={<Suspense fallback={<LoadingSkeleton />}><AdminLoginPage /></Suspense>} />
         <Route path="admin" element={<Suspense fallback={<LoadingSkeleton />}><AdminLoginPage /></Suspense>} />
         <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer', 'emergency_staff']} />}>
           <Route path="staff" element={<Suspense fallback={<LoadingSkeleton />}><StaffDashboardPage /></Suspense>} />

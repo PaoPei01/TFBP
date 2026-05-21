@@ -1,5 +1,5 @@
 import { LogIn, LogOut, UserCheck } from 'lucide-react';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
@@ -8,6 +8,9 @@ import { Input } from '../components/ui/Input';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../lib/supabase';
+import { fetchStaffAccessContext } from '../services/staff';
+
+type AccessTarget = 'admin' | 'staff' | 'none';
 
 export function AdminLoginPage() {
   const { language } = useLanguage();
@@ -15,9 +18,31 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [accessTarget, setAccessTarget] = useState<AccessTarget | null>(null);
+  const [checkingAccess, setCheckingAccess] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const navigate = useNavigate();
+
+  const resolveAccess = useCallback(async (userId: string): Promise<AccessTarget> => {
+    const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin', { uid: userId });
+    if (adminError) throw adminError;
+    if (isAdmin) return 'admin';
+    const access = await fetchStaffAccessContext();
+    if (access.can_view_staff || access.can_mark_attendance || access.can_view_emergency || access.roles?.length) return 'staff';
+    return 'none';
+  }, []);
+
+  function authErrorMessage(err: unknown) {
+    const message = err instanceof Error ? err.message.toLowerCase() : '';
+    if (message.includes('invalid login') || message.includes('invalid credentials')) {
+      return language === 'th' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : 'Invalid email or password.';
+    }
+    if (message.includes('network') || message.includes('fetch')) {
+      return language === 'th' ? 'เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่' : 'Could not connect. Please try again.';
+    }
+    return language === 'th' ? 'เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่' : 'Sign in failed. Please try again.';
+  }
 
   useEffect(() => {
     let active = true;
@@ -33,26 +58,63 @@ export function AdminLoginPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    setAccessTarget(null);
+    setCheckingAccess(false);
+    if (!user) return () => {
+      active = false;
+    };
+    setCheckingAccess(true);
+    resolveAccess(user.id)
+      .then((target) => {
+        if (active) setAccessTarget(target);
+      })
+      .catch(() => {
+        if (active) setAccessTarget('none');
+      })
+      .finally(() => {
+        if (active) setCheckingAccess(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [resolveAccess, user]);
+
   async function handleLogin(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
     setToast(null);
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      setToast({ type: 'error', message: error.message });
-      return;
-    }
-    const signedInUser = signInData.user;
-    const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin', { uid: signedInUser.id });
-    if (adminError || !isAdmin) {
+    try {
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const signedInUser = signInData.user;
+      const target = await resolveAccess(signedInUser.id);
+      setAccessTarget(target);
+      if (target === 'admin') {
+        setUser(signedInUser);
+        setToast({ type: 'success', message: language === 'th' ? 'เข้าสู่ระบบผู้ดูแลสำเร็จ' : 'Admin sign in successful' });
+        navigate('/admin/dashboard');
+        return;
+      }
+      if (target === 'staff') {
+        setUser(signedInUser);
+        setToast({ type: 'success', message: language === 'th' ? 'เข้าสู่ระบบทีมงานสำเร็จ' : 'Staff sign in successful' });
+        navigate('/staff');
+        return;
+      }
       await supabase.auth.signOut();
       setUser(null);
-      setToast({ type: 'error', message: language === 'th' ? 'บัญชีนี้ไม่มีสิทธิ์ผู้ดูแลระบบ' : 'This account does not have admin access.' });
-      return;
+      setAccessTarget(null);
+      setToast({ type: 'error', message: language === 'th' ? 'บัญชีนี้ยังไม่มีสิทธิ์เข้าใช้งานระบบทีมงาน' : 'This account does not have staff access.' });
+    } catch (err) {
+      await supabase.auth.signOut();
+      setUser(null);
+      setAccessTarget(null);
+      setToast({ type: 'error', message: authErrorMessage(err) });
+    } finally {
+      setLoading(false);
     }
-    setUser(signedInUser);
-    navigate('/admin/dashboard');
   }
 
   async function handleSignOut() {
@@ -60,6 +122,7 @@ export function AdminLoginPage() {
     await supabase.auth.signOut();
     setSigningOut(false);
     setUser(null);
+    setAccessTarget(null);
     setToast({ type: 'success', message: language === 'th' ? 'ออกจากระบบแล้ว' : 'Signed out' });
     navigate('/');
   }
@@ -68,9 +131,9 @@ export function AdminLoginPage() {
     <section className="narrow-page page-stack">
       <Toast toast={toast} />
       <div className="section-heading">
-        <p className="eyebrow">Admin</p>
-        <h1>{language === 'th' ? 'เข้าสู่ระบบผู้ดูแล' : 'Admin sign in'}</h1>
-        <p>{language === 'th' ? 'ใช้บัญชี Supabase Auth ที่ถูกเพิ่มในตาราง admins เท่านั้น' : 'Use a Supabase Auth account that has been added to the admins table.'}</p>
+        <p className="eyebrow">Staff Sign In</p>
+        <h1>{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Sign In'}</h1>
+        <p>{language === 'th' ? 'ใช้บัญชีที่ได้รับสิทธิ์ทีมงานหรือผู้ดูแลระบบ' : 'Use an account with staff or admin access.'}</p>
       </div>
       {user ? (
         <Card className="auth-account-card">
@@ -82,11 +145,16 @@ export function AdminLoginPage() {
             </div>
           </div>
           <div className="form-actions">
-            <Button onClick={async () => {
-              const { data: isAdmin } = await supabase.rpc('is_admin', { uid: user.id });
-              if (isAdmin) navigate('/admin/dashboard');
-              else setToast({ type: 'error', message: language === 'th' ? 'บัญชีนี้ไม่มีสิทธิ์ผู้ดูแลระบบ' : 'This account does not have admin access.' });
-            }}>{language === 'th' ? 'ไปหน้าแดชบอร์ด' : 'Go to dashboard'}</Button>
+            {checkingAccess ? <Button disabled>{language === 'th' ? 'กำลังตรวจสอบสิทธิ์...' : 'Checking access...'}</Button> : null}
+            {!checkingAccess && accessTarget === 'admin' ? (
+              <Button onClick={() => navigate('/admin/dashboard')}>{language === 'th' ? 'ไปหน้าแดชบอร์ดผู้ดูแล' : 'Go to Admin Dashboard'}</Button>
+            ) : null}
+            {!checkingAccess && accessTarget === 'staff' ? (
+              <Button onClick={() => navigate('/staff')}>{language === 'th' ? 'ไปหน้า Staff Mode' : 'Go to Staff Mode'}</Button>
+            ) : null}
+            {!checkingAccess && accessTarget === 'none' ? (
+              <span className="form-hint">{language === 'th' ? 'บัญชีนี้ยังไม่มีสิทธิ์เข้าใช้งานระบบทีมงาน' : 'This account does not have staff access.'}</span>
+            ) : null}
             <Button variant="danger" icon={<LogOut size={18} />} onClick={handleSignOut} disabled={signingOut}>
               {language === 'th' ? 'ออกจากระบบ' : 'Sign out'}
             </Button>
@@ -95,9 +163,9 @@ export function AdminLoginPage() {
       ) : null}
       <Card>
         <form className="form-grid" onSubmit={handleLogin}>
-          <Input label={language === 'th' ? 'อีเมลผู้ดูแล' : 'Admin email'} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          <Input label={language === 'th' ? 'อีเมล' : 'Email'} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
           <Input label={language === 'th' ? 'รหัสผ่าน' : 'Password'} type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-          <Button type="submit" disabled={loading} icon={<LogIn size={18} />}>
+          <Button type="submit" loading={loading} icon={<LogIn size={18} />}>
             {language === 'th' ? 'เข้าสู่ระบบ' : 'Sign in'}
           </Button>
         </form>

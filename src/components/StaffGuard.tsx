@@ -28,6 +28,6 @@ export function StaffGuard({ roles, requireEmergency = false, requireAttendance 
   }, [requireAttendance, requireEmergency, roles]);
 
   if (state === 'loading') return <LoadingSkeleton />;
-  if (state === 'denied') return <Navigate to="/admin" replace />;
+  if (state === 'denied') return <Navigate to="/login" replace />;
   return <Outlet />;
 }

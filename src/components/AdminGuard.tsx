@@ -20,6 +20,6 @@ export function AdminGuard() {
   }, []);
 
   if (state === 'loading') return <LoadingSkeleton />;
-  if (state === 'denied') return <Navigate to="/admin" replace />;
+  if (state === 'denied') return <Navigate to="/login" replace />;
   return <Outlet />;
 }

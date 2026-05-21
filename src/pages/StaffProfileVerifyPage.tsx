@@ -124,7 +124,7 @@ export function StaffProfileVerifyPage() {
         eyebrow="Staff Profile Verify"
         title={language === 'th' ? 'แก้ไขโปรไฟล์ทีมงาน' : 'Edit Staff Profile'}
         description={language === 'th' ? 'หน้านี้สำหรับทีมงานรายบุคคลที่ต้องการแก้ไขโปรไฟล์ของตัวเอง ไม่ใช่บัญชีเข้าสู่ระบบทีมงานสำหรับปฏิบัติงาน' : 'This page is for individual staff profile updates, not operational staff login.'}
-        meta={<Link className="btn btn-secondary" to="/admin">{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Login'}</Link>}
+        meta={<Link className="btn btn-secondary" to="/login">{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Login'}</Link>}
       />
       <Card>
         <form className="form-grid" onSubmit={verify}>

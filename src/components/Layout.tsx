@@ -144,7 +144,7 @@ export function Layout() {
               </div>
             </details>
           ) : (
-            <NavLink className="staff-login-link" to="/admin">
+            <NavLink className="staff-login-link" to="/login">
               <Shield size={17} />
               <span>{loginCopy.staffLogin}</span>
             </NavLink>
@@ -184,7 +184,7 @@ export function Layout() {
           </NavLink>
         ) : null}
         {!user && !isAdmin && !isStaff ? (
-          <NavLink to="/admin">
+          <NavLink to="/login">
             <Shield size={19} />
             <span>{language === 'th' ? 'ทีมงาน' : 'Staff'}</span>
           </NavLink>
@@ -277,7 +277,7 @@ export function Layout() {
             <NavLink to="/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
             <NavLink to="/edit"><Pencil size={18} />{language === 'th' ? 'แก้ไขข้อมูล' : 'Edit Info'}</NavLink>
             <NavLink to="/staff/profile/verify"><UserCheck size={18} />{language === 'th' ? 'แก้โปรไฟล์ทีมงาน' : 'Staff Profile Verify'}</NavLink>
-            <NavLink to="/admin"><Shield size={18} />{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff/Admin Login'}</NavLink>
+            <NavLink to="/login"><Shield size={18} />{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff/Admin Login'}</NavLink>
             <button type="button" onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}><Languages size={18} />{language === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}</button>
           </>
         )}
