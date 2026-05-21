@@ -4076,6 +4076,162 @@ th {
   background: rgba(255, 255, 255, 0.96);
 }
 
+.admin-staff-attendance-page .status-pill,
+.staff-attendance-home .status-pill,
+.staff-attendance-scan-page .status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  background: rgba(111, 126, 150, 0.12);
+  color: #2b3a50;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.status-active,
+.status-present,
+.status-checked_out {
+  background: rgba(22, 163, 74, 0.12) !important;
+  color: #166534 !important;
+}
+
+.status-late,
+.status-draft,
+.status-missing {
+  background: rgba(245, 158, 11, 0.14) !important;
+  color: #92400e !important;
+}
+
+.status-absent,
+.status-closed,
+.status-cancelled {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #991b1b !important;
+}
+
+.status-excused,
+.status-archived {
+  background: rgba(40, 104, 232, 0.1) !important;
+  color: var(--accent-strong) !important;
+}
+
+.attendance-session-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(280px, 1.1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.attendance-qr-card,
+.attendance-manual-panel,
+.staff-attendance-primary,
+.scan-result-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.attendance-qr-image {
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  justify-self: center;
+  border-radius: 22px;
+  padding: 0.65rem;
+  background: white;
+  box-shadow: 0 14px 36px rgba(44, 65, 100, 0.12);
+}
+
+.attendance-qr-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+  border: 1px dashed var(--border);
+  border-radius: 22px;
+  color: var(--text-soft);
+  font-weight: 800;
+}
+
+.attendance-scan-url {
+  display: block;
+  max-width: 100%;
+  border-radius: 16px;
+  padding: 0.75rem;
+  overflow-wrap: anywhere;
+  background: rgba(15, 23, 42, 0.06);
+  color: #1f2d44;
+  font-size: 0.83rem;
+}
+
+.attendance-row-actions,
+.attendance-manual-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.attendance-manual-actions .btn {
+  flex: 1 1 130px;
+}
+
+.attendance-camera-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 22px;
+  color: white;
+  background: linear-gradient(135deg, #2868e8, #15a3b8);
+  box-shadow: 0 14px 30px rgba(40, 104, 232, 0.2);
+}
+
+.attendance-session-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
+}
+
+.attendance-session-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.attendance-session-card > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.attendance-session-card span {
+  color: var(--text-soft);
+  font-weight: 750;
+}
+
+.scan-result-card {
+  text-align: center;
+  justify-items: center;
+}
+
+.scan-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.scan-result-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  background: rgba(255, 255, 255, 0.68);
+  color: #25364f;
+  font-weight: 850;
+}
+
 @media (max-width: 760px) {
   .edit-stepper {
     margin-inline: -0.15rem;
@@ -4136,6 +4292,33 @@ th {
 
   .sticky-action-bar {
     bottom: calc(var(--mobile-bottom-nav-height) + var(--safe-bottom) + 0.45rem);
+  }
+
+  .attendance-session-layout,
+  .attendance-session-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-qr-card .form-actions,
+  .staff-attendance-home .form-actions,
+  .staff-attendance-scan-page .form-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-session-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .attendance-row-actions,
+  .attendance-manual-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .attendance-row-actions .btn,
+  .attendance-manual-actions .btn {
+    width: 100%;
   }
 }
 

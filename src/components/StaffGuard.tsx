@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, Outlet, Link } from 'react-router-dom';
+import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Card } from './ui/Card';
 import { LoadingSkeleton } from './LoadingSkeleton';
 import type { StaffRole } from '../lib/types';
@@ -14,6 +14,7 @@ type StaffGuardProps = {
 
 export function StaffGuard({ roles, requireEmergency = false, requireAttendance = false }: StaffGuardProps) {
   const [state, setState] = useState<'loading' | 'allowed' | 'login' | 'forbidden'>('loading');
+  const location = useLocation();
 
   useEffect(() => {
     async function check() {
@@ -35,7 +36,7 @@ export function StaffGuard({ roles, requireEmergency = false, requireAttendance 
   }, [requireAttendance, requireEmergency, roles]);
 
   if (state === 'loading') return <LoadingSkeleton />;
-  if (state === 'login') return <Navigate to="/login" replace state={{ message: 'staff_required' }} />;
+  if (state === 'login') return <Navigate to="/login" replace state={{ message: 'staff_required', returnTo: `${location.pathname}${location.search}` }} />;
   if (state === 'forbidden') {
     return (
       <section className="narrow-page page-stack">

@@ -22,7 +22,9 @@ export function AuthLoginPage() {
   const [toast, setToast] = useState<ToastState>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const routeMessage = (location.state as { message?: string } | null)?.message;
+  const routeState = location.state as { message?: string; returnTo?: string } | null;
+  const routeMessage = routeState?.message;
+  const returnTo = routeState?.returnTo;
 
   useEffect(() => {
     let active = true;
@@ -71,13 +73,13 @@ export function AuthLoginPage() {
       if (target === 'admin') {
         setUser(signedInUser);
         setToast({ type: 'success', message: language === 'th' ? 'เข้าสู่ระบบผู้ดูแลสำเร็จ' : 'Admin sign in successful' });
-        navigate('/admin/dashboard');
+        navigate(returnTo?.startsWith('/admin') ? returnTo : '/admin/dashboard');
         return;
       }
       if (target === 'staff') {
         setUser(signedInUser);
         setToast({ type: 'success', message: language === 'th' ? 'เข้าสู่ระบบทีมงานสำเร็จ' : 'Staff sign in successful' });
-        navigate('/staff');
+        navigate(returnTo?.startsWith('/staff') ? returnTo : '/staff');
         return;
       }
       await supabase.auth.signOut();

@@ -25,7 +25,10 @@ const DocumentHistoryPage = lazy(() => import('./pages/DocumentHistoryPage').the
 const DocumentSettingsPage = lazy(() => import('./pages/DocumentSettingsPage').then((module) => ({ default: module.DocumentSettingsPage })));
 const DocumentTemplatesPage = lazy(() => import('./pages/DocumentTemplatesPage').then((module) => ({ default: module.DocumentTemplatesPage })));
 const PendingRequestsPage = lazy(() => import('./pages/PendingRequestsPage').then((module) => ({ default: module.PendingRequestsPage })));
+const AdminStaffAttendancePage = lazy(() => import('./pages/AdminStaffAttendancePage').then((module) => ({ default: module.AdminStaffAttendancePage })));
+const AdminStaffAttendanceSessionPage = lazy(() => import('./pages/AdminStaffAttendanceSessionPage').then((module) => ({ default: module.AdminStaffAttendanceSessionPage })));
 const StaffAttendancePage = lazy(() => import('./pages/StaffAttendancePage').then((module) => ({ default: module.StaffAttendancePage })));
+const StaffAttendanceScanPage = lazy(() => import('./pages/StaffAttendanceScanPage').then((module) => ({ default: module.StaffAttendanceScanPage })));
 const StaffDashboardPage = lazy(() => import('./pages/StaffDashboardPage').then((module) => ({ default: module.StaffDashboardPage })));
 const StaffDirectoryPage = lazy(() => import('./pages/StaffDirectoryPage').then((module) => ({ default: module.StaffDirectoryPage })));
 const StaffEditRequestsPage = lazy(() => import('./pages/StaffEditRequestsPage').then((module) => ({ default: module.StaffEditRequestsPage })));
@@ -57,8 +60,9 @@ export function App() {
         <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer']} />}>
           <Route path="staff/my-group" element={<Suspense fallback={<LoadingSkeleton />}><StaffMobilePage /></Suspense>} />
         </Route>
-        <Route element={<StaffGuard requireAttendance />}>
+        <Route element={<StaffGuard roles={['staff', 'mentor', 'viewer', 'emergency_staff']} />}>
           <Route path="staff/attendance" element={<Suspense fallback={<LoadingSkeleton />}><StaffAttendancePage /></Suspense>} />
+          <Route path="staff/attendance/scan" element={<Suspense fallback={<LoadingSkeleton />}><StaffAttendanceScanPage /></Suspense>} />
         </Route>
         <Route element={<StaffGuard requireEmergency />}>
           <Route path="staff/emergency" element={<Suspense fallback={<LoadingSkeleton />}><EmergencyDashboardPage /></Suspense>} />
@@ -71,6 +75,8 @@ export function App() {
           <Route path="admin/emergency" element={<Suspense fallback={<LoadingSkeleton />}><EmergencyDashboardPage /></Suspense>} />
           <Route path="admin/groups" element={<Suspense fallback={<LoadingSkeleton />}><GroupDashboardPage /></Suspense>} />
           <Route path="admin/staff" element={<Suspense fallback={<LoadingSkeleton />}><StaffManagementPage /></Suspense>} />
+          <Route path="admin/staff/attendance" element={<Suspense fallback={<LoadingSkeleton />}><AdminStaffAttendancePage /></Suspense>} />
+          <Route path="admin/staff/attendance/:sessionId" element={<Suspense fallback={<LoadingSkeleton />}><AdminStaffAttendanceSessionPage /></Suspense>} />
           <Route path="admin/staff/:id" element={<Suspense fallback={<LoadingSkeleton />}><AdminStaffProfilePage /></Suspense>} />
           <Route path="admin/staff/:id/profile" element={<Suspense fallback={<LoadingSkeleton />}><AdminStaffProfilePage /></Suspense>} />
           <Route path="admin/staff/import" element={<Suspense fallback={<LoadingSkeleton />}><StaffImportPage /></Suspense>} />

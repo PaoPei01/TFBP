@@ -394,6 +394,38 @@ Storage access is restricted by policy:
 
 Unauthenticated staff profile verification (`/staff/profile/verify`) does not upload avatar files for safety. Individual staff can still edit text/visibility there, while avatar file upload is available after staff login or through admin staff profile editing.
 
+## Staff Attendance Hybrid QR
+
+The production staff attendance system uses session QR check-in as the primary flow and admin manual check-in as the required fallback. Apply this migration before using it:
+
+```text
+supabase/migrations/202605210004_staff_attendance_hybrid_qr.sql
+```
+
+Routes:
+
+- Admin dashboard: `/admin/staff/attendance`
+- Admin session detail and manual roster: `/admin/staff/attendance/:sessionId`
+- Staff attendance home: `/staff/attendance`
+- Staff QR scan route: `/staff/attendance/scan?token=...`
+
+Security model:
+
+- Staff must be authenticated to check in from a session QR.
+- Staff QR check-in records only the currently signed-in staff member.
+- Admin manual check-in uses `manual_staff_attendance_update` and requires `public.is_admin(auth.uid())`.
+- The session QR token identifies only the attendance session, not staff personal data.
+- Attendance records store `method`, `checked_by`, `scanned_at`, and optional `note`.
+- New tables have RLS enabled; writes happen through admin/staff RPCs, not through frontend service-role access.
+- Staff personal QR token storage/RPCs are included for admin-assisted check-in (`staff_attendance_identity_tokens`, `admin_scan_staff_personal_qr`), but the MVP UI keeps session QR and manual check-in as the primary operational flows.
+
+QR deployment note:
+
+- QR links are generated for the HashRouter deployment format:
+  `/#/staff/attendance/scan?token=...`
+- Staff can scan using their phone camera. No in-app camera scanner is required for the MVP.
+- Admins can regenerate a session QR; the old QR token stops working immediately.
+
 ## Build
 
 ```bash
@@ -416,6 +448,7 @@ TFBP is designed as a mobile-first event operations platform. Public pages shoul
 
 - `.env` contains only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for frontend use.
 - Supabase migrations are applied through `202605200020_schema_alignment_and_production_hardening.sql`.
+- Apply `202605210004_staff_attendance_hybrid_qr.sql` before using staff attendance sessions.
 - At least one Supabase Auth user exists in `public.admins`.
 - RLS is enabled and public search returns only privacy-safe fields.
 - `document-templates` and `document-outputs` Storage buckets are private.
@@ -437,7 +470,8 @@ Before using the app at the event, test on at least one iPhone-sized screen and 
 - Admin participant lists render as stacked cards on phones; desktop tables remain available on larger screens.
 - Bottom navigation is visible, does not cover important buttons, and respects the iPhone safe area.
 - Emergency dashboard shows one-tap call buttons for EMS, Head Medic, and Police from any scroll position.
-- Staff attendance can mark present/absent with one tap or swipe, and offline queue sync works after reconnecting.
+- Staff attendance QR links open `/staff/attendance/scan`, require login, and return staff to the scan flow after sign-in.
+- Admin staff attendance manual check-in works on mobile cards without horizontal scrolling.
 - Group management can select color/subgroup with horizontal tabs and quick-move participants on touch devices.
 - Forms keep Save/Approve/Reject actions reachable near the bottom and do not hide behind the keyboard.
 - Text remains readable on iPhone SE width, iPhone 12/13/14 width, Android mid-range widths, tablets, and desktop.

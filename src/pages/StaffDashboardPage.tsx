@@ -20,6 +20,7 @@ export function StaffDashboardPage() {
   const assignedLabel = context?.assignment?.main_group ? groupLabel(context.assignment.main_group, context.assignment.subgroup, language) : access?.is_admin || access?.roles.includes('emergency_staff') ? (language === 'th' ? 'ทุกกลุ่ม' : 'All groups') : '-';
   const medicalCount = (context?.participants ?? []).filter((profile) => profile.disease || profile.drug_allergy || profile.food_allergy).length;
   const isEmergencyOnly = Boolean(access?.roles.includes('emergency_staff') && !access?.roles.some((role) => ['staff', 'mentor', 'viewer'].includes(role)));
+  const canUseStaffAttendance = Boolean(access?.is_admin || access?.roles.length || access?.can_mark_attendance);
 
   if (state.loading || accessState.loading) return <LoadingSkeleton />;
   if (state.error && !accessState.data?.can_view_emergency) return <div className="error-state">{state.error}</div>;
@@ -41,7 +42,7 @@ export function StaffDashboardPage() {
       </div>
 
       <div className="today-action-strip">
-        {access.can_mark_attendance ? <Link className="today-primary-action" to="/staff/attendance"><ClipboardCheck size={24} /><strong>{language === 'th' ? 'เริ่มเช็กชื่อ' : 'Start attendance'}</strong><span>{language === 'th' ? 'ปุ่มหลักสำหรับหน้างาน' : 'Primary live-operation action'}</span></Link> : null}
+        {canUseStaffAttendance ? <Link className="today-primary-action" to="/staff/attendance"><ClipboardCheck size={24} /><strong>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}</strong><span>{language === 'th' ? 'สแกน QR เพื่อเช็กชื่อของตัวเอง' : 'Scan QR to check yourself in'}</span></Link> : null}
         {access.can_view_emergency ? <Link className="today-primary-action emergency" to="/staff/emergency"><ShieldAlert size={24} /><strong>{language === 'th' ? 'เปิดฉุกเฉิน' : 'Open emergency'}</strong><span>{language === 'th' ? 'เบอร์ด่วนและข้อมูลสุขภาพ' : 'Hotlines and health data'}</span></Link> : null}
       </div>
 
@@ -74,11 +75,11 @@ export function StaffDashboardPage() {
             <span>{language === 'th' ? 'ค้นหารายชื่อ เบอร์ที่ได้รับอนุญาต และจุดนัดพบ' : 'Find participants, allowed contacts, and meeting point'}</span>
           </Link>
         ) : null}
-        {access.can_mark_attendance ? (
+        {canUseStaffAttendance ? (
           <Link className="staff-action-card" to="/staff/attendance">
             <ClipboardCheck size={28} />
-            <strong>{language === 'th' ? 'เช็กชื่อ' : 'Attendance'}</strong>
-            <span>{language === 'th' ? 'เช็กชื่อแบบเก็บคิว offline ได้' : 'Offline-friendly attendance queue'}</span>
+            <strong>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</strong>
+            <span>{language === 'th' ? 'สแกน QR ของรอบเช็กชื่อ หรือวางลิงก์สำรอง' : 'Scan a session QR or paste a fallback link'}</span>
           </Link>
         ) : null}
         {access.can_view_emergency ? (

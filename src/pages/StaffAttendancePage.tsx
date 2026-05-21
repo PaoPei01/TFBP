@@ -1,208 +1,192 @@
-import { CheckCircle2, Clock, Home, RotateCw, Search, UploadCloud, XCircle } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Camera, CheckCircle2, Clock, Copy, History, Home, Link2, ShieldCheck } from 'lucide-react';
+import { FormEvent, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
-import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
-import { StickyBottomBar } from '../components/mobile/StickyBottomBar';
-import { SwipeAttendanceCard } from '../components/mobile/SwipeAttendanceCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { DashboardStatCard } from '../components/ui/DashboardStatCard';
 import { Input } from '../components/ui/Input';
+import { PageHeader } from '../components/ui/PageHeader';
+import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
-import { groupLabel } from '../lib/grouping';
-import { majorLabel } from '../lib/major';
-import type { StaffAttendance } from '../lib/types';
-import { fetchStaffAttendanceContext, markStaffAttendance } from '../services/staff';
+import { fetchMyStaffAttendance, scanStaffAttendanceSessionQr } from '../services/staffAttendance';
+import { errorMessage } from '../utils/error';
 
-type QueueItem = {
-  profileId: string;
-  status: StaffAttendance['status'];
-  note: string;
-  eventDate: string;
-};
-
-const queueKey = 'tfbp_staff_attendance_queue';
-const statuses: Array<{ value: StaffAttendance['status']; labelTh: string; labelEn: string; icon: ReactNode }> = [
-  { value: 'present', labelTh: 'มาแล้ว', labelEn: 'Present', icon: <CheckCircle2 size={17} /> },
-  { value: 'late', labelTh: 'สาย', labelEn: 'Late', icon: <Clock size={17} /> },
-  { value: 'absent', labelTh: 'ไม่มา', labelEn: 'Absent', icon: <XCircle size={17} /> },
-  { value: 'excused', labelTh: 'ลา/ยกเว้น', labelEn: 'Excused', icon: <RotateCw size={17} /> },
-];
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
+function displayName(profile: { nickname_th?: string | null; nickname?: string | null; nickname_en?: string | null; name_th?: string | null; name_en?: string | null; email?: string | null } | null | undefined) {
+  return profile?.nickname_th || profile?.nickname || profile?.nickname_en || profile?.name_th || profile?.name_en || profile?.email || '-';
 }
 
-function loadQueue(): QueueItem[] {
+function formatDateTime(value: string | null | undefined, language: 'th' | 'en') {
+  if (!value) return '-';
+  return new Date(value).toLocaleString(language === 'th' ? 'th-TH' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function statusLabel(status: string | null | undefined, language: 'th' | 'en') {
+  const labels: Record<string, { th: string; en: string }> = {
+    present: { th: 'มาแล้ว', en: 'Present' },
+    late: { th: 'มาสาย', en: 'Late' },
+    absent: { th: 'ขาด', en: 'Absent' },
+    excused: { th: 'ขออนุญาต', en: 'Excused' },
+    checked_out: { th: 'เช็กออก', en: 'Checked out' },
+    cancelled: { th: 'ยกเลิก', en: 'Cancelled' },
+  };
+  return status ? labels[status]?.[language] ?? status : language === 'th' ? 'ยังไม่เช็ก' : 'Not checked';
+}
+
+function tokenFromInput(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
   try {
-    return JSON.parse(localStorage.getItem(queueKey) || '[]') as QueueItem[];
+    const url = new URL(trimmed);
+    return url.searchParams.get('token') ?? trimmed;
   } catch {
-    return [];
+    return trimmed.replace(/^.*token=/, '').trim();
   }
-}
-
-function saveQueue(items: QueueItem[]) {
-  localStorage.setItem(queueKey, JSON.stringify(items));
 }
 
 export function StaffAttendancePage() {
   const { language } = useLanguage();
-  const [eventDate, setEventDate] = useState(today());
-  const [search, setSearch] = useState('');
-  const [queue, setQueue] = useState<QueueItem[]>(loadQueue);
+  const state = useAsync(fetchMyStaffAttendance, []);
+  const [tokenInput, setTokenInput] = useState('');
+  const [checking, setChecking] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
-  const state = useAsync(() => fetchStaffAttendanceContext(eventDate), [eventDate]);
+  const navigate = useNavigate();
+  const data = state.data;
+  const activeSessions = useMemo(() => data?.active_sessions ?? [], [data?.active_sessions]);
+  const records = useMemo(() => data?.records ?? [], [data?.records]);
+  const latest = data?.latest_record;
+  const counts = useMemo(() => ({
+    active: activeSessions.length,
+    checked: activeSessions.filter((session) => session.record).length,
+    late: records.filter((record) => record.status === 'late').length,
+  }), [activeSessions, records]);
 
-  const participants = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return (state.data?.participants ?? []).filter((profile) => {
-      if (!term) return true;
-      return [profile.name_th, profile.name_en, profile.nickname, profile.major, profile.phone]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-        .includes(term);
-    });
-  }, [search, state.data?.participants]);
-
-  const queueForDate = queue.filter((item) => item.eventDate === eventDate);
-  const queueByProfile = new Map(queueForDate.map((item) => [item.profileId, item]));
-  const attendanceSummary = participants.reduce(
-    (sum, profile) => {
-      const status = queueByProfile.get(profile.id)?.status ?? profile.attendance?.status ?? 'unmarked';
-      sum[status] = (sum[status] ?? 0) + 1;
-      return sum;
-    },
-    { present: 0, late: 0, absent: 0, excused: 0, unmarked: 0 } as Record<string, number>,
-  );
-
-  async function mark(profileId: string, status: StaffAttendance['status']) {
-    const item = { profileId, status, note: '', eventDate };
+  async function pasteTokenCheckIn(event: FormEvent) {
+    event.preventDefault();
+    const token = tokenFromInput(tokenInput);
+    if (!token) {
+      setToast({ type: 'error', message: language === 'th' ? 'กรุณาวางลิงก์หรือ token QR' : 'Paste a scan link or QR token first.' });
+      return;
+    }
     try {
-      if (!navigator.onLine) throw new Error('offline');
-      await markStaffAttendance(profileId, status, '', eventDate);
-      setToast({ type: 'success', message: language === 'th' ? 'บันทึก attendance แล้ว' : 'Attendance saved' });
+      setChecking(true);
+      const result = await scanStaffAttendanceSessionQr(token, { source: 'staff_attendance_page', userAgent: navigator.userAgent });
+      setToast({ type: result.success ? 'success' : 'error', message: resultMessage(result.code, language) });
       await state.reload();
-    } catch {
-      const next = [...queue.filter((queued) => !(queued.profileId === profileId && queued.eventDate === eventDate)), item];
-      setQueue(next);
-      saveQueue(next);
-      setToast({ type: 'success', message: language === 'th' ? 'เก็บไว้ในคิว offline แล้ว กด Sync เมื่อออนไลน์' : 'Saved to offline queue. Sync when online.' });
+      setTokenInput('');
+    } catch (err) {
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'เช็กชื่อไม่สำเร็จ' : 'Check-in failed') });
+    } finally {
+      setChecking(false);
     }
   }
-
-  async function syncQueue() {
-    const remaining: QueueItem[] = [];
-    for (const item of queue) {
-      try {
-        await markStaffAttendance(item.profileId, item.status, item.note, item.eventDate);
-      } catch {
-        remaining.push(item);
-      }
-    }
-    setQueue(remaining);
-    saveQueue(remaining);
-    setToast(remaining.length ? { type: 'error', message: language === 'th' ? `ยัง sync ไม่ครบ ${remaining.length} รายการ` : `${remaining.length} items still not synced` } : { type: 'success', message: language === 'th' ? 'Sync attendance queue สำเร็จ' : 'Attendance queue synced' });
-    await state.reload();
-  }
-
-  useEffect(() => {
-    function onOnline() {
-      if (loadQueue().length) void syncQueue();
-    }
-    window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
-    // syncQueue intentionally uses current component state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queue.length]);
 
   if (state.loading) return <LoadingSkeleton />;
   if (state.error) return <div className="error-state">{state.error}</div>;
-  if (!state.data?.access.can_mark_attendance) return <div className="empty-state">{language === 'th' ? 'บัญชีนี้ไม่มีสิทธิ์เช็กชื่อ' : 'This account cannot mark attendance.'}</div>;
 
   return (
-    <section className="page-stack staff-page">
+    <section className="page-stack staff-page staff-attendance-home">
       <Toast toast={toast} />
-      <div className="section-heading">
-        <p className="eyebrow">{language === 'th' ? 'เช็กชื่อสตาฟ' : 'Staff Attendance'}</p>
-        <h1>{language === 'th' ? 'เช็กชื่อ' : 'Attendance'}</h1>
-        <p>{language === 'th' ? 'เช็กชื่อเฉพาะกลุ่มที่ได้รับมอบหมาย ถ้าเน็ตหลุด ระบบจะเก็บไว้ในคิวบนเครื่องนี้ก่อน' : 'Mark attendance only for your assigned group. If the connection drops, the app stores marks in this device queue first.'}</p>
-      </div>
-
-      <div className="staff-sticky-actions">
-        <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าหลัก' : 'Home'}</Link>
-        <Button variant="secondary" icon={<UploadCloud size={18} />} onClick={syncQueue} disabled={!queue.length}>Sync {queue.length}</Button>
-      </div>
-
-      <MobileSearchHeader
-        label={language === 'th' ? 'ค้นหารายชื่อ' : 'Search participants'}
-        value={search}
-        onChange={setSearch}
-        placeholder={language === 'th' ? 'ชื่อ ชื่อเล่น เบอร์ สาขา' : 'Name, nickname, phone, major'}
-        resultText={`${participants.length} ${language === 'th' ? 'คน' : 'people'}`}
+      <PageHeader
+        eyebrow="Staff Attendance"
+        title={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}
+        description={language === 'th' ? 'สแกน QR Code ของรอบเช็กชื่อด้วยกล้องมือถือ หรือวางลิงก์สำรองเพื่อเช็กชื่อด้วยบัญชีของตัวเอง' : 'Scan the attendance QR code with your phone camera, or paste the fallback link here.'}
+        actions={<Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</Link>}
       />
 
-      <div className="attendance-toolbar">
-        <Input label={language === 'th' ? 'วันที่กิจกรรม' : 'Event date'} type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} />
-        <div className="search-shell">
-          <Search size={18} aria-hidden="true" />
-          <Input label={language === 'th' ? 'ค้นหา' : 'Search'} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={language === 'th' ? 'ชื่อ ชื่อเล่น เบอร์ หรือสาขา' : 'Name, nickname, phone, or major'} />
+      <div className="stats-grid">
+        <DashboardStatCard label={language === 'th' ? 'ชื่อทีมงาน' : 'Staff'} value={displayName(data?.staff_profile)} icon={<ShieldCheck size={20} />} />
+        <DashboardStatCard label={language === 'th' ? 'รอบที่เปิดอยู่' : 'Active sessions'} value={counts.active} icon={<Clock size={20} />} />
+        <DashboardStatCard label={language === 'th' ? 'เช็กแล้ว' : 'Checked'} value={counts.checked} icon={<CheckCircle2 size={20} />} />
+        <DashboardStatCard label={language === 'th' ? 'ประวัติ' : 'History'} value={records.length} icon={<History size={20} />} />
+      </div>
+
+      <Card className="staff-attendance-primary" variant="soft">
+        <div className="attendance-camera-icon"><Camera size={28} /></div>
+        <div>
+          <p className="eyebrow">{language === 'th' ? 'วิธีหลัก' : 'Primary flow'}</p>
+          <h2>{language === 'th' ? 'สแกน QR Code ของรอบเช็กชื่อ' : 'Scan the attendance QR code'}</h2>
+          <p>{language === 'th' ? 'เปิดกล้องมือถือแล้วสแกน QR ที่แอดมินแสดงไว้ ระบบจะเช็กชื่อให้บัญชีทีมงานที่กำลังเข้าสู่ระบบอยู่เท่านั้น' : 'Use your phone camera to scan the QR shown by admins. The system checks in only the signed-in staff account.'}</p>
         </div>
-      </div>
+      </Card>
 
-      {queueForDate.length ? <div className="offline-banner">{language === 'th' ? `มีรายการรอ sync ${queueForDate.length} รายการบนเครื่องนี้` : `${queueForDate.length} attendance marks waiting to sync on this device`}</div> : null}
-
-      <div className="attendance-summary-strip">
-        <span>{language === 'th' ? 'มาแล้ว' : 'Present'} <strong>{attendanceSummary.present}</strong></span>
-        <span>{language === 'th' ? 'สาย' : 'Late'} <strong>{attendanceSummary.late}</strong></span>
-        <span>{language === 'th' ? 'ไม่มา' : 'Absent'} <strong>{attendanceSummary.absent}</strong></span>
-        <span>{language === 'th' ? 'ยังไม่เช็ก' : 'Unmarked'} <strong>{attendanceSummary.unmarked}</strong></span>
-        <span>{language === 'th' ? 'รอ sync' : 'Unsynced'} <strong>{queueForDate.length}</strong></span>
-      </div>
+      <Card>
+        <form className="form-grid" onSubmit={pasteTokenCheckIn}>
+          <Input
+            label={language === 'th' ? 'ลิงก์หรือ token สำรอง' : 'Fallback link or token'}
+            value={tokenInput}
+            onChange={(event) => setTokenInput(event.target.value)}
+            placeholder={language === 'th' ? 'วางลิงก์จาก QR หากกล้องเปิดไม่ได้' : 'Paste the QR link if camera scan is not available'}
+            hint={language === 'th' ? 'ใช้เฉพาะกรณีสแกนด้วยกล้องไม่ได้' : 'Use only if camera scanning is not available.'}
+          />
+          <Button type="submit" loading={checking} icon={<Link2 size={18} />}>{language === 'th' ? 'เช็กชื่อด้วยลิงก์' : 'Check in with link'}</Button>
+        </form>
+      </Card>
 
       <div className="staff-section-head">
-        <h2>{language === 'th' ? 'รายชื่อ' : 'Participant list'}</h2>
-        <span>{participants.length} {language === 'th' ? 'คน' : 'people'} · {language === 'th' ? 'คิว' : 'queue'} {queueForDate.length}</span>
+        <h2>{language === 'th' ? 'รอบเช็กชื่อที่เปิดอยู่' : 'Active attendance sessions'}</h2>
+        <span>{activeSessions.length} {language === 'th' ? 'รอบ' : 'sessions'}</span>
+      </div>
+      <div className="attendance-session-grid">
+        {activeSessions.length ? activeSessions.map((session) => (
+          <Card key={session.id} className="attendance-session-card">
+            <div>
+              <strong>{session.title}</strong>
+              <span>{formatDateTime(session.starts_at, language)} · {statusLabel(session.record?.status, language)}</span>
+            </div>
+            {session.record ? (
+              <span className={`status-pill status-${session.record.status}`}>{statusLabel(session.record.status, language)}</span>
+            ) : (
+              <Button size="sm" variant="secondary" icon={<Copy size={16} />} onClick={() => navigate(`/staff/attendance/scan?token=${session.qr_token ?? ''}`)} disabled={!session.qr_token}>
+                {language === 'th' ? 'เปิดลิงก์เช็กชื่อ' : 'Open check-in link'}
+              </Button>
+            )}
+          </Card>
+        )) : (
+          <Card className="empty-state">{language === 'th' ? 'ยังไม่มีรอบเช็กชื่อที่เปิดอยู่สำหรับบัญชีนี้' : 'No active attendance sessions for this account right now.'}</Card>
+        )}
       </div>
 
-      <div className="staff-list">
-        {participants.map((profile) => {
-          const queued = queueByProfile.get(profile.id);
-          const status = queued?.status ?? profile.attendance?.status;
-          return (
-            <Card className="attendance-card" key={profile.id}>
-              <SwipeAttendanceCard
-                title={profile.nickname || profile.name_th || '-'}
-                subtitle={`${profile.name_th || '-'} · ${majorLabel(profile.major, language)}`}
-                meta={groupLabel(profile.group_assignment?.main_group, profile.group_assignment?.subgroup, language)}
-                status={status ?? undefined}
-                statusLabel={status ? (language === 'th' ? statuses.find((item) => item.value === status)?.labelTh ?? status : statuses.find((item) => item.value === status)?.labelEn ?? status) : language === 'th' ? 'ยังไม่เช็ก' : 'Not marked'}
-                presentLabel={language === 'th' ? 'มาแล้ว' : 'Present'}
-                absentLabel={language === 'th' ? 'ไม่มา' : 'Absent'}
-                onPresent={() => mark(profile.id, 'present')}
-                onAbsent={() => mark(profile.id, 'absent')}
-              >
-                {queued ? <span>{language === 'th' ? 'รอ sync' : 'Waiting to sync'}</span> : profile.attendance?.marked_at ? <span>{new Date(profile.attendance.marked_at).toLocaleTimeString(language === 'th' ? 'th-TH' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span> : null}
-              </SwipeAttendanceCard>
-              <div className="attendance-actions">
-                {statuses.map((item) => (
-                  <Button key={item.value} variant={status === item.value ? 'primary' : 'secondary'} icon={item.icon} onClick={() => mark(profile.id, item.value)}>
-                    {language === 'th' ? item.labelTh : item.labelEn}
-                  </Button>
-                ))}
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      {latest ? (
+        <Card className="privacy-notice" variant="success">
+          <strong>{language === 'th' ? 'สถานะล่าสุด' : 'Latest status'}</strong>
+          <span>{latest.session?.title ?? '-'} · {statusLabel(latest.status, language)} · {formatDateTime(latest.scanned_at ?? latest.updated_at, language)}</span>
+        </Card>
+      ) : null}
 
-      <StickyBottomBar label={language === 'th' ? 'ปุ่มเช็กชื่อด่วน' : 'Quick attendance actions'}>
-        <Button variant="secondary" icon={<UploadCloud size={18} />} onClick={syncQueue} disabled={!queue.length}>Sync {queue.length}</Button>
-        <Button variant="secondary" icon={<Search size={18} />} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>{language === 'th' ? 'ค้นหา' : 'Search'}</Button>
-      </StickyBottomBar>
+      <ResponsiveDataTable
+        rows={records}
+        getKey={(row) => row.id}
+        emptyText={language === 'th' ? 'ยังไม่มีประวัติการเช็กชื่อ' : 'No attendance history yet'}
+        mobileTitle={(row) => row.session?.title ?? '-'}
+        mobileSubtitle={(row) => statusLabel(row.status, language)}
+        mobileMeta={(row) => formatDateTime(row.scanned_at ?? row.updated_at, language)}
+        columns={[
+          { key: 'session', header: language === 'th' ? 'รอบ' : 'Session', render: (row) => row.session?.title ?? '-' },
+          { key: 'status', header: language === 'th' ? 'สถานะ' : 'Status', render: (row) => <span className={`status-pill status-${row.status}`}>{statusLabel(row.status, language)}</span> },
+          { key: 'time', header: language === 'th' ? 'เวลา' : 'Time', render: (row) => formatDateTime(row.scanned_at ?? row.updated_at, language) },
+          { key: 'method', header: language === 'th' ? 'วิธี' : 'Method', render: (row) => row.method },
+        ]}
+      />
     </section>
   );
+}
+
+function resultMessage(code: string, language: 'th' | 'en') {
+  const messages: Record<string, { th: string; en: string }> = {
+    checked_in: { th: 'เช็กชื่อสำเร็จ', en: 'Check-in successful' },
+    late: { th: 'เช็กชื่อสำเร็จ แต่ระบบบันทึกเป็นมาสาย', en: 'Checked in as late' },
+    checked_out: { th: 'เช็กออกสำเร็จ', en: 'Checked out successfully' },
+    already_checked: { th: 'คุณเช็กชื่อรอบนี้แล้ว', en: 'You have already checked in' },
+    session_not_found: { th: 'ไม่พบรอบเช็กชื่อ', en: 'Attendance session not found' },
+    session_not_active: { th: 'รอบเช็กชื่อนี้ยังไม่เปิดใช้งาน', en: 'This session is not active' },
+    session_not_started: { th: 'รอบเช็กชื่อนี้ยังไม่เริ่ม', en: 'This session has not started' },
+    session_closed: { th: 'รอบเช็กชื่อนี้ปิดแล้ว', en: 'This session is closed' },
+    qr_expired: { th: 'QR หมดอายุแล้ว', en: 'QR has expired' },
+    staff_not_found: { th: 'ไม่พบข้อมูลทีมงานของบัญชีนี้', en: 'Staff profile not found' },
+    not_in_target_scope: { th: 'บัญชีนี้ไม่มีสิทธิ์เช็กชื่อรอบนี้', en: 'This account is not allowed for this session' },
+  };
+  return messages[code]?.[language] ?? (language === 'th' ? 'ดำเนินการแล้ว' : 'Done');
 }

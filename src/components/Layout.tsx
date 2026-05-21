@@ -56,7 +56,7 @@ export function Layout() {
 
   const isAdmin = Boolean(access?.is_admin);
   const isStaff = Boolean(access?.can_view_staff || access?.can_mark_attendance || access?.can_view_emergency);
-  const canAttend = Boolean(access?.can_mark_attendance);
+  const canAttend = Boolean(isStaff || access?.can_mark_attendance);
   const canEmergency = Boolean(access?.can_view_emergency || access?.is_admin);
   const loginCopy = language === 'th' ? copy.th : copy.en;
 
@@ -104,6 +104,7 @@ export function Layout() {
                   <NavLink to="/admin/requests">{t.requests}</NavLink>
                   <span className="nav-menu-label">{language === 'th' ? 'ทีมงาน' : 'Staff'}</span>
                   <NavLink to="/admin/staff">{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
+                  <NavLink to="/admin/staff/attendance">{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</NavLink>
                   <NavLink to="/admin/staff/operations">{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
                   <NavLink to="/admin/staff/requests">{language === 'th' ? 'คำขอแก้ไขทีมงาน' : 'Staff Requests'}</NavLink>
@@ -250,6 +251,7 @@ export function Layout() {
             <NavLink to="/admin/dashboard"><Shield size={18} />{language === 'th' ? 'แดชบอร์ด' : 'Dashboard'}</NavLink>
             <NavLink to="/admin/groups"><UsersRound size={18} />{language === 'th' ? 'จัดกลุ่ม' : 'Groups'}</NavLink>
             <NavLink to="/admin/staff"><UserCheck size={18} />{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
+            <NavLink to="/admin/staff/attendance"><UserCheck size={18} />{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</NavLink>
             <NavLink to="/admin/staff/operations"><UsersRound size={18} />{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
             <NavLink to="/admin/staff/requests"><Pencil size={18} />{language === 'th' ? 'คำขอทีมงาน' : 'Staff Requests'}</NavLink>
             <NavLink to="/admin/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
