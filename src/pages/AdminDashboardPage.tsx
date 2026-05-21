@@ -1,8 +1,10 @@
-import { Download, HeartPulse, Pencil, Trash2, UsersRound } from 'lucide-react';
+import { Download, HeartPulse, Pencil, SlidersHorizontal, Trash2, UsersRound } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { ContactLinks } from '../components/ContactLinks';
 import { HealthFlags, hasHealthFlag } from '../components/HealthFlags';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { MobileFilterSheet } from '../components/mobile/MobileFilterSheet';
+import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
@@ -31,6 +33,7 @@ export function AdminDashboardPage() {
   const [group, setGroup] = useState('');
   const [subgroup, setSubgroup] = useState('');
   const [healthFilter, setHealthFilter] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [editing, setEditing] = useState<GroupProfile | null>(null);
   const [deleting, setDeleting] = useState<GroupProfile | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
@@ -142,7 +145,19 @@ export function AdminDashboardPage() {
         </details>
       ) : null}
 
+      <MobileSearchHeader
+        label={t.searchParticipants}
+        value={search}
+        onChange={setSearch}
+        placeholder={language === 'th' ? 'ชื่อ อีเมล เบอร์ Line IG Facebook' : 'Name, email, phone, Line, IG, Facebook'}
+        resultText={language === 'th' ? `${profiles.length.toLocaleString('th-TH')} รายการ` : `${profiles.length.toLocaleString('en-US')} results`}
+        trailing={<Button variant="secondary" icon={<SlidersHorizontal size={17} />} onClick={() => setFilterOpen(true)}>{language === 'th' ? 'ตัวกรอง' : 'Filters'}</Button>}
+      >
+        {activeFilterChips.length ? activeFilterChips.slice(0, 2).map((chip) => <span className="filter-chip" key={chip}>{chip}</span>) : null}
+      </MobileSearchHeader>
+
       <FilterPanel
+        className="desktop-filter-panel"
         title={language === 'th' ? 'ค้นหาและตัวกรอง' : 'Search and filters'}
         description={language === 'th' ? `แสดงผล ${profiles.length.toLocaleString('th-TH')} รายการ` : `${profiles.length.toLocaleString('en-US')} results`}
         actions={<Button variant="ghost" onClick={clearFilters}>{language === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}</Button>}
@@ -158,6 +173,21 @@ export function AdminDashboardPage() {
         <Select label={t.filterSubgroup} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
         <Select label={t.filterHealth} value={healthFilter} onChange={(event) => setHealthFilter(event.target.value)} options={healthOptions} />
       </FilterPanel>
+
+      <MobileFilterSheet
+        open={filterOpen}
+        title={language === 'th' ? 'ตัวกรองผู้เข้าร่วม' : 'Participant filters'}
+        description={language === 'th' ? 'เลือกสาขา กลุ่ม และข้อมูลสุขภาพที่ต้องการดู' : 'Filter by major, group, subgroup, and health flags.'}
+        primaryLabel={language === 'th' ? 'ใช้ตัวกรอง' : 'Apply'}
+        clearLabel={language === 'th' ? 'ล้าง' : 'Clear'}
+        onClose={() => setFilterOpen(false)}
+        onClear={clearFilters}
+      >
+        <Select label={t.filterMajor} value={major} onChange={(event) => setMajor(event.target.value)} options={majorOptions} />
+        <Select label={t.filterGroup} value={group} onChange={(event) => setGroup(event.target.value)} options={groupOptions} />
+        <Select label={t.filterSubgroup} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
+        <Select label={t.filterHealth} value={healthFilter} onChange={(event) => setHealthFilter(event.target.value)} options={healthOptions} />
+      </MobileFilterSheet>
 
       {profilesState.loading ? <LoadingSkeleton /> : null}
       {profilesState.error ? <div className="error-state">{profilesState.error}</div> : null}

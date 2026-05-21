@@ -1,7 +1,10 @@
-import { Search } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { MobileFilterSheet } from '../components/mobile/MobileFilterSheet';
+import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { PublicStaffCard } from '../components/PublicStaffCard';
+import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -20,6 +23,7 @@ export function StaffDirectoryPage() {
   const [role, setRole] = useState('');
   const [mainGroup, setMainGroup] = useState('');
   const [subgroup, setSubgroup] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
   const rows = useMemo(() => (state.data ?? []).filter((row) => {
     const haystack = [row.nickname_th, row.nickname, row.nickname_en, row.name_th, row.name_en, row.primary_role, row.position, row.main_group, row.subgroup].filter(Boolean).join(' ').toLowerCase();
     if (search && !haystack.includes(search.toLowerCase())) return false;
@@ -30,10 +34,24 @@ export function StaffDirectoryPage() {
   }), [mainGroup, role, search, state.data, subgroup]);
   const roles = useMemo(() => [...new Set((state.data ?? []).map((row) => row.primary_role || row.position).filter(Boolean))] as string[], [state.data]);
 
+  function clearFilters() {
+    setRole('');
+    setMainGroup('');
+    setSubgroup('');
+  }
+
   return (
     <section className="page-stack">
       <PageHeader eyebrow="Staff Directory" title={language === 'th' ? 'ไดเรกทอรีทีมงาน' : 'Staff Directory'} description={language === 'th' ? 'ค้นหาทีมงานและช่องทางติดต่อที่เจ้าตัวยินยอมให้ทีมงานเห็น' : 'Search staff contacts based on their internal visibility settings.'} />
-      <Card className="toolbar">
+      <MobileSearchHeader
+        label={language === 'th' ? 'ค้นหาทีมงาน' : 'Search staff'}
+        value={search}
+        onChange={setSearch}
+        placeholder={language === 'th' ? 'ชื่อ ชื่อเล่น หน้าที่ กลุ่ม' : 'Name, nickname, role, group'}
+        resultText={`${rows.length} ${language === 'th' ? 'คน' : 'people'}`}
+        trailing={<Button variant="secondary" icon={<SlidersHorizontal size={17} />} onClick={() => setFilterOpen(true)}>{language === 'th' ? 'ตัวกรอง' : 'Filters'}</Button>}
+      />
+      <Card className="toolbar desktop-filter-panel">
         <div className="search-shell">
           <Search size={18} />
           <Input label={language === 'th' ? 'ค้นหา' : 'Search'} value={search} onChange={(event) => setSearch(event.target.value)} />
@@ -42,6 +60,19 @@ export function StaffDirectoryPage() {
         <Select label={language === 'th' ? 'สี' : 'Color'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((group) => ({ value: group, label: language === 'th' ? groupMeta[group].th : groupMeta[group].en }))} />
         <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups} />
       </Card>
+      <MobileFilterSheet
+        open={filterOpen}
+        title={language === 'th' ? 'ตัวกรองทีมงาน' : 'Staff filters'}
+        description={language === 'th' ? 'กรองตามหน้าที่ สี และกลุ่มย่อย' : 'Filter by role, color, and subgroup.'}
+        primaryLabel={language === 'th' ? 'ใช้ตัวกรอง' : 'Apply'}
+        clearLabel={language === 'th' ? 'ล้าง' : 'Clear'}
+        onClose={() => setFilterOpen(false)}
+        onClear={clearFilters}
+      >
+        <Select label={language === 'th' ? 'หน้าที่' : 'Role'} value={role} onChange={(event) => setRole(event.target.value)} options={roles} />
+        <Select label={language === 'th' ? 'สี' : 'Color'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((group) => ({ value: group, label: language === 'th' ? groupMeta[group].th : groupMeta[group].en }))} />
+        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups} />
+      </MobileFilterSheet>
       {state.loading ? <LoadingSkeleton /> : null}
       {state.error ? <div className="error-state">{state.error}</div> : null}
       <div className="staff-card-grid">

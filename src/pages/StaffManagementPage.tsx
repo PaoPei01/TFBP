@@ -1,9 +1,10 @@
-import { BarChart3, Download, FileSpreadsheet, Pencil, RefreshCw, Search, Trash2, UserRound } from 'lucide-react';
+import { BarChart3, Download, FileSpreadsheet, Pencil, RefreshCw, Search, SlidersHorizontal, Trash2, UserRound } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ContactLinks } from '../components/ContactLinks';
 import { HealthFlags } from '../components/HealthFlags';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { MobileFilterSheet } from '../components/mobile/MobileFilterSheet';
 import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -41,6 +42,7 @@ export function StaffManagementPage() {
   const [mainGroup, setMainGroup] = useState('');
   const [subgroup, setSubgroup] = useState('');
   const [major, setMajor] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [editing, setEditing] = useState<StaffManagementRow | null>(null);
   const [deleting, setDeleting] = useState<StaffManagementRow | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -49,6 +51,13 @@ export function StaffManagementPage() {
   const rows = useMemo(() => state.data ?? [], [state.data]);
   const positions = useMemo(() => [...new Set(rows.map((row) => row.position).filter(Boolean))].sort() as string[], [rows]);
   const majors = useMemo(() => majorCodeOptions(rows.map((row) => row.major)), [rows]);
+
+  function clearFilters() {
+    setPosition('');
+    setMainGroup('');
+    setSubgroup('');
+    setMajor('');
+  }
 
   async function save() {
     if (!editing) return;
@@ -147,6 +156,7 @@ export function StaffManagementPage() {
         onChange={setSearch}
         placeholder={language === 'th' ? 'ชื่อ ชื่อเล่น รหัส เบอร์ สาขา' : 'Name, nickname, ID, phone, major'}
         resultText={`${rows.length} ${language === 'th' ? 'คน' : 'people'}`}
+        trailing={<Button variant="secondary" icon={<SlidersHorizontal size={17} />} onClick={() => setFilterOpen(true)}>{language === 'th' ? 'ตัวกรอง' : 'Filters'}</Button>}
       />
 
       <Card className="group-action-panel">
@@ -159,7 +169,7 @@ export function StaffManagementPage() {
         </div>
       </Card>
 
-      <div className="toolbar">
+      <div className="toolbar desktop-filter-panel">
         <div className="search-shell">
           <Search size={18} aria-hidden="true" />
           <Input label={language === 'th' ? 'ค้นหา' : 'Search'} value={search} onChange={(event) => setSearch(event.target.value)} />
@@ -169,6 +179,21 @@ export function StaffManagementPage() {
         <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} />
         <Select label={language === 'th' ? 'สาขา' : 'Major'} value={major} onChange={(event) => setMajor(event.target.value)} options={majors.map((code) => ({ value: code, label: majorLabel(`(${code})`, language) }))} />
       </div>
+
+      <MobileFilterSheet
+        open={filterOpen}
+        title={language === 'th' ? 'ตัวกรองทีมงาน' : 'Staff filters'}
+        description={language === 'th' ? 'กรองรายชื่อทีมงานตามตำแหน่ง สี กลุ่มย่อย และสาขา' : 'Filter staff by position, color, subgroup, and major.'}
+        primaryLabel={language === 'th' ? 'ใช้ตัวกรอง' : 'Apply'}
+        clearLabel={language === 'th' ? 'ล้าง' : 'Clear'}
+        onClose={() => setFilterOpen(false)}
+        onClear={clearFilters}
+      >
+        <Select label={language === 'th' ? 'ตำแหน่ง' : 'Position'} value={position} onChange={(event) => setPosition(event.target.value)} options={positions} />
+        <Select label={language === 'th' ? 'สี' : 'Color'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} />
+        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} />
+        <Select label={language === 'th' ? 'สาขา' : 'Major'} value={major} onChange={(event) => setMajor(event.target.value)} options={majors.map((code) => ({ value: code, label: majorLabel(`(${code})`, language) }))} />
+      </MobileFilterSheet>
 
       {state.loading ? <LoadingSkeleton /> : null}
       {state.error ? <div className="error-state">{state.error}</div> : null}

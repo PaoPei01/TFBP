@@ -7,11 +7,12 @@ type FilterPanelProps = {
   children: ReactNode;
   actions?: ReactNode;
   chips?: ReactNode;
+  className?: string;
 };
 
-export function FilterPanel({ title, description, children, actions, chips }: FilterPanelProps) {
+export function FilterPanel({ title, description, children, actions, chips, className = '' }: FilterPanelProps) {
   return (
-    <Card className="filter-panel" variant="soft">
+    <Card className={`filter-panel ${className}`} variant="soft">
       {title || description || actions ? (
         <div className="filter-panel-head">
           <div>
