@@ -270,25 +270,6 @@ export function VerifyEditPage() {
             ) : null}
           </div>
 
-          {friends.length ? (
-            <details className="edit-section-card friend-panel edit-collapsible">
-              <summary>
-                <span>{language === 'th' ? 'เพื่อนที่คุณอาจรู้จักในกลุ่ม' : 'People You May Know in Your Group'}</span>
-                <small>{language === 'th' ? 'แสดงเฉพาะคนที่เปิดโปรไฟล์สาธารณะเท่านั้น' : 'Only people with public profiles are shown.'}</small>
-              </summary>
-              <div className="friend-carousel">
-                {friends.map((friend) => (
-                  <div className="friend-card" key={friend.id}>
-                    <strong>{friend.nickname || friend.name_th}</strong>
-                    <span>{friend.name_th}</span>
-                    <small>{majorLabel(friend.major, language)}</small>
-                    <ContactLinks instagram={friend.instagram} lineId={friend.line_id} compact />
-                  </div>
-                ))}
-              </div>
-            </details>
-          ) : null}
-
           {submitted ? (
             <Card className="edit-success-card" aria-live="polite">
               <h2>{language === 'th' ? 'ส่งคำขอแก้ไขแล้ว' : 'Edit request submitted'}</h2>
@@ -333,6 +314,32 @@ export function VerifyEditPage() {
               </div>
             </form>
           </Card>
+
+          {friends.length ? (
+            <details className="edit-section-card edit-collapsible edit-friend-panel">
+              <summary>
+                <span>
+                  <strong>{language === 'th' ? 'เพื่อนที่คุณอาจรู้จักในกลุ่ม' : 'People You May Know in Your Group'}</strong>
+                  <small>{language === 'th' ? `พบ ${friends.length} คน · แสดงเฉพาะคนที่เปิดโปรไฟล์สาธารณะ` : `${friends.length} found · Only public profiles are shown`}</small>
+                </span>
+                <em>{language === 'th' ? 'ตัวเลือกเสริม' : 'Optional'}</em>
+              </summary>
+              <div className="edit-friend-grid">
+                {friends.map((friend) => {
+                  const displayName = friend.nickname || friend.name_th || '-';
+                  const showThaiName = friend.name_th && friend.name_th !== displayName;
+                  return (
+                    <div className="edit-friend-card" key={friend.id}>
+                      <strong>{displayName}</strong>
+                      {showThaiName ? <span>{friend.name_th}</span> : null}
+                      <small>{majorLabel(friend.major, language)}</small>
+                      <ContactLinks instagram={friend.instagram} lineId={friend.line_id} compact />
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
+          ) : null}
         </>
       ) : null}
 

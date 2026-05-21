@@ -1873,6 +1873,79 @@ th {
   font-weight: 750;
 }
 
+.edit-friend-panel {
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: var(--shadow-soft);
+}
+
+.edit-friend-panel > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  cursor: pointer;
+  list-style: none;
+  min-height: 56px;
+}
+
+.edit-friend-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.edit-friend-panel > summary span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.edit-friend-panel > summary strong {
+  color: #142033;
+}
+
+.edit-friend-panel > summary small {
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.edit-friend-panel > summary em {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: rgba(40, 104, 232, 0.08);
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.edit-friend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.65rem;
+  max-height: 340px;
+  overflow: auto;
+  padding-top: 0.75rem;
+}
+
+.edit-friend-card {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(132, 155, 190, 0.18);
+  border-radius: 18px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.edit-friend-card strong {
+  color: #142033;
+  line-height: 1.25;
+}
+
+.edit-friend-card span,
+.edit-friend-card small {
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+
 .mobile-submit-hint {
   color: var(--text-soft);
   font-size: 0.78rem;
@@ -4003,18 +4076,22 @@ th {
     font-size: 1.55rem;
   }
 
-  .friend-carousel {
-    grid-auto-columns: minmax(78%, 86%);
-    scroll-snap-type: x mandatory;
-  }
-
-  .friend-card {
-    scroll-snap-align: start;
-  }
-
   .edit-collapsible > summary {
     align-items: start;
     flex-direction: column;
+  }
+
+  .edit-friend-panel > summary {
+    align-items: flex-start;
+  }
+
+  .edit-friend-grid {
+    grid-template-columns: 1fr;
+    max-height: 320px;
+  }
+
+  .edit-friend-panel > summary em {
+    display: none;
   }
 
   .sticky-action-bar {
