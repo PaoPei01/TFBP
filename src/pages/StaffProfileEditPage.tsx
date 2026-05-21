@@ -1,5 +1,5 @@
 import { Save, Send } from 'lucide-react';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
 import { StickyActionBar } from '../components/mobile/StickyActionBar';
@@ -12,7 +12,8 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
-import { fetchMyStaffProfile, staffDisplayName, submitStaffEditRequest, updateMyStaffPublicProfile, uploadStaffAvatar, type StaffPublicProfileInput } from '../services/staffProfiles';
+import { fetchMyStaffProfile, staffDisplayName, submitStaffEditRequest, updateMyStaffPublicProfile, type StaffPublicProfileInput } from '../services/staffProfiles';
+import { removeStaffAvatar, resolveStaffAvatarUrl, uploadStaffAvatar } from '../services/staffAvatar';
 import { errorMessage } from '../utils/error';
 
 export function StaffProfileEditPage() {
@@ -21,6 +22,7 @@ export function StaffProfileEditPage() {
   const [toast, setToast] = useState<ToastState>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarDisplayUrl, setAvatarDisplayUrl] = useState<string | null>(null);
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestForm, setRequestForm] = useState({ phone: '', line_id: '', instagram: '', facebook: '', disease: '', drug_allergy: '', food_allergy: '', medical_note: '' });
   const [form, setForm] = useState<StaffPublicProfileInput>({
@@ -30,6 +32,7 @@ export function StaffProfileEditPage() {
   const mergedForm = useMemo(() => ({ ...(state.data?.public_profile ?? {}), ...form }), [form, state.data?.public_profile]);
   const preview = state.data ? {
     staff_profile_id: state.data.profile.id,
+    avatar_path: mergedForm.avatar_path ?? null,
     avatar_url: mergedForm.avatar_url ?? null,
     nickname: state.data.profile.nickname,
     nickname_th: state.data.profile.nickname_th,
@@ -47,6 +50,16 @@ export function StaffProfileEditPage() {
     facebook: mergedForm.show_facebook ? state.data.profile.facebook : null,
     phone: mergedForm.show_phone_to_public ? state.data.profile.phone : null,
   } : null;
+
+  useEffect(() => {
+    let active = true;
+    void resolveStaffAvatarUrl(mergedForm).then((url) => {
+      if (active) setAvatarDisplayUrl(url);
+    });
+    return () => {
+      active = false;
+    };
+  }, [mergedForm]);
 
   function patch(values: StaffPublicProfileInput) {
     setForm((current) => ({ ...current, ...values }));
@@ -94,11 +107,29 @@ export function StaffProfileEditPage() {
     if (!file || !state.data) return;
     setUploadingAvatar(true);
     try {
-      const url = await uploadStaffAvatar(file, state.data.profile.id);
-      patch({ avatar_url: url });
-      setToast({ type: 'success', message: language === 'th' ? 'อัปโหลดรูปโปรไฟล์แล้ว อย่าลืมกดบันทึก' : 'Avatar uploaded. Remember to save.' });
+      const result = await uploadStaffAvatar(state.data.profile.id, file);
+      patch({ avatar_path: result.avatar_path });
+      setAvatarDisplayUrl(result.signedUrl);
+      setToast({ type: 'success', message: language === 'th' ? 'อัปโหลดรูปสำเร็จ ระบบบีบอัดรูปให้แล้ว' : 'Photo uploaded successfully and compressed.' });
+      await state.reload();
     } catch (err) {
       setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'อัปโหลดรูปไม่สำเร็จ' : 'Avatar upload failed') });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function removeAvatar() {
+    if (!state.data) return;
+    setUploadingAvatar(true);
+    try {
+      await removeStaffAvatar(state.data.profile.id, mergedForm.avatar_path);
+      patch({ avatar_path: null });
+      setAvatarDisplayUrl(null);
+      setToast({ type: 'success', message: language === 'th' ? 'ลบรูปโปรไฟล์แล้ว' : 'Profile photo removed' });
+      await state.reload();
+    } catch (err) {
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ลบรูปไม่สำเร็จ' : 'Remove photo failed') });
     } finally {
       setUploadingAvatar(false);
     }
@@ -120,14 +151,14 @@ export function StaffProfileEditPage() {
           <Card>
             <form className="form-grid" onSubmit={save}>
               <AvatarUploadCard
-                imageUrl={mergedForm.avatar_url}
+                imageUrl={avatarDisplayUrl}
                 displayName={staffDisplayName(state.data.profile)}
                 uploading={uploadingAvatar}
-                helperText={language === 'th' ? 'JPG, PNG, WebP ขนาดไม่เกิน 2 MB' : 'JPG, PNG, WebP up to 2 MB'}
-                uploadLabel={language === 'th' ? 'อัปโหลดรูป' : 'Upload photo'}
+                helperText={language === 'th' ? 'รองรับ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB ระบบจะย่อและบีบอัดรูปให้อัตโนมัติ' : 'JPG, PNG, WEBP up to 5 MB. Images are resized and compressed automatically.'}
+                uploadLabel={mergedForm.avatar_path ? (language === 'th' ? 'เปลี่ยนรูป' : 'Change photo') : (language === 'th' ? 'อัปโหลดรูป' : 'Upload photo')}
                 removeLabel={language === 'th' ? 'ลบรูป' : 'Remove'}
                 onFile={(file) => void uploadAvatar(file)}
-                onRemove={() => patch({ avatar_url: null })}
+                onRemove={() => void removeAvatar()}
               />
               <h3 className="full-span form-section-title">{language === 'th' ? 'โปรไฟล์สาธารณะ' : 'Public profile'}</h3>
               <label className="field">

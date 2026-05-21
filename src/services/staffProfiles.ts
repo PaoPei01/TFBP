@@ -13,6 +13,7 @@ export type StaffProfileContext = {
 
 export type PublicStaffCardData = {
   staff_profile_id: string;
+  avatar_path: string | null;
   avatar_url: string | null;
   nickname: string | null;
   nickname_th: string | null;
@@ -45,6 +46,7 @@ export type VerifiedStaffProfileContext = {
 
 export type StaffPublicProfileInput = Partial<Pick<
   StaffPublicProfile,
+  | 'avatar_path'
   | 'avatar_url'
   | 'bio'
   | 'hometown'
@@ -157,23 +159,6 @@ export async function approveStaffEditRequest(id: string) {
 export async function rejectStaffEditRequest(id: string, note: string) {
   const { error } = await supabase.rpc('reject_staff_edit_request', { request_id: id, note });
   if (error) throw error;
-}
-
-export async function uploadStaffAvatar(file: File, staffProfileId?: string | null) {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-  if (!allowed.includes(file.type)) throw new Error('รองรับเฉพาะไฟล์ JPG, PNG หรือ WebP');
-  if (file.size > 2 * 1024 * 1024) throw new Error('ไฟล์รูปต้องมีขนาดไม่เกิน 2 MB');
-  const extension = file.name.split('.').pop()?.toLowerCase() || 'webp';
-  const safeId = staffProfileId ?? 'verified';
-  const path = `${safeId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-  const { error } = await supabase.storage.from('staff-avatars').upload(path, file, {
-    cacheControl: '3600',
-    upsert: false,
-    contentType: file.type,
-  });
-  if (error) throw error;
-  const { data } = supabase.storage.from('staff-avatars').getPublicUrl(path);
-  return data.publicUrl;
 }
 
 export function staffDisplayName(row: Pick<StaffManagementRow, 'nickname_th' | 'nickname' | 'nickname_en' | 'name_th' | 'name_en' | 'student_id'> | PublicStaffCardData) {

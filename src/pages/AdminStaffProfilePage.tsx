@@ -1,5 +1,5 @@
 import { Check, Save, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
@@ -12,7 +12,8 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
-import { approveStaffEditRequest, fetchAdminStaffProfileDetail, rejectStaffEditRequest, staffDisplayName, updateStaffPublicProfileAdmin, uploadStaffAvatar, type StaffPublicProfileInput } from '../services/staffProfiles';
+import { approveStaffEditRequest, fetchAdminStaffProfileDetail, rejectStaffEditRequest, staffDisplayName, updateStaffPublicProfileAdmin, type StaffPublicProfileInput } from '../services/staffProfiles';
+import { removeStaffAvatar, resolveStaffAvatarUrl, uploadStaffAvatar } from '../services/staffAvatar';
 import { updateStaffProfile } from '../services/staffManagement';
 import { errorMessage } from '../utils/error';
 
@@ -23,10 +24,12 @@ export function AdminStaffProfilePage() {
   const [toast, setToast] = useState<ToastState>(null);
   const [publicPatch, setPublicPatch] = useState<StaffPublicProfileInput>({});
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarDisplayUrl, setAvatarDisplayUrl] = useState<string | null>(null);
   const data = state.data;
   const mergedPublic = useMemo(() => ({ ...(data?.public_profile ?? {}), ...publicPatch }), [data?.public_profile, publicPatch]);
   const publicCard = data ? {
     staff_profile_id: data.profile.id,
+    avatar_path: mergedPublic.avatar_path ?? null,
     avatar_url: mergedPublic.avatar_url ?? null,
     nickname: data.profile.nickname,
     nickname_th: data.profile.nickname_th,
@@ -45,6 +48,16 @@ export function AdminStaffProfilePage() {
     phone: mergedPublic.show_phone_to_public ? data.profile.phone : null,
   } : null;
 
+  useEffect(() => {
+    let active = true;
+    void resolveStaffAvatarUrl(mergedPublic).then((url) => {
+      if (active) setAvatarDisplayUrl(url);
+    });
+    return () => {
+      active = false;
+    };
+  }, [mergedPublic]);
+
   async function savePublic() {
     try {
       await updateStaffPublicProfileAdmin(id, mergedPublic);
@@ -59,11 +72,29 @@ export function AdminStaffProfilePage() {
     if (!file || !data) return;
     setUploadingAvatar(true);
     try {
-      const url = await uploadStaffAvatar(file, data.profile.id);
-      setPublicPatch({ ...publicPatch, avatar_url: url });
-      setToast({ type: 'success', message: language === 'th' ? 'อัปโหลดรูปแล้ว อย่าลืมบันทึก Public Profile' : 'Avatar uploaded. Remember to save the public profile.' });
+      const result = await uploadStaffAvatar(data.profile.id, file);
+      setPublicPatch({ ...publicPatch, avatar_path: result.avatar_path });
+      setAvatarDisplayUrl(result.signedUrl);
+      setToast({ type: 'success', message: language === 'th' ? 'อัปโหลดรูปสำเร็จ ระบบบีบอัดรูปให้แล้ว' : 'Photo uploaded successfully and compressed.' });
+      await state.reload();
     } catch (err) {
       setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'อัปโหลดรูปไม่สำเร็จ' : 'Avatar upload failed') });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function removeAvatar() {
+    if (!data) return;
+    setUploadingAvatar(true);
+    try {
+      await removeStaffAvatar(data.profile.id, mergedPublic.avatar_path);
+      setPublicPatch({ ...publicPatch, avatar_path: null });
+      setAvatarDisplayUrl(null);
+      setToast({ type: 'success', message: language === 'th' ? 'ลบรูปโปรไฟล์แล้ว' : 'Profile photo removed' });
+      await state.reload();
+    } catch (err) {
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ลบรูปไม่สำเร็จ' : 'Remove photo failed') });
     } finally {
       setUploadingAvatar(false);
     }
@@ -114,14 +145,14 @@ export function AdminStaffProfilePage() {
               <h2>{language === 'th' ? 'Public Profile' : 'Public Profile'}</h2>
               {publicCard ? <PublicStaffCard staff={publicCard} /> : null}
               <AvatarUploadCard
-                imageUrl={mergedPublic.avatar_url}
+                imageUrl={avatarDisplayUrl}
                 displayName={staffDisplayName(data.profile)}
                 uploading={uploadingAvatar}
-                helperText={language === 'th' ? 'JPG, PNG, WebP ขนาดไม่เกิน 2 MB' : 'JPG, PNG, WebP up to 2 MB'}
-                uploadLabel={language === 'th' ? 'อัปโหลดรูป' : 'Upload photo'}
+                helperText={language === 'th' ? 'รองรับ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB ระบบจะย่อและบีบอัดรูปให้อัตโนมัติ' : 'JPG, PNG, WEBP up to 5 MB. Images are resized and compressed automatically.'}
+                uploadLabel={mergedPublic.avatar_path ? (language === 'th' ? 'เปลี่ยนรูป' : 'Change photo') : (language === 'th' ? 'อัปโหลดรูป' : 'Upload photo')}
                 removeLabel={language === 'th' ? 'ลบรูป' : 'Remove'}
                 onFile={(file) => void uploadAvatar(file)}
-                onRemove={() => setPublicPatch({ ...publicPatch, avatar_url: null })}
+                onRemove={() => void removeAvatar()}
               />
               <Input label="Bio" value={mergedPublic.bio ?? ''} onChange={(event) => setPublicPatch({ ...publicPatch, bio: event.target.value })} />
               <Input label={language === 'th' ? 'ภูมิลำเนา' : 'Hometown'} value={mergedPublic.hometown ?? ''} onChange={(event) => setPublicPatch({ ...publicPatch, hometown: event.target.value })} />

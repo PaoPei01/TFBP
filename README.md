@@ -360,6 +360,37 @@ Staff profile data is stored separately from participant `profiles`.
 
 Supported sheets include `ข้อมูลทีมงาน`, `ข้อมูลสตาฟ`, `staff_profiles_import`, `staff_medical_info_import`, and `staff_group_assignments`.
 
+## Staff Avatar Upload
+
+Staff profile photos are uploaded as files instead of pasted image links. Apply this migration before using the production avatar flow:
+
+```text
+supabase/migrations/202605210002_staff_avatar_storage_hardening.sql
+```
+
+Avatar storage rules:
+
+- Bucket: `staff-avatars`
+- Privacy model: private bucket with runtime signed URLs.
+- Database field: `staff_public_profiles.avatar_path`
+- Legacy fallback field: `staff_public_profiles.avatar_url`
+- Stable object path: `staff/{staff_profile_id}/avatar.webp`
+- The database stores only the Storage path, never base64 data and never signed URLs.
+- Staff/admin uploads are resized and compressed in the browser before upload.
+- Supported original files: JPG, PNG, WEBP up to 5 MB.
+- Target output: WebP, longest side around 800px, usually under 300 KB.
+- Replacing a photo overwrites the same stable object path with `upsert: true`, preventing old avatar files from accumulating.
+- Removing a photo deletes/clears the stable object and sets `avatar_path` to null.
+
+Storage access is restricted by policy:
+
+- Admins can manage any staff avatar.
+- Authenticated staff can manage only their own `staff/{staff_profile_id}/avatar.webp` object when their Auth user is linked to that staff profile.
+- Public/anonymous users cannot upload, update, or delete avatar files.
+- Public staff cards resolve avatars at runtime through signed URLs and fall back to legacy `avatar_url` or initials if the file is unavailable.
+
+Unauthenticated staff profile verification (`/staff/profile/verify`) does not upload avatar files for safety. Individual staff can still edit text/visibility there, while avatar file upload is available after staff login or through admin staff profile editing.
+
 ## Build
 
 ```bash

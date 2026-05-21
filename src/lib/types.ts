@@ -168,6 +168,7 @@ export type StaffMedicalInfo = {
 
 export type StaffPublicProfile = {
   staff_profile_id: string;
+  avatar_path: string | null;
   avatar_url: string | null;
   bio: string | null;
   hometown: string | null;

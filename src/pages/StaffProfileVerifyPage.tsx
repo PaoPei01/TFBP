@@ -3,7 +3,6 @@ import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PublicStaffCard } from '../components/PublicStaffCard';
 import { StickyActionBar } from '../components/mobile/StickyActionBar';
-import { AvatarUploadCard } from '../components/ui/AvatarUploadCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -12,7 +11,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { groupLabel } from '../lib/grouping';
-import { submitStaffEditRequestVerified, updateStaffPublicProfileVerified, uploadStaffAvatar, verifyStaffIdentity, staffDisplayName, type StaffPublicProfileInput, type VerifiedStaffProfileContext } from '../services/staffProfiles';
+import { submitStaffEditRequestVerified, updateStaffPublicProfileVerified, verifyStaffIdentity, staffDisplayName, type StaffPublicProfileInput, type VerifiedStaffProfileContext } from '../services/staffProfiles';
 import { errorMessage } from '../utils/error';
 
 export function StaffProfileVerifyPage() {
@@ -24,12 +23,12 @@ export function StaffProfileVerifyPage() {
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestForm, setRequestForm] = useState({ phone: '', line_id: '', disease: '', drug_allergy: '', food_allergy: '', medical_note: '' });
   const [loading, setLoading] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
 
   const mergedForm = useMemo(() => ({ ...(data?.public_profile ?? {}), instagram: data?.profile.instagram ?? '', facebook: data?.profile.facebook ?? '', ...form }), [data, form]);
   const preview = data ? {
     staff_profile_id: data.profile.id,
+    avatar_path: mergedForm.avatar_path ?? null,
     avatar_url: mergedForm.avatar_url ?? null,
     nickname: data.profile.nickname,
     nickname_th: data.profile.nickname_th,
@@ -64,6 +63,7 @@ export function StaffProfileVerifyPage() {
       }
       setData(result);
       setForm({
+        avatar_path: result.public_profile?.avatar_path ?? null,
         avatar_url: result.public_profile?.avatar_url ?? '',
         bio: result.public_profile?.bio ?? '',
         hometown: result.public_profile?.hometown ?? '',
@@ -117,20 +117,6 @@ export function StaffProfileVerifyPage() {
     }
   }
 
-  async function uploadAvatar(file: File | null) {
-    if (!file || !data) return;
-    setUploadingAvatar(true);
-    try {
-      const url = await uploadStaffAvatar(file, data.profile.id);
-      patch({ avatar_url: url });
-      setToast({ type: 'success', message: language === 'th' ? 'อัปโหลดรูปโปรไฟล์แล้ว อย่าลืมกดบันทึก' : 'Avatar uploaded. Remember to save.' });
-    } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'อัปโหลดรูปไม่สำเร็จ' : 'Avatar upload failed') });
-    } finally {
-      setUploadingAvatar(false);
-    }
-  }
-
   return (
     <section className="narrow-page page-stack has-sticky-actions">
       <Toast toast={toast} />
@@ -162,16 +148,10 @@ export function StaffProfileVerifyPage() {
             </Card>
             <Card>
               <form className="form-grid" onSubmit={savePublic}>
-                <AvatarUploadCard
-                  imageUrl={mergedForm.avatar_url}
-                  displayName={staffDisplayName(data.profile)}
-                  uploading={uploadingAvatar}
-                  helperText={language === 'th' ? 'JPG, PNG, WebP ขนาดไม่เกิน 2 MB' : 'JPG, PNG, WebP up to 2 MB'}
-                  uploadLabel={language === 'th' ? 'อัปโหลดรูป' : 'Upload photo'}
-                  removeLabel={language === 'th' ? 'ลบรูป' : 'Remove'}
-                  onFile={(file) => void uploadAvatar(file)}
-                  onRemove={() => patch({ avatar_url: null })}
-                />
+                <Card className="privacy-notice full-span" variant="soft">
+                  <strong>{language === 'th' ? 'การอัปโหลดรูป' : 'Profile photo upload'}</strong>
+                  <span>{language === 'th' ? 'เพื่อความปลอดภัย การอัปโหลดไฟล์รูปทำได้หลังเข้าสู่ระบบทีมงาน หรือให้แอดมินอัปโหลดให้เท่านั้น หน้านี้ยังแก้ Bio/ความสนใจ/การมองเห็นได้ตามปกติ' : 'For security, image file upload is available after staff login or by admin. This verified page can still edit bio, interests, and visibility settings.'}</span>
+                </Card>
                 <h3 className="full-span form-section-title">{language === 'th' ? 'โปรไฟล์สาธารณะ' : 'Public profile'}</h3>
                 <label className="field">
                   <span>Bio</span>

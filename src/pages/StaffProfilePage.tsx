@@ -1,7 +1,9 @@
-import { Edit3, Eye, ShieldAlert, UserRound } from 'lucide-react';
+import { Edit3, Eye, ShieldAlert } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
+import { AvatarPlaceholder } from '../components/ui/AvatarPlaceholder';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -10,13 +12,16 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
 import { groupLabel } from '../lib/grouping';
 import { fetchMyStaffProfile, staffDisplayName } from '../services/staffProfiles';
+import { resolveStaffAvatarUrl } from '../services/staffAvatar';
 
 export function StaffProfilePage() {
   const { language } = useLanguage();
   const state = useAsync(fetchMyStaffProfile, []);
   const data = state.data;
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const publicCard = data ? {
     staff_profile_id: data.profile.id,
+    avatar_path: data.public_profile?.avatar_path ?? null,
     avatar_url: data.public_profile?.avatar_url ?? null,
     nickname: data.profile.nickname,
     nickname_th: data.profile.nickname_th,
@@ -34,6 +39,17 @@ export function StaffProfilePage() {
     facebook: data.public_profile?.show_facebook ? data.profile.facebook : null,
     phone: data.public_profile?.show_phone_to_public ? data.profile.phone : null,
   } : null;
+  const publicProfileForAvatar = useMemo(() => data?.public_profile ?? null, [data?.public_profile]);
+
+  useEffect(() => {
+    let active = true;
+    void resolveStaffAvatarUrl(publicProfileForAvatar).then((url) => {
+      if (active) setAvatarUrl(url);
+    });
+    return () => {
+      active = false;
+    };
+  }, [publicProfileForAvatar]);
 
   return (
     <section className="page-stack">
@@ -48,7 +64,7 @@ export function StaffProfilePage() {
       {data ? (
         <>
           <Card className="staff-profile-hero">
-            <div className="staff-avatar large">{data.public_profile?.avatar_url ? <img src={data.public_profile.avatar_url} alt="" /> : <UserRound size={36} />}</div>
+            <AvatarPlaceholder src={avatarUrl} name={staffDisplayName(data.profile)} size="lg" />
             <div>
               <h2>{staffDisplayName(data.profile)}</h2>
               <p>{data.profile.name_th || data.profile.name_en}</p>
