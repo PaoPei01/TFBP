@@ -1723,6 +1723,162 @@ th {
   color: var(--text-soft);
 }
 
+.edit-stepper {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 0.15rem 0 0.25rem;
+  scroll-snap-type: x proximity;
+}
+
+.edit-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  color: var(--text-soft);
+  background: rgba(255, 255, 255, 0.74);
+  font-weight: 900;
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
+
+.edit-step b {
+  display: inline-grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  color: var(--accent-strong);
+  background: rgba(40, 104, 232, 0.1);
+  font-size: 0.82rem;
+}
+
+.edit-step-active {
+  border-color: rgba(40, 104, 232, 0.28);
+  color: var(--accent-strong);
+  background: rgba(40, 104, 232, 0.1);
+}
+
+.edit-step-done {
+  border-color: rgba(25, 122, 70, 0.2);
+  color: #197a46;
+  background: var(--success-surface);
+}
+
+.edit-step-done b {
+  color: #fff;
+  background: #197a46;
+}
+
+.edit-verify-card,
+.edit-profile-summary,
+.edit-section-card,
+.edit-success-card {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.edit-section-title {
+  margin: 0 0 0.25rem;
+}
+
+.edit-profile-summary {
+  border-color: rgba(25, 122, 70, 0.18);
+  background: linear-gradient(135deg, var(--success-surface), rgba(255, 255, 255, 0.88));
+}
+
+.edit-privacy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.65rem;
+}
+
+.edit-privacy-grid > span,
+.edit-privacy-grid .check-field {
+  min-height: 52px;
+  border: 1px solid rgba(132, 155, 190, 0.16);
+  border-radius: 18px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.edit-privacy-grid > span {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-soft);
+}
+
+.edit-privacy-grid strong {
+  color: #17243a;
+}
+
+.edit-form-section {
+  display: grid;
+  gap: 0.7rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.edit-form-section h3 {
+  margin: 0;
+}
+
+.edit-consent-field small {
+  display: block;
+  margin-top: 0.18rem;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.edit-inline-error {
+  border: 1px solid rgba(201, 52, 68, 0.18);
+  border-radius: 16px;
+  padding: 0.75rem;
+  color: #9f2434;
+  background: var(--danger-surface);
+  font-weight: 800;
+}
+
+.edit-success-card {
+  border-color: rgba(25, 122, 70, 0.18);
+  background: var(--success-surface);
+}
+
+.edit-success-card h2 {
+  margin: 0;
+}
+
+.edit-collapsible {
+  border-radius: 22px;
+}
+
+.edit-collapsible > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 48px;
+  cursor: pointer;
+  color: #17243a;
+  font-weight: 950;
+}
+
+.edit-collapsible > summary small {
+  color: var(--text-soft);
+  font-weight: 750;
+}
+
+.mobile-submit-hint {
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
 .staff-page {
   max-width: 760px;
   margin: 0 auto;
@@ -3805,6 +3961,65 @@ th {
   padding: 0.75rem 0.85rem calc(0.75rem + var(--safe-bottom));
   border-top: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.96);
+}
+
+@media (max-width: 760px) {
+  .edit-stepper {
+    margin-inline: -0.15rem;
+    padding-bottom: 0.35rem;
+  }
+
+  .edit-step {
+    min-height: 40px;
+    padding: 0.38rem 0.62rem;
+    font-size: 0.86rem;
+  }
+
+  .edit-verify-card .btn,
+  .edit-request-form .btn,
+  .edit-success-card .btn {
+    width: 100%;
+  }
+
+  .edit-profile-summary,
+  .edit-section-card,
+  .edit-success-card {
+    gap: 0.75rem;
+  }
+
+  .edit-privacy-grid,
+  .edit-form-section .two-col,
+  .edit-request-form.two-col,
+  .group-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .group-reveal {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .group-reveal h2 {
+    font-size: 1.55rem;
+  }
+
+  .friend-carousel {
+    grid-auto-columns: minmax(78%, 86%);
+    scroll-snap-type: x mandatory;
+  }
+
+  .friend-card {
+    scroll-snap-align: start;
+  }
+
+  .edit-collapsible > summary {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .sticky-action-bar {
+    bottom: calc(var(--mobile-bottom-nav-height) + var(--safe-bottom) + 0.45rem);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
