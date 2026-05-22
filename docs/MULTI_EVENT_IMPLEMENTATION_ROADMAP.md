@@ -282,6 +282,7 @@ Use this as the next Codex prompt when ready:
 - [x] default event foundation exists in code
 - [x] staging runbook exists: `docs/STAGING_MIGRATION_RUNBOOK.md`
 - [x] read-only staging verification script exists: `npm run check:multi-event-staging`
+- [x] current environment schema check result documented: `docs/MULTI_EVENT_STAGING_CHECK_RESULTS.md`
 - [ ] default event migration applied in production
 - [ ] backup taken
 - [ ] people dedupe tested on staging data
