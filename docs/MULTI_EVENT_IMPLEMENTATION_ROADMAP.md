@@ -57,6 +57,8 @@ Deferred from P1:
 
 ## P2: Add People Table and Mapping
 
+Status: foundation started on 2026-05-23.
+
 Tasks:
 
 - create `people`
@@ -71,6 +73,24 @@ Compatibility:
 - new event registration uses `people`
 
 Risk: medium because deduplication must be careful.
+
+Completed in foundation pass:
+
+- Added additive migration `202605230001_people_foundation.sql`.
+- Created `public.people` with identity/contact fields and non-destructive indexes.
+- Enabled RLS so only admins can directly read/manage `people`.
+- Added `verify_person_identity_for_prefill(input_email, input_phone)` RPC for future prefill flows.
+- Added TypeScript person types and service helpers:
+  - `fetchAdminPeople()`
+  - `verifyPersonIdentityForPrefill(email, phone)`
+
+Deferred from P2 until staging/dedupe review:
+
+- Backfilling `people` from `profiles`.
+- Backfilling `people` from `staff_profiles`.
+- Adding nullable `person_id` to legacy tables.
+- Creating `event_participants` or `event_staff`.
+- Replacing any existing public/staff/admin flow with `people`.
 
 ## P3: Event-Scoped Registration and Staff Application
 

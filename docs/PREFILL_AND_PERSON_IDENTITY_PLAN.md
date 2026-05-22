@@ -155,6 +155,21 @@ Rules:
 - Public lookup should return minimal confirmation only.
 - Event application responses should not expose other events.
 
+## Implementation Note: Foundation RPC
+
+Initial foundation now supports a future prefill lookup through `verify_person_identity_for_prefill(input_email, input_phone)`.
+
+Current behavior:
+
+- Requires both email and phone.
+- Matches against `public.people`.
+- Returns minimal safe identity data only.
+- Does not return raw email, phone, health information, or internal notes.
+
+Important limitation:
+
+- This RPC will only find people after `public.people` has been safely populated. Backfill from `profiles` and `staff_profiles` is intentionally deferred until duplicate rules are tested on staging data.
+
 ## UX Copy
 
 Known person:

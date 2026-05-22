@@ -320,6 +320,27 @@ RLS rules:
 6. Backfill `event_id` on announcements, attendance sessions, project profiles, generated docs.
 7. Run Data Health checks before making event fields non-null.
 
+## Implementation Note: People Foundation
+
+The first P2 implementation should stop at the identity foundation unless staging data has been deduplicated.
+
+Implemented foundation:
+
+- `public.people`
+- admin-only direct RLS policies
+- normalized email/phone indexes
+- safe two-factor prefill verification RPC:
+  - `verify_person_identity_for_prefill(input_email, input_phone)`
+
+The RPC is designed for future registration/staff application prefill flows. It requires email + phone and returns only minimal non-medical identity fields. It does not expose phone, email, medical data, or internal notes in the returned JSON.
+
+Deferred:
+
+- bulk insert/backfill from `profiles`
+- bulk insert/backfill from `staff_profiles`
+- `person_id` columns on existing legacy tables
+- event participant/staff relationship tables
+
 ## What Not To Do Yet
 
 - Do not make `event_id` non-null in legacy tables immediately.

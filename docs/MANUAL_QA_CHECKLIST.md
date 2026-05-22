@@ -153,6 +153,17 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Public/non-admin users cannot access `/admin/events`.
 - [ ] Existing `/admin/dashboard` still loads normally.
 
+## People Foundation
+
+- [ ] Migration `202605230001_people_foundation.sql` applies successfully.
+- [ ] `public.people` exists.
+- [ ] Public users cannot directly read `public.people`.
+- [ ] Admin users can read `public.people`.
+- [ ] `verify_person_identity_for_prefill` returns `identity_verification_failed` when no matching person exists.
+- [ ] `verify_person_identity_for_prefill` returns only minimal safe identity fields when a matching person exists.
+- [ ] The RPC response does not include phone, email, medical data, or internal notes.
+- [ ] Existing `/`, `/edit`, `/staff/attendance`, and `/admin/dashboard` behavior is unchanged.
+
 ## Pending Participant Requests
 
 - [ ] Open `/admin/requests`.
