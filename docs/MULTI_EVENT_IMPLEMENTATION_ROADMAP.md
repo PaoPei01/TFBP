@@ -142,6 +142,8 @@ Deferred:
 
 ## P4: Admin Event Dashboard
 
+Status: lightweight event admin detail started on 2026-05-23.
+
 Routes:
 
 - `/admin/events`
@@ -157,6 +159,23 @@ Tasks:
 - event switcher
 
 Risk: medium.
+
+Completed in lightweight pass:
+
+- Added `/admin/events/:eventId`.
+- Added admin event detail/edit page for event metadata, status, visibility, dates, and location.
+- Added admin event service helpers:
+  - `fetchAdminEventById(id)`
+  - `updateAdminEvent(id, input)`
+- Kept legacy dashboards and event-scoped operations unchanged.
+
+Deferred:
+
+- Event CRUD create/delete.
+- Registration open/close controls beyond event status field.
+- Staff application review UI.
+- Event switcher backed by accessible events.
+- Event-scoped attendance/documents/announcements.
 
 ## P5: Event-Scoped Attendance
 

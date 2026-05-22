@@ -33,6 +33,7 @@ const GuideCategoryPage = lazy(() => import('./pages/GuideCategoryPage').then((m
 const GuideTopicPage = lazy(() => import('./pages/GuideTopicPage').then((module) => ({ default: module.GuideTopicPage })));
 const PendingRequestsPage = lazy(() => import('./pages/PendingRequestsPage').then((module) => ({ default: module.PendingRequestsPage })));
 const AdminEventsPage = lazy(() => import('./pages/AdminEventsPage').then((module) => ({ default: module.AdminEventsPage })));
+const AdminEventDetailPage = lazy(() => import('./pages/AdminEventDetailPage').then((module) => ({ default: module.AdminEventDetailPage })));
 const AdminStaffAttendancePage = lazy(() => import('./pages/AdminStaffAttendancePage').then((module) => ({ default: module.AdminStaffAttendancePage })));
 const AdminStaffAttendanceSessionPage = lazy(() => import('./pages/AdminStaffAttendanceSessionPage').then((module) => ({ default: module.AdminStaffAttendanceSessionPage })));
 const StaffAttendancePage = lazy(() => import('./pages/StaffAttendancePage').then((module) => ({ default: module.StaffAttendancePage })));
@@ -85,6 +86,7 @@ export function App() {
         <Route element={<AdminGuard />}>
           <Route path="admin/dashboard" element={<Suspense fallback={<LoadingSkeleton />}><AdminDashboardPage /></Suspense>} />
           <Route path="admin/events" element={<Suspense fallback={<LoadingSkeleton />}><AdminEventsPage /></Suspense>} />
+          <Route path="admin/events/:eventId" element={<Suspense fallback={<LoadingSkeleton />}><AdminEventDetailPage /></Suspense>} />
           <Route path="admin/announcements" element={<Suspense fallback={<LoadingSkeleton />}><AdminAnnouncementsPage /></Suspense>} />
           <Route path="admin/announcements/new" element={<Suspense fallback={<LoadingSkeleton />}><AnnouncementEditPage /></Suspense>} />
           <Route path="admin/announcements/:id/edit" element={<Suspense fallback={<LoadingSkeleton />}><AnnouncementEditPage /></Suspense>} />

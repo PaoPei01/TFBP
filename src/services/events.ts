@@ -52,6 +52,41 @@ export async function fetchAdminEvents(): Promise<EventRecord[]> {
   return orderEvents((data ?? []) as EventRecord[]);
 }
 
+export async function fetchAdminEventById(id: string): Promise<EventRecord | null> {
+  const { data, error } = await supabase
+    .from('events')
+    .select(eventFields)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data as EventRecord | null;
+}
+
+export async function updateAdminEvent(id: string, input: Partial<EventRecord>): Promise<EventRecord> {
+  const payload = {
+    name_th: input.name_th,
+    name_en: input.name_en,
+    slug: input.slug,
+    description: input.description,
+    event_type: input.event_type,
+    academic_year: input.academic_year,
+    start_date: input.start_date,
+    end_date: input.end_date,
+    location: input.location,
+    status: input.status,
+    visibility: input.visibility,
+    cover_image_path: input.cover_image_path,
+  };
+  const { data, error } = await supabase
+    .from('events')
+    .update(payload)
+    .eq('id', id)
+    .select(eventFields)
+    .single();
+  if (error) throw error;
+  return data as EventRecord;
+}
+
 export async function fetchPublicEventForm(eventSlug: string, formType: EventFormType): Promise<EventForm | null> {
   const { data, error } = await supabase.rpc('get_public_event_form', {
     input_event_slug: eventSlug,

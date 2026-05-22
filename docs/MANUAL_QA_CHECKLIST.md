@@ -156,7 +156,9 @@ Use this checklist before real event operations and after every production-readi
 
 - [ ] Admin can open `/admin/events`.
 - [ ] `/admin/events` shows the default event after applying migrations.
-- [ ] Admin Events page is read-only in this phase.
+- [ ] Admin can open `/admin/events/:eventId`.
+- [ ] Admin can edit event name, status, visibility, dates, and location.
+- [ ] Event edit does not change legacy public search or attendance behavior.
 - [ ] Public/non-admin users cannot access `/admin/events`.
 - [ ] Existing `/admin/dashboard` still loads normally.
 
