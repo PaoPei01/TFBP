@@ -179,6 +179,8 @@ Deferred:
 
 ## P5: Event-Scoped Attendance
 
+Status: compatibility foundation started on 2026-05-23.
+
 Tasks:
 
 - add nullable `event_id` to `staff_attendance_sessions`
@@ -188,6 +190,20 @@ Tasks:
 - add event name to QR/result UI
 
 Risk: high if done without fallback.
+
+Completed in compatibility pass:
+
+- Added nullable `event_id` to `staff_attendance_sessions`.
+- Backfilled existing null attendance sessions to the default event when available.
+- Updated create/update attendance session RPCs to keep legacy behavior while storing `event_id`.
+- Added `event_id` to TypeScript attendance session types.
+
+Deferred:
+
+- Filtering staff/admin attendance pages by selected event.
+- Event switcher integration for attendance.
+- Event-aware QR result UI.
+- Event-role RLS for attendance.
 
 ## P6: Event-Scoped Announcements and Documents
 

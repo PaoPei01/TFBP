@@ -258,6 +258,7 @@ Use this checklist before real event operations and after every production-readi
 
 - [ ] Open `/admin/staff/attendance`.
 - [ ] Create attendance session.
+- [ ] New attendance session stores `event_id` as the default event after applying P5 migration.
 - [ ] Confirm datetime displays in Asia/Bangkok as entered.
 - [ ] Set late_after and verify late behavior.
 - [ ] Open session detail.

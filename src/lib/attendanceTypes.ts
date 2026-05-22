@@ -41,6 +41,7 @@ export type StaffAttendanceRecord = {
 
 export type StaffAttendanceSession = {
   id: string;
+  event_id: string | null;
   title: string;
   description: string | null;
   session_type: StaffAttendanceSessionType;
@@ -64,6 +65,7 @@ export type StaffAttendanceSessionInput = Partial<
   Pick<
     StaffAttendanceSession,
     | 'title'
+    | 'event_id'
     | 'description'
     | 'session_type'
     | 'target_scope'
