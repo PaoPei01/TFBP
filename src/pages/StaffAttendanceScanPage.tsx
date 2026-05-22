@@ -11,7 +11,8 @@ import { useLanguage } from '../context/LanguageContext';
 import type { StaffAttendanceScanResult } from '../lib/attendanceTypes';
 import { formatBangkokDateTime } from '../lib/dateTime';
 import { supabase } from '../lib/supabase';
-import { scanStaffAttendanceSessionQr, scanStaffAttendanceSessionQrVerified } from '../services/staffAttendance';
+import { getVerifiedStaffIdentity, identityFromAttendanceResult, saveVerifiedStaffIdentity } from '../lib/verifiedStaffIdentity';
+import { scanStaffAttendanceSessionQr, scanStaffAttendanceSessionQrByVerifiedToken, verifyStaffAttendanceIdentity } from '../services/staffAttendance';
 import { errorMessage } from '../utils/error';
 
 function resultCopy(code: string, language: 'th' | 'en') {
@@ -59,6 +60,10 @@ export function StaffAttendanceScanPage() {
       .then(({ data }) => {
         if (!active) return null;
         if (!data.user) {
+          const remembered = getVerifiedStaffIdentity();
+          if (remembered) {
+            return scanStaffAttendanceSessionQrByVerifiedToken(token, remembered.verified_staff_token, { source: 'scan_route_remembered_verified', userAgent: navigator.userAgent });
+          }
           setShowVerifyForm(true);
           return null;
         }
@@ -93,7 +98,19 @@ export function StaffAttendanceScanPage() {
     try {
       setChecking(true);
       setToast(null);
-      const data = await scanStaffAttendanceSessionQrVerified(token, email, phone, { source: 'scan_route_verified', userAgent: navigator.userAgent });
+      const identityResult = await verifyStaffAttendanceIdentity(email, phone);
+      const identity = identityFromAttendanceResult(identityResult);
+      if (!identity) {
+        setResult({
+          success: false,
+          code: 'identity_verification_failed',
+          message: 'staff identity verification failed',
+        });
+        setShowVerifyForm(false);
+        return;
+      }
+      saveVerifiedStaffIdentity(identity);
+      const data = await scanStaffAttendanceSessionQrByVerifiedToken(token, identity.verified_staff_token, { source: 'scan_route_verified_token', userAgent: navigator.userAgent });
       setResult(data);
       setShowVerifyForm(false);
     } catch (err) {

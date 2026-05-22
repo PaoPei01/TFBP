@@ -414,6 +414,12 @@ For timezone-safe session creation and non-Auth staff personal QR support, also 
 supabase/migrations/202605220001_staff_attendance_timezone_personal_qr.sql
 ```
 
+For remembered verified staff identity and staff-side in-browser session QR scanning, also apply:
+
+```text
+supabase/migrations/202605220002_staff_attendance_verified_identity_cache.sql
+```
+
 Routes:
 
 - Admin dashboard: `/admin/staff/attendance`
@@ -428,6 +434,8 @@ Security model:
 - Staff QR check-in records only the currently signed-in staff member.
 - Staff without Supabase Auth accounts can scan the same session QR and verify with the email + phone stored in `staff_profiles`.
 - Staff without Supabase Auth accounts can also generate a personal QR after email + phone verification. This QR contains only a random token and is for admin-assisted check-in only.
+- Staff without Supabase Auth accounts can verify once on `/staff/attendance`; the app stores only minimal staff identity and a random verified token in `localStorage` for 7 days under `tfbp_verified_staff_identity`.
+- Remembered verified staff can scan an admin/session QR in-browser through `scan_staff_attendance_session_qr_by_verified_token` without retyping email and phone.
 - Admin-assisted personal QR check-in uses `admin_scan_staff_personal_qr` and requires `public.is_admin(auth.uid())`.
 - Admin manual check-in uses `manual_staff_attendance_update` and requires `public.is_admin(auth.uid())`.
 - The session QR token identifies only the attendance session, not staff personal data.
@@ -442,6 +450,7 @@ QR deployment note:
 - QR links are generated for the HashRouter deployment format:
   `/#/staff/attendance/scan?token=...`
 - Staff can scan using their phone camera. No in-app camera scanner is required for the MVP.
+- Staff attendance now also supports an in-browser camera scanner for session QR codes. Camera permission is requested only after tapping the open-camera button.
 - Admins can regenerate a session QR; the old QR token stops working immediately.
 - Admins can paste a personal QR token or `staff_identity:<token>` text in the attendance session detail page as a faster manual fallback.
 

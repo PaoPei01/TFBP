@@ -12,7 +12,7 @@ export type StaffAttendanceSessionType =
 export type StaffAttendanceSessionStatus = 'draft' | 'active' | 'closed' | 'archived';
 export type StaffAttendanceTargetScope = 'all' | 'main_group' | 'subgroup' | 'role' | 'emergency_staff';
 export type StaffAttendanceStatus = 'present' | 'late' | 'absent' | 'excused' | 'checked_out' | 'cancelled';
-export type StaffAttendanceMethod = 'session_qr' | 'verified_qr' | 'manual' | 'admin_scan_staff_qr' | 'import' | 'system';
+export type StaffAttendanceMethod = 'session_qr' | 'verified_qr' | 'verified_camera_scan' | 'manual' | 'admin_scan_staff_qr' | 'import' | 'system';
 
 export type StaffAttendanceSummary = {
   total_targeted: number;
@@ -159,6 +159,35 @@ export type StaffPersonalQrResult = {
   message: string;
   token?: string;
   qr_payload?: string;
+  staff?: {
+    staff_profile_id: string;
+    display_name: string;
+    nickname: string | null;
+    main_group: MainGroup | null;
+    subgroup: Subgroup | null;
+    primary_role: string | null;
+  } | null;
+};
+
+export type VerifiedStaffAttendanceIdentity = {
+  staff_profile_id: string;
+  display_name: string;
+  nickname: string | null;
+  main_group: MainGroup | null;
+  subgroup: Subgroup | null;
+  primary_role: string | null;
+  verified_staff_token: string;
+  personal_qr_payload: string;
+  saved_at: string;
+};
+
+export type StaffAttendanceIdentityResult = {
+  success: boolean;
+  code: StaffAttendanceScanCode;
+  message: string;
+  verified_staff_token?: string;
+  personal_qr_payload?: string;
+  token?: string;
   staff?: {
     staff_profile_id: string;
     display_name: string;

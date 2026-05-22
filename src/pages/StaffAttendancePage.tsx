@@ -1,20 +1,29 @@
-import { Camera, CheckCircle2, Clock, Copy, History, Home, Link2, ShieldCheck } from 'lucide-react';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Camera, History, Home, LogOut, QrCode, ShieldCheck } from 'lucide-react';
+import { FormEvent, lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { DashboardStatCard } from '../components/ui/DashboardStatCard';
 import { Input } from '../components/ui/Input';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
-import type { MyStaffAttendanceData } from '../lib/attendanceTypes';
+import type { MyStaffAttendanceData, VerifiedStaffAttendanceIdentity } from '../lib/attendanceTypes';
 import { formatBangkokDateTime } from '../lib/dateTime';
+import { groupLabel } from '../lib/grouping';
 import { supabase } from '../lib/supabase';
-import { fetchMyStaffAttendance, scanStaffAttendanceSessionQr } from '../services/staffAttendance';
+import {
+  clearVerifiedStaffIdentity,
+  getVerifiedStaffIdentity,
+  identityFromAttendanceResult,
+  saveVerifiedStaffIdentity,
+} from '../lib/verifiedStaffIdentity';
+import { fetchMyStaffAttendance, getMyStaffPersonalQr, verifyStaffAttendanceIdentity } from '../services/staffAttendance';
 import { errorMessage } from '../utils/error';
+
+const StaffPersonalQrModal = lazy(() => import('../components/attendance/StaffPersonalQrModal').then((module) => ({ default: module.StaffPersonalQrModal })));
+const SessionQrScannerModal = lazy(() => import('../components/attendance/SessionQrScannerModal').then((module) => ({ default: module.SessionQrScannerModal })));
 
 function displayName(profile: { nickname_th?: string | null; nickname?: string | null; nickname_en?: string | null; name_th?: string | null; name_en?: string | null; email?: string | null } | null | undefined) {
   return profile?.nickname_th || profile?.nickname || profile?.nickname_en || profile?.name_th || profile?.name_en || profile?.email || '-';
@@ -32,35 +41,40 @@ function statusLabel(status: string | null | undefined, language: 'th' | 'en') {
   return status ? labels[status]?.[language] ?? status : language === 'th' ? 'ยังไม่เช็ก' : 'Not checked';
 }
 
-function tokenFromInput(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
-  try {
-    const url = new URL(trimmed);
-    return url.searchParams.get('token') ?? trimmed;
-  } catch {
-    return trimmed.replace(/^.*token=/, '').trim();
-  }
+function authIdentityFromData(data: MyStaffAttendanceData | null, personalQrPayload: string): VerifiedStaffAttendanceIdentity | null {
+  const profile = data?.staff_profile;
+  if (!profile || !personalQrPayload) return null;
+  const assignment = profile.assignment as { main_group?: string | null; subgroup?: string | null; primary_role?: string | null } | null | undefined;
+  return {
+    staff_profile_id: profile.id,
+    display_name: displayName(profile),
+    nickname: profile.nickname_th || profile.nickname || profile.nickname_en || null,
+    main_group: (assignment?.main_group ?? null) as VerifiedStaffAttendanceIdentity['main_group'],
+    subgroup: (assignment?.subgroup ?? null) as VerifiedStaffAttendanceIdentity['subgroup'],
+    primary_role: assignment?.primary_role ?? null,
+    verified_staff_token: '',
+    personal_qr_payload: personalQrPayload,
+    saved_at: new Date().toISOString(),
+  };
 }
 
 export function StaffAttendancePage() {
   const { language } = useLanguage();
   const [data, setData] = useState<MyStaffAttendanceData | null>(null);
+  const [verifiedIdentity, setVerifiedIdentity] = useState<VerifiedStaffAttendanceIdentity | null>(() => getVerifiedStaffIdentity());
+  const [authPersonalQrPayload, setAuthPersonalQrPayload] = useState('');
   const [loading, setLoading] = useState(true);
+  const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [tokenInput, setTokenInput] = useState('');
-  const [checking, setChecking] = useState(false);
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [personalQrOpen, setPersonalQrOpen] = useState(false);
+  const [sessionScannerOpen, setSessionScannerOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
-  const navigate = useNavigate();
-  const activeSessions = useMemo(() => data?.active_sessions ?? [], [data?.active_sessions]);
   const records = useMemo(() => data?.records ?? [], [data?.records]);
   const latest = data?.latest_record;
-  const counts = useMemo(() => ({
-    active: activeSessions.length,
-    checked: activeSessions.filter((session) => session.record).length,
-    late: records.filter((record) => record.status === 'late').length,
-  }), [activeSessions, records]);
+  const activeIdentity = isAuthenticated ? authIdentityFromData(data, authPersonalQrPayload) : verifiedIdentity;
 
   const loadAttendance = useCallback(async () => {
     setLoading(true);
@@ -70,9 +84,11 @@ export function StaffAttendancePage() {
       setIsAuthenticated(Boolean(userData.user));
       if (!userData.user) {
         setData(null);
+        setLoading(false);
         return;
       }
-      setData(await fetchMyStaffAttendance());
+      const nextData = await fetchMyStaffAttendance();
+      setData(nextData);
     } catch (err) {
       setError(errorMessage(err, language === 'th' ? 'โหลดข้อมูลเช็กชื่อไม่สำเร็จ' : 'Could not load attendance'));
     } finally {
@@ -84,110 +100,116 @@ export function StaffAttendancePage() {
     void loadAttendance();
   }, [loadAttendance]);
 
-  async function pasteTokenCheckIn(event: FormEvent) {
+  async function verifyIdentity(event: FormEvent) {
     event.preventDefault();
-    const token = tokenFromInput(tokenInput);
-    if (!token) {
-      setToast({ type: 'error', message: language === 'th' ? 'กรุณาวางลิงก์หรือ token QR' : 'Paste a scan link or QR token first.' });
-      return;
-    }
     try {
-      setChecking(true);
-      if (!isAuthenticated) {
-        navigate(`/staff/attendance/scan?token=${encodeURIComponent(token)}`);
+      setVerifying(true);
+      const result = await verifyStaffAttendanceIdentity(email, phone);
+      const identity = identityFromAttendanceResult(result);
+      if (!identity) {
+        setToast({ type: 'error', message: language === 'th' ? 'ไม่พบข้อมูลทีมงานจากอีเมลและเบอร์โทรนี้' : 'No staff profile found for this email and phone.' });
         return;
       }
-      const result = await scanStaffAttendanceSessionQr(token, { source: 'staff_attendance_page', userAgent: navigator.userAgent });
-      if (result.code === 'staff_not_found') {
-        navigate(`/staff/attendance/scan?token=${encodeURIComponent(token)}`);
-        return;
-      }
-      setToast({ type: result.success ? 'success' : 'error', message: resultMessage(result.code, language) });
-      await loadAttendance();
-      setTokenInput('');
+      saveVerifiedStaffIdentity(identity);
+      setVerifiedIdentity(identity);
+      setToast({ type: 'success', message: language === 'th' ? 'ยืนยันตัวตนสำเร็จ' : 'Identity verified' });
     } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'เช็กชื่อไม่สำเร็จ' : 'Check-in failed') });
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ยืนยันตัวตนไม่สำเร็จ' : 'Verification failed') });
     } finally {
-      setChecking(false);
+      setVerifying(false);
     }
+  }
+
+  async function openPersonalQr() {
+    if (isAuthenticated && !authPersonalQrPayload) {
+      try {
+        const qr = await getMyStaffPersonalQr();
+        if (qr.qr_payload) setAuthPersonalQrPayload(qr.qr_payload);
+      } catch (err) {
+        setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'โหลด QR ส่วนตัวไม่สำเร็จ' : 'Could not load personal QR') });
+        return;
+      }
+    }
+    setPersonalQrOpen(true);
+  }
+
+  function clearIdentity() {
+    clearVerifiedStaffIdentity();
+    setVerifiedIdentity(null);
+    setEmail('');
+    setPhone('');
+    setToast({ type: 'success', message: language === 'th' ? 'ล้างข้อมูลที่จำไว้แล้ว' : 'Remembered identity cleared' });
   }
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <div className="error-state">{error}</div>;
 
+  const showVerification = !isAuthenticated && !verifiedIdentity;
+
   return (
-    <section className="page-stack staff-page staff-attendance-home">
+    <section className="page-stack staff-page staff-attendance-home staff-attendance-simple">
       <Toast toast={toast} />
       <PageHeader
         eyebrow="Staff Attendance"
         title={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}
-        description={language === 'th' ? 'สแกน QR Code ของรอบเช็กชื่อด้วยกล้องมือถือ หรือเปิดลิงก์ที่ได้รับ' : 'Scan the attendance QR code with your phone camera, or open the link you received.'}
-        actions={isAuthenticated ? <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</Link> : <Link className="btn btn-secondary" to="/login">{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Login'}</Link>}
+        description={language === 'th' ? 'ยืนยันตัวตนครั้งเดียว แล้วเลือกแสดง QR หรือสแกน QR รอบเช็กชื่อ' : 'Verify once, then show your QR or scan an attendance QR.'}
+        actions={isAuthenticated ? <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</Link> : null}
       />
 
-      {isAuthenticated ? <div className="stats-grid">
-        <DashboardStatCard label={language === 'th' ? 'ชื่อทีมงาน' : 'Staff'} value={displayName(data?.staff_profile)} icon={<ShieldCheck size={20} />} />
-        <DashboardStatCard label={language === 'th' ? 'รอบที่เปิดอยู่' : 'Active sessions'} value={counts.active} icon={<Clock size={20} />} />
-        <DashboardStatCard label={language === 'th' ? 'เช็กแล้ว' : 'Checked'} value={counts.checked} icon={<CheckCircle2 size={20} />} />
-        <DashboardStatCard label={language === 'th' ? 'ประวัติ' : 'History'} value={records.length} icon={<History size={20} />} />
-      </div> : null}
-
-      <Card className="staff-attendance-primary" variant="soft">
-        <div className="attendance-camera-icon"><Camera size={28} /></div>
-        <div>
-          <p className="eyebrow">{language === 'th' ? 'วิธีหลัก' : 'Primary flow'}</p>
-          <h2>{language === 'th' ? 'สแกน QR Code ของรอบเช็กชื่อ' : 'Scan the attendance QR code'}</h2>
-          <p>{language === 'th' ? 'เปิดกล้องมือถือแล้วสแกน QR ที่แอดมินแสดงไว้ หากไม่ได้เข้าสู่ระบบ ระบบจะให้ยืนยันด้วยอีเมลและเบอร์โทรที่ลงทะเบียนทีมงาน' : 'Use your phone camera to scan the QR shown by admins. If you are not signed in, you can verify with your staff email and phone.'}</p>
-        </div>
-      </Card>
-
-      <Card className="privacy-notice" variant="soft">
-        <strong>{language === 'th' ? 'QR ส่วนตัวทีมงาน' : 'Staff personal QR'}</strong>
-        <span>{language === 'th' ? 'สำหรับให้แอดมินสแกนเช็กชื่อแทนเท่านั้น ไม่ใช่ QR เช็กชื่อด้วยตัวเอง' : 'For admin-assisted check-in only. This is not a self check-in QR.'}</span>
-        <Link className="btn btn-secondary" to="/staff/profile/qr">{language === 'th' ? 'แสดง QR ส่วนตัว' : 'Show personal QR'}</Link>
-      </Card>
-
-      <Card>
-        <form className="form-grid" onSubmit={pasteTokenCheckIn}>
-          <Input
-            label={language === 'th' ? 'ลิงก์หรือ token สำรอง' : 'Fallback link or token'}
-            value={tokenInput}
-            onChange={(event) => setTokenInput(event.target.value)}
-            placeholder={language === 'th' ? 'วางลิงก์จาก QR หากกล้องเปิดไม่ได้' : 'Paste the QR link if camera scan is not available'}
-            hint={language === 'th' ? 'ใช้เฉพาะกรณีสแกนด้วยกล้องไม่ได้' : 'Use only if camera scanning is not available.'}
-          />
-          <Button type="submit" loading={checking} icon={<Link2 size={18} />}>{language === 'th' ? 'เช็กชื่อ' : 'Check in'}</Button>
-        </form>
-      </Card>
-
-      {isAuthenticated ? <div className="staff-section-head">
-        <h2>{language === 'th' ? 'รอบเช็กชื่อที่เปิดอยู่' : 'Active attendance sessions'}</h2>
-        <span>{activeSessions.length} {language === 'th' ? 'รอบ' : 'sessions'}</span>
-      </div> : null}
-      {isAuthenticated ? <div className="attendance-session-grid">
-        {activeSessions.length ? activeSessions.map((session) => (
-          <Card key={session.id} className="attendance-session-card">
-            <div>
-              <strong>{session.title}</strong>
-              <span>{formatBangkokDateTime(session.starts_at, language)} · {statusLabel(session.record?.status, language)}</span>
-            </div>
-            {session.record ? (
-              <span className={`status-pill status-${session.record.status}`}>{statusLabel(session.record.status, language)}</span>
-            ) : (
-              <Button size="sm" variant="secondary" icon={<Copy size={16} />} onClick={() => navigate(`/staff/attendance/scan?token=${session.qr_token ?? ''}`)} disabled={!session.qr_token}>
-                {language === 'th' ? 'เปิดลิงก์เช็กชื่อ' : 'Open check-in link'}
-              </Button>
-            )}
-          </Card>
-        )) : (
-          <Card className="empty-state">{language === 'th' ? 'ยังไม่มีรอบเช็กชื่อที่เปิดอยู่สำหรับบัญชีนี้' : 'No active attendance sessions for this account right now.'}</Card>
-        )}
-      </div> : (
-        <Card className="privacy-notice" variant="soft">
-          <strong>{language === 'th' ? 'ไม่จำเป็นต้องมีบัญชีเข้าสู่ระบบ' : 'No login required'}</strong>
-          <span>{language === 'th' ? 'ถ้าไม่มีบัญชีทีมงาน ให้สแกน QR หรือวางลิงก์ ระบบจะให้กรอกอีเมลและเบอร์โทรเพื่อยืนยันตัวตนก่อนเช็กชื่อ' : 'If you do not have a staff login, scan the QR or paste the link and verify with email and phone.'}</span>
+      {showVerification ? (
+        <Card className="scan-verify-card">
+          <div>
+            <p className="eyebrow">{language === 'th' ? 'ยืนยันตัวตนทีมงาน' : 'Staff verification'}</p>
+            <h2>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</h2>
+            <p>{language === 'th' ? 'กรอกอีเมลและเบอร์โทรที่ใช้ลงทะเบียนทีมงานเพื่อใช้งานเมนูเช็กชื่อ' : 'Enter the email and phone used for staff registration to use attendance tools.'}</p>
+          </div>
+          <form className="form-grid" onSubmit={verifyIdentity}>
+            <Input label={language === 'th' ? 'อีเมล' : 'Email'} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+            <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} value={phone} onChange={(event) => setPhone(event.target.value)} required />
+            <Button type="submit" size="lg" fullWidth loading={verifying}>{language === 'th' ? 'ยืนยันตัวตน' : 'Verify identity'}</Button>
+          </form>
         </Card>
-      )}
+      ) : null}
+
+      {!showVerification ? (
+        <>
+          <Card className="staff-attendance-identity-card" variant="soft">
+            <ShieldCheck size={28} />
+            <div>
+              <p className="eyebrow">{language === 'th' ? 'กำลังใช้งานในชื่อ' : 'Using attendance as'}</p>
+              <h2>{activeIdentity?.display_name ?? displayName(data?.staff_profile)}</h2>
+              <span>{groupLabel(activeIdentity?.main_group ?? null, activeIdentity?.subgroup ?? null, language)} · {activeIdentity?.primary_role ?? '-'}</span>
+            </div>
+          </Card>
+
+          <Card className="staff-attendance-choice-card">
+            <div>
+              <p className="eyebrow">{language === 'th' ? 'เลือกวิธีเช็กชื่อ' : 'Choose check-in method'}</p>
+              <h2>{language === 'th' ? 'คุณต้องการเช็กชื่อแบบไหน' : 'How do you want to check in?'}</h2>
+            </div>
+            <div className="staff-attendance-action-grid">
+              <button className="staff-attendance-action-card" type="button" onClick={openPersonalQr}>
+                <QrCode size={28} />
+                <strong>{language === 'th' ? 'เปิด QR ของฉันให้แอดมินสแกน' : 'Show my QR for admin scan'}</strong>
+                <span>{language === 'th' ? 'ใช้เมื่อแอดมินหรือหัวหน้าทีมเป็นคนเช็กชื่อให้' : 'Use when an admin or team lead checks you in.'}</span>
+                <em>{language === 'th' ? 'แสดง QR ของฉัน' : 'Show my QR'}</em>
+              </button>
+              <button className="staff-attendance-action-card" type="button" onClick={() => setSessionScannerOpen(true)}>
+                <Camera size={28} />
+                <strong>{language === 'th' ? 'สแกน QR รอบเช็กชื่อ' : 'Scan attendance QR'}</strong>
+                <span>{language === 'th' ? 'ใช้กล้องมือถือสแกน QR ที่แอดมินแสดง' : 'Use your phone camera to scan the QR shown by admin.'}</span>
+                <em>{language === 'th' ? 'เปิดกล้องสแกน QR' : 'Open QR scanner'}</em>
+              </button>
+            </div>
+            {!isAuthenticated ? (
+              <div className="staff-attendance-secondary-actions">
+                <button type="button" onClick={clearIdentity}><LogOut size={16} />{language === 'th' ? 'เปลี่ยนบัญชีทีมงานนี้' : 'Change staff identity'}</button>
+                <button type="button" onClick={clearIdentity}>{language === 'th' ? 'ล้างข้อมูลที่จำไว้ในเครื่อง' : 'Clear remembered identity'}</button>
+              </div>
+            ) : null}
+          </Card>
+        </>
+      ) : null}
 
       {latest ? (
         <Card className="privacy-notice" variant="success">
@@ -196,38 +218,68 @@ export function StaffAttendancePage() {
         </Card>
       ) : null}
 
-      {isAuthenticated ? <ResponsiveDataTable
-        rows={records}
-        getKey={(row) => row.id}
-        emptyText={language === 'th' ? 'ยังไม่มีประวัติการเช็กชื่อ' : 'No attendance history yet'}
-        mobileTitle={(row) => row.session?.title ?? '-'}
-        mobileSubtitle={(row) => statusLabel(row.status, language)}
-        mobileMeta={(row) => formatBangkokDateTime(row.scanned_at ?? row.updated_at, language)}
-        columns={[
-          { key: 'session', header: language === 'th' ? 'รอบ' : 'Session', render: (row) => row.session?.title ?? '-' },
-          { key: 'status', header: language === 'th' ? 'สถานะ' : 'Status', render: (row) => <span className={`status-pill status-${row.status}`}>{statusLabel(row.status, language)}</span> },
-          { key: 'time', header: language === 'th' ? 'เวลา' : 'Time', render: (row) => formatBangkokDateTime(row.scanned_at ?? row.updated_at, language) },
-          { key: 'method', header: language === 'th' ? 'วิธี' : 'Method', render: (row) => row.method },
-        ]}
-      /> : null}
+      {isAuthenticated ? (
+        <section className="page-stack">
+          <div className="staff-section-head">
+            <h2><History size={19} />{language === 'th' ? 'ประวัติของฉัน' : 'My history'}</h2>
+            <span>{records.length} {language === 'th' ? 'รายการ' : 'records'}</span>
+          </div>
+          <ResponsiveDataTable
+            rows={records}
+            getKey={(row) => row.id}
+            emptyText={language === 'th' ? 'ยังไม่มีประวัติการเช็กชื่อ' : 'No attendance history yet'}
+            mobileTitle={(row) => row.session?.title ?? '-'}
+            mobileSubtitle={(row) => statusLabel(row.status, language)}
+            mobileMeta={(row) => formatBangkokDateTime(row.scanned_at ?? row.updated_at, language)}
+            columns={[
+              { key: 'session', header: language === 'th' ? 'รอบ' : 'Session', render: (row) => row.session?.title ?? '-' },
+              { key: 'status', header: language === 'th' ? 'สถานะ' : 'Status', render: (row) => <span className={`status-pill status-${row.status}`}>{statusLabel(row.status, language)}</span> },
+              { key: 'time', header: language === 'th' ? 'เวลา' : 'Time', render: (row) => formatBangkokDateTime(row.scanned_at ?? row.updated_at, language) },
+              { key: 'method', header: language === 'th' ? 'วิธี' : 'Method', render: (row) => row.method },
+            ]}
+          />
+        </section>
+      ) : null}
+
+      {personalQrOpen ? (
+        <Suspense fallback={<LoadingSkeleton />}>
+          <StaffPersonalQrModal
+            open={personalQrOpen}
+            onClose={() => setPersonalQrOpen(false)}
+            staffIdentity={activeIdentity}
+            qrPayload={activeIdentity?.personal_qr_payload}
+          />
+        </Suspense>
+      ) : null}
+
+      {sessionScannerOpen ? (
+        <Suspense fallback={<LoadingSkeleton />}>
+          <SessionQrScannerModal
+            open={sessionScannerOpen}
+            onClose={() => setSessionScannerOpen(false)}
+            verifiedStaffIdentity={verifiedIdentity}
+            useAuthStaff={isAuthenticated}
+            onScanSuccess={async (result) => {
+              setToast({ type: result.success ? 'success' : 'error', message: scanResultMessage(result.code, language) });
+              if (isAuthenticated) await loadAttendance();
+            }}
+          />
+        </Suspense>
+      ) : null}
     </section>
   );
 }
 
-function resultMessage(code: string, language: 'th' | 'en') {
+function scanResultMessage(code: string, language: 'th' | 'en') {
   const messages: Record<string, { th: string; en: string }> = {
     checked_in: { th: 'เช็กชื่อสำเร็จ', en: 'Check-in successful' },
-    late: { th: 'เช็กชื่อสำเร็จ แต่ระบบบันทึกเป็นมาสาย', en: 'Checked in as late' },
-    checked_out: { th: 'เช็กออกสำเร็จ', en: 'Checked out successfully' },
+    late: { th: 'เช็กชื่อสำเร็จ บันทึกเป็นมาสาย', en: 'Checked in as late' },
+    checked_out: { th: 'เช็กออกแล้ว', en: 'Checked out' },
     already_checked: { th: 'คุณเช็กชื่อรอบนี้แล้ว', en: 'You have already checked in' },
-    session_not_found: { th: 'ไม่พบรอบเช็กชื่อ', en: 'Attendance session not found' },
-    session_not_active: { th: 'รอบเช็กชื่อนี้ยังไม่เปิดใช้งาน', en: 'This session is not active' },
-    session_not_started: { th: 'รอบเช็กชื่อนี้ยังไม่เริ่ม', en: 'This session has not started' },
-    session_closed: { th: 'รอบเช็กชื่อนี้ปิดแล้ว', en: 'This session is closed' },
+    invalid_token: { th: 'QR ไม่ถูกต้อง', en: 'Invalid QR' },
+    session_closed: { th: 'รอบเช็กชื่อนี้ปิดแล้ว', en: 'Session is closed' },
     qr_expired: { th: 'QR หมดอายุแล้ว', en: 'QR has expired' },
-    staff_not_found: { th: 'ไม่พบข้อมูลทีมงานของบัญชีนี้', en: 'Staff profile not found' },
-    identity_verification_failed: { th: 'ไม่พบข้อมูลทีมงานจากอีเมลและเบอร์โทรนี้', en: 'No staff profile found for this email and phone' },
-    not_in_target_scope: { th: 'บัญชีนี้ไม่มีสิทธิ์เช็กชื่อรอบนี้', en: 'This account is not allowed for this session' },
+    not_in_target_scope: { th: 'คุณไม่มีสิทธิ์เช็กชื่อรอบนี้', en: 'You are not allowed for this session' },
   };
   return messages[code]?.[language] ?? (language === 'th' ? 'ดำเนินการแล้ว' : 'Done');
 }

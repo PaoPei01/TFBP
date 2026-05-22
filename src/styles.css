@@ -4288,6 +4288,122 @@ th {
   margin: 0;
 }
 
+.staff-attendance-simple {
+  max-width: 1040px;
+  margin-inline: auto;
+}
+
+.staff-attendance-identity-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.staff-attendance-identity-card > svg {
+  flex: 0 0 auto;
+  color: var(--accent-strong);
+}
+
+.staff-attendance-identity-card h2 {
+  margin: 0;
+}
+
+.staff-attendance-identity-card span {
+  color: var(--text-soft);
+  font-weight: 800;
+}
+
+.staff-attendance-choice-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.staff-attendance-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.staff-attendance-action-card {
+  display: grid;
+  min-height: 190px;
+  gap: 0.55rem;
+  align-content: start;
+  padding: 1rem;
+  border: 1px solid rgba(132, 155, 190, 0.22);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #142033;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.staff-attendance-action-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(40, 104, 232, 0.28);
+  box-shadow: 0 18px 38px rgba(44, 65, 100, 0.1);
+}
+
+.staff-attendance-action-card svg {
+  color: var(--accent-strong);
+}
+
+.staff-attendance-action-card strong {
+  font-size: 1.02rem;
+}
+
+.staff-attendance-action-card span {
+  color: var(--text-soft);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.staff-attendance-action-card em {
+  align-self: end;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(40, 104, 232, 0.1);
+  color: var(--accent-strong);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.staff-attendance-secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.staff-attendance-secondary-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 42px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--text-soft);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.staff-personal-qr-modal {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding-bottom: calc(0.75rem + var(--safe-bottom));
+}
+
+.staff-personal-qr-modal .staff-personal-qr-head,
+.staff-personal-qr-modal .attendance-scan-url,
+.staff-personal-qr-modal .form-hint,
+.staff-personal-qr-modal .form-actions {
+  width: min(100%, 520px);
+}
+
 .attendance-row-actions,
 .attendance-manual-actions {
   display: flex;
@@ -4449,6 +4565,18 @@ th {
   .attendance-manual-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .staff-attendance-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-attendance-action-card {
+    min-height: 160px;
+  }
+
+  .staff-attendance-identity-card {
+    align-items: flex-start;
   }
 
   .attendance-row-actions .btn,

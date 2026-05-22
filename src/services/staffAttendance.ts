@@ -11,6 +11,7 @@ import type {
   MyStaffAttendanceData,
   StaffAttendanceAdminRow,
   StaffPersonalQrResult,
+  StaffAttendanceIdentityResult,
 } from '../lib/attendanceTypes';
 
 const sessionTimeKeys = ['starts_at', 'ends_at', 'late_after', 'qr_expires_at'] as const;
@@ -81,6 +82,25 @@ export async function scanStaffAttendanceSessionQrVerified(token: string, email:
   return data as StaffAttendanceScanResult;
 }
 
+export async function verifyStaffAttendanceIdentity(email: string, phone: string): Promise<StaffAttendanceIdentityResult> {
+  const { data, error } = await supabase.rpc('verify_staff_attendance_identity', {
+    input_email: cleanEmail(email),
+    input_phone: cleanPhone(phone),
+  });
+  if (error) throw error;
+  return data as StaffAttendanceIdentityResult;
+}
+
+export async function scanStaffAttendanceSessionQrByVerifiedToken(sessionToken: string, verifiedStaffToken: string, deviceInfo: Record<string, unknown> = {}): Promise<StaffAttendanceScanResult> {
+  const { data, error } = await supabase.rpc('scan_staff_attendance_session_qr_by_verified_token', {
+    input_session_token: parseStaffAttendanceSessionToken(sessionToken),
+    input_verified_staff_token: verifiedStaffToken,
+    input_device_info: deviceInfo,
+  });
+  if (error) throw error;
+  return data as StaffAttendanceScanResult;
+}
+
 export async function manualStaffAttendanceUpdate(sessionId: string, staffProfileId: string, status: StaffAttendanceStatus, note?: string | null): Promise<StaffAttendanceRecord> {
   const { data, error } = await supabase.rpc('manual_staff_attendance_update', {
     input_session_id: sessionId,
@@ -110,6 +130,19 @@ export async function getStaffPersonalQrVerified(email: string, phone: string): 
   });
   if (error) throw error;
   return data as StaffPersonalQrResult;
+}
+
+export async function getMyStaffPersonalQr(): Promise<StaffPersonalQrResult> {
+  const { data, error } = await supabase.rpc('get_my_staff_personal_qr');
+  if (error) throw error;
+  const token = typeof data === 'object' && data && 'token' in data ? String((data as { token?: unknown }).token ?? '') : '';
+  return {
+    success: Boolean(token),
+    code: token ? 'ok' : 'invalid_token',
+    message: token ? 'ok' : 'token not found',
+    token,
+    qr_payload: token ? `staff_identity:${token}` : undefined,
+  };
 }
 
 export async function regenerateStaffPersonalQrVerified(email: string, phone: string): Promise<StaffPersonalQrResult> {
@@ -142,6 +175,21 @@ export function parseStaffPersonalQrToken(value: string) {
   } catch {
     const tokenMatch = trimmed.match(/[?&]token=([^&\s]+)/);
     return tokenMatch ? decodeURIComponent(tokenMatch[1]) : trimmed;
+  }
+}
+
+export function parseStaffAttendanceSessionToken(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('attendance_session:')) {
+    return trimmed.slice('attendance_session:'.length).trim();
+  }
+  try {
+    const url = new URL(trimmed);
+    return url.searchParams.get('token') ?? trimmed;
+  } catch {
+    const tokenMatch = trimmed.match(/[?&]token=([^&\s]+)/);
+    return tokenMatch ? decodeURIComponent(tokenMatch[1]) : trimmed.replace(/^.*token=/, '').trim();
   }
 }
 
