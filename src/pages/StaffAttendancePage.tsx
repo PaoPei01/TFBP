@@ -1,6 +1,7 @@
-import { Camera, History, Home, LogOut, QrCode, ShieldCheck } from 'lucide-react';
+import { Camera, History, Home, LogOut, QrCode, RefreshCw, ShieldCheck } from 'lucide-react';
 import { FormEvent, lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -142,7 +143,20 @@ export function StaffAttendancePage() {
   }
 
   if (loading) return <LoadingSkeleton />;
-  if (error) return <div className="error-state">{error}</div>;
+  if (error) {
+    return (
+      <section className="narrow-page page-stack">
+        <Toast toast={toast} />
+        <Card className="error-state" variant="warning">
+          <h1>{language === 'th' ? 'โหลดข้อมูลเช็กชื่อไม่สำเร็จ' : 'Could not load attendance'}</h1>
+          <p>{error}</p>
+          <Button icon={<RefreshCw size={18} />} onClick={() => void loadAttendance()}>
+            {language === 'th' ? 'ลองใหม่' : 'Try again'}
+          </Button>
+        </Card>
+      </section>
+    );
+  }
 
   const showVerification = !isAuthenticated && !verifiedIdentity;
 
@@ -153,7 +167,12 @@ export function StaffAttendancePage() {
         eyebrow="Staff Attendance"
         title={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}
         description={language === 'th' ? 'ยืนยันตัวตนครั้งเดียว แล้วเลือกแสดง QR หรือสแกน QR รอบเช็กชื่อ' : 'Verify once, then show your QR or scan an attendance QR.'}
-        actions={isAuthenticated ? <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</Link> : null}
+        actions={(
+          <>
+            <HelpButton topicId="staff-attendance.overview" variant="link" />
+            {isAuthenticated ? <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</Link> : null}
+          </>
+        )}
       />
 
       {showVerification ? (
@@ -184,8 +203,17 @@ export function StaffAttendancePage() {
 
           <Card className="staff-attendance-choice-card">
             <div>
-              <p className="eyebrow">{language === 'th' ? 'เลือกวิธีเช็กชื่อ' : 'Choose check-in method'}</p>
-              <h2>{language === 'th' ? 'คุณต้องการเช็กชื่อแบบไหน' : 'How do you want to check in?'}</h2>
+              <div className="section-title-row">
+                <div>
+                  <p className="eyebrow">{language === 'th' ? 'เลือกวิธีเช็กชื่อ' : 'Choose check-in method'}</p>
+                  <h2>{language === 'th' ? 'คุณต้องการเช็กชื่อแบบไหน' : 'How do you want to check in?'}</h2>
+                </div>
+                <HelpButton topicId="staff-attendance.overview" variant="compact" />
+              </div>
+            </div>
+            <div className="help-chip-row">
+              <HelpButton topicId="staff-attendance.personal-qr" variant="link" label={language === 'th' ? 'QR ส่วนตัวคืออะไร' : 'What is personal QR?'} />
+              <HelpButton topicId="staff-attendance.session-qr" variant="link" label={language === 'th' ? 'สแกน QR รอบอย่างไร' : 'How to scan session QR'} />
             </div>
             <div className="staff-attendance-action-grid">
               <button className="staff-attendance-action-card" type="button" onClick={openPersonalQr}>

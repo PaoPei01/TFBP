@@ -7,6 +7,7 @@ import { adminScanStaffPersonalQr, parseStaffPersonalQrToken } from '../../servi
 import { errorMessage } from '../../utils/error';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { HelpButton } from '../help/HelpButton';
 import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { Toast, ToastState } from '../ui/Toast';
@@ -152,11 +153,14 @@ export function StaffQrScannerModal({ open, onClose, sessionId, onScanSuccess }:
     <Modal open={open} title={language === 'th' ? 'สแกน QR ส่วนตัวทีมงาน' : 'Scan staff personal QR'} onClose={() => void close()}>
       <Toast toast={toast} />
       <div className="staff-qr-scanner-modal">
-        <p className="form-hint">
-          {language === 'th'
-            ? 'ให้ทีมงานแสดง QR ส่วนตัว แล้วนำกล้องสแกนเพื่อเช็กชื่อเข้ารอบนี้'
-            : 'Ask staff to show their personal QR, then scan it to check them into this session.'}
-        </p>
+        <div className="section-title-row">
+          <p className="form-hint">
+            {language === 'th'
+              ? 'ให้ทีมงานแสดง QR ส่วนตัว แล้วนำกล้องสแกนเพื่อเช็กชื่อเข้ารอบนี้'
+              : 'Ask staff to show their personal QR, then scan it to check them into this session.'}
+          </p>
+          <HelpButton topicId="admin-attendance.scan-staff-qr" variant="compact" />
+        </div>
 
         <div className={`staff-qr-camera-frame ${cameraActive ? 'staff-qr-camera-active' : ''}`}>
           <div id={scannerId} className="staff-qr-reader" />

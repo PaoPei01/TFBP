@@ -87,7 +87,7 @@ export function Layout() {
         <div className="nav-links">
           <NavLink to="/">{t.participants}</NavLink>
           <NavLink to="/announcements">{language === 'th' ? 'ประกาศ' : 'Info'}</NavLink>
-          <NavLink to="/guide">{language === 'th' ? 'วิธีใช้' : 'Guide'}</NavLink>
+          <NavLink to="/guide">{language === 'th' ? 'คู่มือ' : 'Guide'}</NavLink>
           <NavLink to="/edit">{t.edit}</NavLink>
           <details className={`nav-menu ${isAdmin ? 'nav-menu-wide' : ''}`}>
             <summary>
@@ -252,7 +252,7 @@ export function Layout() {
         {isAdmin ? (
           <>
             <NavLink to="/admin/dashboard"><Shield size={18} />{language === 'th' ? 'แดชบอร์ด' : 'Dashboard'}</NavLink>
-            <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'วิธีใช้' : 'Guide'}</NavLink>
+            <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'คู่มือ' : 'Guide'}</NavLink>
             <NavLink to="/admin/groups"><UsersRound size={18} />{language === 'th' ? 'จัดกลุ่ม' : 'Groups'}</NavLink>
             <NavLink to="/admin/staff"><UserCheck size={18} />{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
             <NavLink to="/admin/staff/attendance"><UserCheck size={18} />{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</NavLink>
@@ -269,7 +269,7 @@ export function Layout() {
         ) : isStaff ? (
           <>
             <NavLink to="/staff"><Shield size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</NavLink>
-            <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'วิธีใช้' : 'Guide'}</NavLink>
+            <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'คู่มือ' : 'Guide'}</NavLink>
             <NavLink to="/staff/profile"><UserCheck size={18} />{language === 'th' ? 'โปรไฟล์ของฉัน' : 'My Profile'}</NavLink>
             <NavLink to="/staff/directory"><UsersRound size={18} />{language === 'th' ? 'ไดเรกทอรีทีมงาน' : 'Staff Directory'}</NavLink>
             {access?.can_view_staff ? <NavLink to="/staff/my-group"><UsersRound size={18} />{language === 'th' ? 'กลุ่มของฉัน' : 'My Group'}</NavLink> : null}
@@ -283,7 +283,7 @@ export function Layout() {
           <>
             <NavLink to="/"><Home size={18} />{language === 'th' ? 'รายชื่อผู้เข้าร่วม' : 'Participants'}</NavLink>
             <NavLink to="/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
-            <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'วิธีใช้' : 'Guide'}</NavLink>
+            <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'คู่มือ' : 'Guide'}</NavLink>
             <NavLink to="/edit"><Pencil size={18} />{language === 'th' ? 'แก้ไขข้อมูล' : 'Edit Info'}</NavLink>
             <NavLink to="/staff/profile/verify"><UserCheck size={18} />{language === 'th' ? 'แก้โปรไฟล์ทีมงาน' : 'Staff Profile Verify'}</NavLink>
             <NavLink to="/staff/profile/qr"><UserCheck size={18} />{language === 'th' ? 'QR ส่วนตัวทีมงาน' : 'Staff Personal QR'}</NavLink>

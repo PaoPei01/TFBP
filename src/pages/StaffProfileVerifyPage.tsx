@@ -1,6 +1,7 @@
 import { Save, SearchCheck, Send } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { HelpButton } from '../components/help/HelpButton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
 import { StickyActionBar } from '../components/mobile/StickyActionBar';
 import { Button } from '../components/ui/Button';
@@ -125,7 +126,12 @@ export function StaffProfileVerifyPage() {
         eyebrow="Staff Profile Verify"
         title={language === 'th' ? 'แก้ไขโปรไฟล์ทีมงาน' : 'Edit Staff Profile'}
         description={language === 'th' ? 'หน้านี้สำหรับทีมงานรายบุคคลที่ต้องการแก้ไขโปรไฟล์ของตัวเอง ไม่ใช่บัญชีเข้าสู่ระบบทีมงานสำหรับปฏิบัติงาน' : 'This page is for individual staff profile updates, not operational staff login.'}
-        meta={<Link className="btn btn-secondary" to="/login">{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Login'}</Link>}
+        meta={(
+          <>
+            <HelpButton topicId="staff.profile-verify" variant="link" />
+            <Link className="btn btn-secondary" to="/login">{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Login'}</Link>
+          </>
+        )}
       />
       <Card>
         <form className="form-grid" onSubmit={verify}>
@@ -152,6 +158,7 @@ export function StaffProfileVerifyPage() {
                 <Card className="privacy-notice full-span" variant="soft">
                   <strong>{language === 'th' ? 'โปรไฟล์พื้นฐานแบบปลอดภัย' : 'Safe Public Lite profile'}</strong>
                   <span>{language === 'th' ? 'โปรไฟล์พื้นฐานของพี่อาจแสดงให้น้องเห็น เช่น ชื่อเล่นและหน้าที่ แต่ช่องทางติดต่อจะซ่อนไว้จนกว่าพี่จะเลือกเปิดเอง' : 'Your basic staff profile may be visible to participants, but contact channels stay hidden until you choose to show them.'}</span>
+                  <HelpButton topicId="staff.profile-verify" variant="compact" />
                 </Card>
                 <Card className="privacy-notice full-span" variant="soft">
                   <strong>{language === 'th' ? 'การอัปโหลดรูป' : 'Profile photo upload'}</strong>

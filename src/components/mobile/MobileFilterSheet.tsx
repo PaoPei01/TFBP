@@ -2,6 +2,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '../ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
 
 type MobileFilterSheetProps = {
   open: boolean;
@@ -15,6 +16,7 @@ type MobileFilterSheetProps = {
 };
 
 export function MobileFilterSheet({ open, title, description, children, primaryLabel = 'Apply', clearLabel = 'Clear', onClose, onClear }: MobileFilterSheetProps) {
+  const { language } = useLanguage();
   useEffect(() => {
     if (!open) return undefined;
     function handleKeyDown(event: KeyboardEvent) {
@@ -33,7 +35,7 @@ export function MobileFilterSheet({ open, title, description, children, primaryL
             <span><SlidersHorizontal size={17} /> {title}</span>
             {description ? <small>{description}</small> : null}
           </div>
-          <Button variant="ghost" size="sm" aria-label="Close filters" icon={<X size={18} />} onClick={onClose} />
+          <Button variant="ghost" size="sm" aria-label={language === 'th' ? 'ปิดตัวกรอง' : 'Close filters'} icon={<X size={18} />} onClick={onClose} />
         </div>
         <div className="mobile-filter-body">{children}</div>
         <div className="mobile-filter-actions">

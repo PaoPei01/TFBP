@@ -1,7 +1,9 @@
 import { Download, HeartPulse, Pencil, SlidersHorizontal, Trash2, UsersRound } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { ContactLinks } from '../components/ContactLinks';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { HealthFlags, hasHealthFlag } from '../components/HealthFlags';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { MobileFilterSheet } from '../components/mobile/MobileFilterSheet';
 import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
@@ -108,8 +110,10 @@ export function AdminDashboardPage() {
         eyebrow="Dashboard"
         title={t.dashboard}
         description={t.adminOnly}
+        meta={<EventSwitcher compact />}
         actions={(
           <>
+            <HelpButton topicId="admin.dashboard" variant="compact" />
             <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportProfilesCsv(profiles)}>CSV</Button>
             <Button variant="secondary" icon={<Download size={18} />} onClick={() => void exportProfilesXlsx(profiles)}>Excel</Button>
           </>
@@ -151,7 +155,12 @@ export function AdminDashboardPage() {
         onChange={setSearch}
         placeholder={language === 'th' ? 'ชื่อ อีเมล เบอร์ Line IG Facebook' : 'Name, email, phone, Line, IG, Facebook'}
         resultText={language === 'th' ? `${profiles.length.toLocaleString('th-TH')} รายการ` : `${profiles.length.toLocaleString('en-US')} results`}
-        trailing={<Button variant="secondary" icon={<SlidersHorizontal size={17} />} onClick={() => setFilterOpen(true)}>{language === 'th' ? 'ตัวกรอง' : 'Filters'}</Button>}
+        trailing={(
+          <>
+            <HelpButton topicId="admin.participants" variant="compact" />
+            <Button variant="secondary" icon={<SlidersHorizontal size={17} />} onClick={() => setFilterOpen(true)}>{language === 'th' ? 'ตัวกรอง' : 'Filters'}</Button>
+          </>
+        )}
       >
         {activeFilterChips.length ? activeFilterChips.slice(0, 2).map((chip) => <span className="filter-chip" key={chip}>{chip}</span>) : null}
       </MobileSearchHeader>
@@ -160,7 +169,7 @@ export function AdminDashboardPage() {
         className="desktop-filter-panel"
         title={language === 'th' ? 'ค้นหาและตัวกรอง' : 'Search and filters'}
         description={language === 'th' ? `แสดงผล ${profiles.length.toLocaleString('th-TH')} รายการ` : `${profiles.length.toLocaleString('en-US')} results`}
-        actions={<Button variant="ghost" onClick={clearFilters}>{language === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}</Button>}
+        actions={<><HelpButton topicId="admin.participants" variant="compact" /><Button variant="ghost" onClick={clearFilters}>{language === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}</Button></>}
         chips={activeFilterChips.length ? (
           <div className="filter-chip-row">
             {activeFilterChips.map((chip) => <span className="filter-chip" key={chip}>{chip}</span>)}

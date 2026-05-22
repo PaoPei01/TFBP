@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import { CheckCircle2, Clock, Copy, Download, QrCode, RefreshCw, Search, ShieldCheck, XCircle } from 'lucide-react';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { Button } from '../components/ui/Button';
@@ -186,6 +187,7 @@ export function AdminStaffAttendanceSessionPage() {
         actions={(
           <>
             <Link className="btn btn-secondary" to="/admin/staff/attendance">{language === 'th' ? 'ทุกรอบ' : 'All sessions'}</Link>
+            <HelpButton topicId="admin-attendance.export" variant="compact" />
             <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportStaffAttendanceCsv(state.data?.roster ?? [], `${session.title}.csv`)}>CSV</Button>
             <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
           </>
@@ -202,9 +204,14 @@ export function AdminStaffAttendanceSessionPage() {
       <div className="attendance-session-layout">
         <Card className="attendance-qr-card" variant="soft">
           <div>
-            <p className="eyebrow">{language === 'th' ? 'แสดง QR Code' : 'Show QR Code'}</p>
-            <h2>{language === 'th' ? 'ให้ทีมงานสแกน QR นี้' : 'Let staff scan this QR'}</h2>
-            <p>{language === 'th' ? 'ทีมงานต้องสแกนด้วยมือถือของตัวเองและเข้าสู่ระบบทีมงานเพื่อเช็กชื่อ' : 'Staff should scan this QR with their own phone and sign in to check in.'}</p>
+            <div className="section-title-row">
+              <div>
+                <p className="eyebrow">{language === 'th' ? 'แสดง QR Code' : 'Show QR Code'}</p>
+                <h2>{language === 'th' ? 'ให้ทีมงานสแกน QR นี้' : 'Let staff scan this QR'}</h2>
+              </div>
+              <HelpButton topicId="admin-attendance.session-qr" variant="compact" />
+            </div>
+            <p>{language === 'th' ? 'ทีมงานสแกนด้วยมือถือของตัวเอง แล้วเข้าสู่ระบบหรือยืนยันอีเมลและเบอร์โทรเพื่อเช็กชื่อ' : 'Staff scan this with their own phone, then sign in or verify by email and phone to check in.'}</p>
           </div>
           {qrDataUrl ? <img className="attendance-qr-image" src={qrDataUrl} alt={language === 'th' ? 'QR เช็กชื่อทีมงาน' : 'Staff attendance QR'} /> : <div className="attendance-qr-fallback">{language === 'th' ? 'ไม่สามารถสร้างรูป QR ได้' : 'Could not render QR image'}</div>}
           <code className="attendance-scan-url">{scanUrl}</code>
@@ -217,8 +224,13 @@ export function AdminStaffAttendanceSessionPage() {
 
         <Card className="attendance-manual-panel">
           <div>
-            <p className="eyebrow">{language === 'th' ? 'เครื่องมือเช็กชื่อ' : 'Check-in tools'}</p>
-            <h2>{language === 'th' ? 'Manual และ QR ส่วนตัวทีมงาน' : 'Manual and staff personal QR'}</h2>
+            <div className="section-title-row">
+              <div>
+                <p className="eyebrow">{language === 'th' ? 'เครื่องมือเช็กชื่อ' : 'Check-in tools'}</p>
+                <h2>{language === 'th' ? 'Manual และ QR ส่วนตัวทีมงาน' : 'Manual and staff personal QR'}</h2>
+              </div>
+              <HelpButton topicId="admin-attendance.manual-checkin" variant="compact" />
+            </div>
             <p>{language === 'th' ? 'ใช้เมื่อทีมงานสแกนเองไม่ได้ หรือใช้ QR ส่วนตัวเพื่อเช็กชื่อแทนอย่างรวดเร็ว' : 'Use manual controls or a staff personal QR when staff cannot self check-in.'}</p>
           </div>
           <details className="filter-disclosure">
@@ -228,6 +240,10 @@ export function AdminStaffAttendanceSessionPage() {
           <details className="filter-disclosure attendance-personal-qr-tool">
             <summary>{language === 'th' ? 'สแกน QR ส่วนตัวทีมงาน' : 'Scan staff personal QR'}</summary>
             <div className="form-grid">
+              <div className="section-title-row full-span">
+                <span className="form-hint">{language === 'th' ? 'ใช้เมื่อทีมงานเปิด QR ส่วนตัวให้แอดมินสแกน' : 'Use when staff show their personal QR for admin-assisted check-in.'}</span>
+                <HelpButton topicId="admin-attendance.scan-staff-qr" variant="compact" />
+              </div>
               <Button type="button" icon={<QrCode size={18} />} onClick={() => setScannerOpen(true)}>
                 {language === 'th' ? 'สแกน QR ทีมงาน' : 'Scan Staff QR'}
               </Button>

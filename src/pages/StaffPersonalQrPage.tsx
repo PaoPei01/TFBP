@@ -1,6 +1,7 @@
 import QRCode from 'qrcode';
 import { Copy, RefreshCw, ShieldCheck } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { HelpButton } from '../components/help/HelpButton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -93,6 +94,7 @@ export function StaffPersonalQrPage() {
         description={language === 'th'
           ? 'ยืนยันด้วยอีเมลและเบอร์โทรเพื่อแสดง QR สำหรับให้แอดมินสแกนเช็กชื่อแทน'
           : 'Verify with email and phone to show a QR for admin-assisted attendance.'}
+        actions={<HelpButton topicId="staff.personal-qr" variant="link" />}
       />
 
       {!result?.success ? (

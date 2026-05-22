@@ -1,5 +1,6 @@
 import { Download, Eye } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -84,7 +85,12 @@ export function DocumentGeneratePage() {
   return (
     <section className="page-stack">
       <Toast toast={toast} />
-      <PageHeader eyebrow="Document Center" title="Generate DOCX" description="เลือกประเภทเอกสาร ตรวจข้อมูลที่ขาด ดูตัวอย่าง และดาวน์โหลดไฟล์" />
+      <PageHeader
+        eyebrow="Document Center"
+        title="Generate DOCX"
+        description="เลือกประเภทเอกสาร ตรวจข้อมูลที่ขาด ดูตัวอย่าง และดาวน์โหลดไฟล์"
+        actions={<HelpButton topicId="documents.generate" variant="link" />}
+      />
       {state.loading ? <LoadingSkeleton /> : null}
       {data ? (
         <>
@@ -110,7 +116,10 @@ export function DocumentGeneratePage() {
             </div>
           </Card>
           <Card className="document-missing-card">
-            <h2>Missing info checker</h2>
+            <div className="section-title-row">
+              <h2>Missing info checker</h2>
+              <HelpButton topicId="documents.generate" variant="compact" />
+            </div>
             {missing.length ? <div className="filter-chip-row">{missing.map((item) => <span className="filter-chip" key={item.field}>{item.label}</span>)}</div> : <p>ไม่มีข้อมูลที่ขาดสำหรับเอกสารประเภทนี้</p>}
           </Card>
           {previewHtml ? <Card className="document-preview-card"><div dangerouslySetInnerHTML={{ __html: previewHtml }} /></Card> : null}

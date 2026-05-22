@@ -2,6 +2,7 @@ import { Download, Lock, RefreshCw, Shuffle, Trash2 } from 'lucide-react';
 import { DragEvent, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ContactLinks } from '../components/ContactLinks';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { MobileGroupTabs } from '../components/mobile/MobileGroupTabs';
 import { StickyBottomBar } from '../components/mobile/StickyBottomBar';
@@ -167,7 +168,10 @@ export function GroupDashboardPage() {
       <Toast toast={toast} />
       <div className="section-heading">
         <p className="eyebrow">Smart Groups</p>
-        <h1>{language === 'th' ? 'ระบบจัดกลุ่มอัตโนมัติ' : 'Smart group assignment'}</h1>
+        <div className="section-title-row">
+          <h1>{language === 'th' ? 'ระบบจัดกลุ่มอัตโนมัติ' : 'Smart group assignment'}</h1>
+          <HelpButton topicId="admin.groups" variant="compact" />
+        </div>
         <p>{language === 'th' ? 'บาลานซ์ขนาดกลุ่ม สาขา และรอบการรับเข้า พร้อมปรับมือแบบลากวางก่อนล็อกกลุ่ม' : 'Balance group size, majors, and registration order with drag-and-drop manual adjustment before locking.'}</p>
       </div>
 

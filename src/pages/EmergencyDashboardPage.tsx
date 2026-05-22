@@ -1,6 +1,7 @@
 import { AlertTriangle, Clipboard, Phone, Save, Search, ShieldAlert, Siren } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { HealthFlags, hasHealthFlag } from '../components/HealthFlags';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { EmergencyQuickDock } from '../components/mobile/EmergencyQuickDock';
 import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
@@ -129,7 +130,10 @@ export function EmergencyDashboardPage() {
       <Toast toast={toast} />
       <div className="section-heading">
         <p className="eyebrow">{language === 'th' ? 'ปฏิบัติการฉุกเฉิน' : 'Emergency Operations'}</p>
-        <h1>{language === 'th' ? 'แดชบอร์ดฉุกเฉิน' : 'Emergency Dashboard'}</h1>
+        <div className="section-title-row">
+          <h1>{language === 'th' ? 'แดชบอร์ดฉุกเฉิน' : 'Emergency Dashboard'}</h1>
+          <HelpButton topicId="emergency.overview" variant="compact" />
+        </div>
         <p>{language === 'th' ? 'ข้อมูลสุขภาพเป็นความลับ ใช้เฉพาะงานดูแลความปลอดภัยในกิจกรรม ทุกครั้งที่เปิดหรือแก้ไขจะถูกบันทึก audit log' : 'Health information is confidential and only for event safety operations. Every view or edit is recorded in the audit log.'}</p>
       </div>
 

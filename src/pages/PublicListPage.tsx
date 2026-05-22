@@ -6,6 +6,7 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { MobileFilterSheet } from '../components/mobile/MobileFilterSheet';
 import { MobileSafeAreaSpacer } from '../components/mobile/MobileSafeAreaSpacer';
+import { HelpButton } from '../components/help/HelpButton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -84,9 +85,12 @@ export function PublicListPage() {
         resultText={resultText}
         inputRef={searchInputRef}
         trailing={(
-          <Button type="button" variant="secondary" icon={<SlidersHorizontal size={17} />} onClick={() => setFiltersOpen(true)}>
-            {language === 'th' ? 'ตัวกรอง' : 'Filters'}
-          </Button>
+          <>
+            <HelpButton topicId="participant.search" variant="compact" />
+            <Button type="button" variant="secondary" icon={<SlidersHorizontal size={17} />} onClick={() => setFiltersOpen(true)}>
+              {language === 'th' ? 'ตัวกรอง' : 'Filters'}
+            </Button>
+          </>
         )}
       >
         <button type="button" onClick={clearFilters}>
@@ -98,7 +102,12 @@ export function PublicListPage() {
         className="desktop-filter-panel"
         title={language === 'th' ? 'ตัวกรองรายชื่อ' : 'Participant filters'}
         open
-        actions={hasFilters ? <Button variant="ghost" onClick={clearFilters}>{language === 'th' ? copy.th.clearFilters : copy.en.clearFilters}</Button> : null}
+        actions={(
+          <>
+            <HelpButton topicId="participant.search" variant="compact" />
+            {hasFilters ? <Button variant="ghost" onClick={clearFilters}>{language === 'th' ? copy.th.clearFilters : copy.en.clearFilters}</Button> : null}
+          </>
+        )}
       >
         <div className="toolbar">
           <div className="search-shell">
@@ -138,7 +147,20 @@ export function PublicListPage() {
 
       <div className="participant-grid">
         {participants.map((profile) => (
-          <Card className="participant-card participant-card-clickable" key={profile.id} onClick={() => setSelected(profile)} role="button" tabIndex={0} onKeyDown={(event) => event.key === 'Enter' && setSelected(profile)}>
+          <Card
+            className="participant-card participant-card-clickable"
+            key={profile.id}
+            onClick={() => setSelected(profile)}
+            role="button"
+            tabIndex={0}
+            aria-label={language === 'th' ? `เปิดโปรไฟล์ของ ${profile.name_th || profile.nickname || 'ผู้เข้าร่วม'}` : `Open profile for ${profile.name_en || profile.name_th || profile.nickname || 'participant'}`}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setSelected(profile);
+              }
+            }}
+          >
             <h2>{(language === 'th' ? profile.name_th : profile.name_en) || profile.name_th || (language === 'th' ? 'ไม่ระบุชื่อ' : 'Name not specified')}</h2>
             <p>{(language === 'th' ? profile.nickname : profile.nickname_en || profile.nickname) ? `${t.nickname} ${language === 'th' ? profile.nickname : profile.nickname_en || profile.nickname}` : language === 'th' ? 'ยังไม่มีชื่อเล่น' : 'No nickname yet'}</p>
             <span>{majorLabel(profile.major, language)}</span>
@@ -170,6 +192,7 @@ export function PublicListPage() {
             <Card className="privacy-notice">
               <strong>{language === 'th' ? 'ต้องยืนยันตัวตนก่อนดูข้อมูลเต็ม' : 'Verify identity to view full details'}</strong>
               <span>{language === 'th' ? 'ข้อมูลติดต่อ ข้อมูลสุขภาพ และระบบแนะนำเพื่อนจะแสดงหลังยืนยันอีเมลและเบอร์โทรของตัวเองเท่านั้น' : 'Contact details, health details, and friend recommendations are available only after verifying your own email and phone.'}</span>
+              <HelpButton topicId="participant.edit-info" variant="compact" />
             </Card>
             <div className="form-actions">
               <Button icon={<Eye size={18} />} onClick={() => { setSelected(null); navigate('/edit'); }}>

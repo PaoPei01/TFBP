@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import type { VerifiedStaffAttendanceIdentity } from '../../lib/attendanceTypes';
 import { groupLabel } from '../../lib/grouping';
 import { Button } from '../ui/Button';
+import { HelpButton } from '../help/HelpButton';
 import { Modal } from '../ui/Modal';
 import { Toast, ToastState } from '../ui/Toast';
 
@@ -55,7 +56,10 @@ export function StaffPersonalQrModal({ open, onClose, staffIdentity, qrPayload }
         <div className="staff-personal-qr-head">
           <ShieldCheck size={30} />
           <div>
-            <p className="eyebrow">{language === 'th' ? 'ให้แอดมินสแกน QR นี้เพื่อเช็กชื่อให้คุณ' : 'Let an admin scan this QR to check you in.'}</p>
+            <div className="section-title-row">
+              <p className="eyebrow">{language === 'th' ? 'ให้แอดมินสแกน QR นี้เพื่อเช็กชื่อให้คุณ' : 'Let an admin scan this QR to check you in.'}</p>
+              <HelpButton topicId="staff-attendance.personal-qr" variant="compact" />
+            </div>
             <h2>{staffIdentity?.display_name ?? (language === 'th' ? 'ทีมงาน' : 'Staff')}</h2>
             <span>{groupLabel(staffIdentity?.main_group ?? null, staffIdentity?.subgroup ?? null, language)} · {staffIdentity?.primary_role ?? '-'}</span>
           </div>

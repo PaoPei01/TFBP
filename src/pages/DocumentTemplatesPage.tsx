@@ -1,5 +1,6 @@
 import { FileUp, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -79,12 +80,18 @@ export function DocumentTemplatesPage() {
   return (
     <section className="page-stack">
       <Toast toast={toast} />
-      <PageHeader eyebrow="Document Center" title="DOCX Templates" description="ใช้ docxtemplater syntax ตัวพิมพ์เล็ก เช่น {project_name}, {event_date_th}, {#schedule_items}{time_range} {title}{/schedule_items}" />
+      <PageHeader
+        eyebrow="Document Center"
+        title="DOCX Templates"
+        description="ใช้ docxtemplater syntax ตัวพิมพ์เล็ก เช่น {project_name}, {event_date_th}, {#schedule_items}{time_range} {title}{/schedule_items}"
+        actions={<HelpButton topicId="documents.templates" variant="link" />}
+      />
       <Card className="template-upload-card" variant="soft">
         <div>
           <p className="eyebrow">Template Upload</p>
           <h2>อัปโหลดไฟล์ .docx</h2>
           <span>ระบบจะอ่าน placeholder และเก็บไฟล์ไว้ใน private Supabase Storage</span>
+          <HelpButton topicId="documents.templates" variant="compact" />
         </div>
         <label className="file-drop-zone">
           <FileUp size={28} />

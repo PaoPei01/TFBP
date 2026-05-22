@@ -12,6 +12,7 @@ import {
 import { errorMessage } from '../../utils/error';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { HelpButton } from '../help/HelpButton';
 import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { Toast, ToastState } from '../ui/Toast';
@@ -155,7 +156,10 @@ export function SessionQrScannerModal({ open, onClose, verifiedStaffIdentity, us
     <Modal open={open} title={language === 'th' ? 'สแกน QR รอบเช็กชื่อ' : 'Scan Attendance QR'} onClose={() => void close()}>
       <Toast toast={toast} />
       <div className="staff-qr-scanner-modal">
-        <p className="form-hint">{language === 'th' ? 'นำกล้องไปสแกน QR ที่แอดมินแสดง' : 'Point the camera at the QR shown by admin.'}</p>
+        <div className="section-title-row">
+          <p className="form-hint">{language === 'th' ? 'นำกล้องไปสแกน QR ที่แอดมินแสดง' : 'Point the camera at the QR shown by admin.'}</p>
+          <HelpButton topicId="staff-attendance.camera-scan" variant="compact" />
+        </div>
         <div className={`staff-qr-camera-frame ${cameraActive ? 'staff-qr-camera-active' : ''}`}>
           <div id={scannerId} className="staff-qr-reader" />
           {!cameraActive ? (

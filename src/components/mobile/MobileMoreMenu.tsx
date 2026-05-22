@@ -2,6 +2,7 @@ import { X } from 'lucide-react';
 import { useEffect, useId } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '../ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
 
 type MobileMoreMenuProps = {
   open: boolean;
@@ -11,6 +12,7 @@ type MobileMoreMenuProps = {
 };
 
 export function MobileMoreMenu({ open, title, children, onClose }: MobileMoreMenuProps) {
+  const { language } = useLanguage();
   const titleId = useId();
   useEffect(() => {
     if (!open) return undefined;
@@ -27,7 +29,7 @@ export function MobileMoreMenu({ open, title, children, onClose }: MobileMoreMen
       <section className="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className="mobile-more-head">
           <strong id={titleId}>{title}</strong>
-          <Button variant="ghost" size="sm" aria-label="Close menu" icon={<X size={18} />} onClick={onClose} />
+          <Button variant="ghost" size="sm" aria-label={language === 'th' ? 'ปิดเมนู' : 'Close menu'} icon={<X size={18} />} onClick={onClose} />
         </div>
         <div
           className="mobile-more-grid"

@@ -3,6 +3,7 @@ import { FormEvent, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ContactLinks } from '../components/ContactLinks';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
 import { StickyActionBar } from '../components/mobile/StickyActionBar';
@@ -203,7 +204,10 @@ export function VerifyEditPage() {
       <Card className="edit-verify-card">
         <form className="form-grid" onSubmit={handleVerify}>
           <div className="full-span">
-            <h2 className="edit-section-title">{language === 'th' ? 'ยืนยันตัวตน' : 'Identity Verification'}</h2>
+            <div className="section-title-row">
+              <h2 className="edit-section-title">{language === 'th' ? 'ยืนยันตัวตน' : 'Identity Verification'}</h2>
+              <HelpButton topicId="participant.edit-info" variant="compact" />
+            </div>
             <p className="muted">{language === 'th' ? 'ใช้ข้อมูลเดียวกับตอนลงทะเบียน หากจำเบอร์ไม่ได้ให้ติดต่อแอดมิน' : 'Use the same information you registered with. Contact an admin if you cannot remember your phone number.'}</p>
           </div>
           <Input label={language === 'th' ? 'อีเมล' : 'Email'} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
@@ -282,7 +286,10 @@ export function VerifyEditPage() {
           ) : null}
 
           <Card className="edit-section-card sensitive-panel">
-            <h2>{language === 'th' ? 'ข้อมูลที่ขอแก้ไขได้' : 'Editable Information'}</h2>
+            <div className="section-title-row">
+              <h2>{language === 'th' ? 'ข้อมูลที่ขอแก้ไขได้' : 'Editable Information'}</h2>
+              <HelpButton topicId="faq.edit-approval-delay" variant="compact" />
+            </div>
             <p>{language === 'th' ? 'กรอกเฉพาะช่องที่ต้องการเปลี่ยน คำขอจะรอแอดมินอนุมัติก่อนอัปเดตจริง' : 'Fill only the fields you want to change. Requests wait for admin approval.'}</p>
             <Card className="privacy-notice">
               <strong>{language === 'th' ? 'ข้อมูลที่แก้ไขไม่ได้จากหน้านี้' : 'Protected fields'}</strong>

@@ -1,5 +1,6 @@
 import { FileText, History, Settings, Upload, Wand2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Card } from '../components/ui/Card';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
@@ -12,7 +13,12 @@ export function DocumentCenterPage() {
   const data = state.data;
   return (
     <section className="page-stack document-center-page">
-      <PageHeader eyebrow="Document Center" title="ศูนย์เอกสารกิจกรรม" description="จัดการข้อมูลโครงการ เทมเพลต และสร้างเอกสาร DOCX สำหรับงานสานสัมพันธ์" />
+      <PageHeader
+        eyebrow="Document Center"
+        title="ศูนย์เอกสารกิจกรรม"
+        description="จัดการข้อมูลโครงการ เทมเพลต และสร้างเอกสาร DOCX สำหรับงานสานสัมพันธ์"
+        actions={<HelpButton topicId="documents.overview" variant="link" />}
+      />
       {state.loading ? <LoadingSkeleton /> : null}
       {state.error ? <div className="error-state">{state.error}</div> : null}
       {data ? (

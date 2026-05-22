@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, Clock, Home } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -130,6 +131,7 @@ export function StaffAttendanceScanPage() {
         eyebrow="Staff Attendance"
         title={language === 'th' ? 'เช็กชื่อด้วย QR รอบกิจกรรม' : 'Session QR Check-in'}
         description={language === 'th' ? 'กรอกอีเมลและเบอร์โทรที่ใช้ลงทะเบียนทีมงาน หากไม่ได้เข้าสู่ระบบ' : 'Enter the email and phone used for staff registration if you are not signed in.'}
+        actions={<HelpButton topicId="staff-attendance.session-qr" variant="link" />}
       />
       {loading ? <LoadingSkeleton /> : null}
       {!loading && !token ? (

@@ -1,8 +1,10 @@
 import { CalendarClock, Plus, RefreshCw, UsersRound } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
@@ -53,6 +55,7 @@ export function AdminStaffAttendancePage() {
   });
 
   const sessions = useMemo(() => state.data?.sessions ?? [], [state.data?.sessions]);
+  const timezoneHint = language === 'th' ? 'เวลาไทย (Asia/Bangkok)' : 'Thailand local time (Asia/Bangkok)';
   const totals = useMemo(() => sessions.reduce(
     (sum, session) => {
       sum.total += session.summary?.total_targeted ?? 0;
@@ -89,6 +92,7 @@ export function AdminStaffAttendancePage() {
         description={language === 'th' ? 'สร้างรอบเช็กชื่อ แสดง QR ให้ทีมงานสแกน และเช็กชื่อสำรองแบบ manual ได้' : 'Create sessions, show QR links for staff, and manually check staff in when needed.'}
         actions={(
           <>
+            <HelpButton topicId="admin-attendance.create-session" variant="link" />
             <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
             <Button icon={<Plus size={18} />} onClick={() => setCreating(true)}>{language === 'th' ? 'สร้างรอบเช็กชื่อ' : 'Create session'}</Button>
           </>
@@ -125,6 +129,11 @@ export function AdminStaffAttendancePage() {
 
       <Modal open={creating} title={language === 'th' ? 'สร้างรอบเช็กชื่อ' : 'Create attendance session'} onClose={() => setCreating(false)}>
         <form className="form-grid" onSubmit={submit}>
+          <Card className="privacy-notice full-span" variant="soft">
+            <strong>{language === 'th' ? 'เวลาทั้งหมดเป็นเวลาไทย' : 'All times use Thailand local time'}</strong>
+            <span>{language === 'th' ? 'กรอกเวลาตามเครื่องของคุณ ไม่ต้องบวกหรือลบ 7 ชั่วโมงเอง' : 'Enter the time from your device. Do not add or subtract 7 hours manually.'}</span>
+            <HelpButton topicId="admin-attendance.create-session" variant="compact" />
+          </Card>
           <Input label={language === 'th' ? 'ชื่อรอบ' : 'Title'} value={form.title ?? ''} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
           <Select label={language === 'th' ? 'ประเภท' : 'Type'} value={form.session_type ?? 'check_in'} onChange={(event) => setForm({ ...form, session_type: event.target.value as StaffAttendanceSessionInput['session_type'] })} options={sessionTypes} />
           <Select label={language === 'th' ? 'กลุ่มเป้าหมาย' : 'Target'} value={form.target_scope ?? 'all'} onChange={(event) => setForm({ ...form, target_scope: event.target.value as StaffAttendanceSessionInput['target_scope'] })} options={targetScopes} />
@@ -137,15 +146,15 @@ export function AdminStaffAttendancePage() {
           {form.target_scope === 'role' ? (
             <Select label={language === 'th' ? 'ฝ่าย/หน้าที่' : 'Role'} value={form.role_filter ?? ''} onChange={(event) => setForm({ ...form, role_filter: event.target.value })} options={staffOperationalRoles} />
           ) : null}
-          <Input label={language === 'th' ? 'เริ่ม' : 'Starts'} type="datetime-local" value={form.starts_at ?? ''} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} required />
-          <Input label={language === 'th' ? 'นับว่าสายหลัง' : 'Late after'} type="datetime-local" value={form.late_after ?? ''} onChange={(event) => setForm({ ...form, late_after: event.target.value })} />
-          <Input label={language === 'th' ? 'สิ้นสุด' : 'Ends'} type="datetime-local" value={form.ends_at ?? ''} onChange={(event) => setForm({ ...form, ends_at: event.target.value })} />
+          <Input label={language === 'th' ? 'เริ่ม' : 'Starts'} type="datetime-local" value={form.starts_at ?? ''} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} hint={timezoneHint} required />
+          <Input label={language === 'th' ? 'นับว่าสายหลัง' : 'Late after'} type="datetime-local" value={form.late_after ?? ''} onChange={(event) => setForm({ ...form, late_after: event.target.value })} hint={timezoneHint} />
+          <Input label={language === 'th' ? 'สิ้นสุด' : 'Ends'} type="datetime-local" value={form.ends_at ?? ''} onChange={(event) => setForm({ ...form, ends_at: event.target.value })} hint={timezoneHint} />
           <Select label={language === 'th' ? 'สถานะ' : 'Status'} value={form.status ?? 'draft'} onChange={(event) => setForm({ ...form, status: event.target.value as StaffAttendanceSessionInput['status'] })} options={['draft', 'active']} />
           <details className="filter-disclosure">
             <summary>{language === 'th' ? 'ตัวเลือกขั้นสูง' : 'Advanced options'}</summary>
             <div className="form-grid">
               <Input label={language === 'th' ? 'คำอธิบาย' : 'Description'} value={form.description ?? ''} onChange={(event) => setForm({ ...form, description: event.target.value })} />
-              <Input label={language === 'th' ? 'QR หมดอายุ' : 'QR expires at'} type="datetime-local" value={form.qr_expires_at ?? ''} onChange={(event) => setForm({ ...form, qr_expires_at: event.target.value })} />
+              <Input label={language === 'th' ? 'QR หมดอายุ' : 'QR expires at'} type="datetime-local" value={form.qr_expires_at ?? ''} onChange={(event) => setForm({ ...form, qr_expires_at: event.target.value })} hint={timezoneHint} />
             </div>
           </details>
           <div className="form-actions">

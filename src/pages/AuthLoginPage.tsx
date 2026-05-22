@@ -2,6 +2,7 @@ import { LogIn, LogOut, UserCheck } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { HelpButton } from '../components/help/HelpButton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -25,6 +26,7 @@ export function AuthLoginPage() {
   const routeState = location.state as { message?: string; returnTo?: string } | null;
   const routeMessage = routeState?.message;
   const returnTo = routeState?.returnTo;
+  const loginHelpTopic = location.pathname.startsWith('/admin') ? 'admin.login' : 'staff.login';
 
   useEffect(() => {
     let active = true;
@@ -116,7 +118,10 @@ export function AuthLoginPage() {
       <Toast toast={toast} />
       <div className="section-heading">
         <p className="eyebrow">Staff Sign In</p>
-        <h1>{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Sign In'}</h1>
+        <div className="section-title-row">
+          <h1>{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Sign In'}</h1>
+          <HelpButton topicId={loginHelpTopic} variant="compact" />
+        </div>
         <p>{language === 'th' ? 'ใช้บัญชีที่ได้รับสิทธิ์ทีมงานหรือผู้ดูแลระบบ' : 'Use an account with staff or admin access.'}</p>
       </div>
       {routeMessage ? (
