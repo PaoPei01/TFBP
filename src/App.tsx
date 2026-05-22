@@ -18,6 +18,8 @@ const AnnouncementsPage = lazy(() => import('./pages/AnnouncementsPage').then((m
 const ChangeLogPage = lazy(() => import('./pages/ChangeLogPage').then((module) => ({ default: module.ChangeLogPage })));
 const DataHealthPage = lazy(() => import('./pages/DataHealthPage').then((module) => ({ default: module.DataHealthPage })));
 const EmergencyDashboardPage = lazy(() => import('./pages/EmergencyDashboardPage').then((module) => ({ default: module.EmergencyDashboardPage })));
+const EventsPage = lazy(() => import('./pages/EventsPage').then((module) => ({ default: module.EventsPage })));
+const EventDetailPage = lazy(() => import('./pages/EventDetailPage').then((module) => ({ default: module.EventDetailPage })));
 const GroupDashboardPage = lazy(() => import('./pages/GroupDashboardPage').then((module) => ({ default: module.GroupDashboardPage })));
 const DocumentCenterPage = lazy(() => import('./pages/DocumentCenterPage').then((module) => ({ default: module.DocumentCenterPage })));
 const DocumentGeneratePage = lazy(() => import('./pages/DocumentGeneratePage').then((module) => ({ default: module.DocumentGeneratePage })));
@@ -28,6 +30,7 @@ const GuideCenterPage = lazy(() => import('./pages/GuideCenterPage').then((modul
 const GuideCategoryPage = lazy(() => import('./pages/GuideCategoryPage').then((module) => ({ default: module.GuideCategoryPage })));
 const GuideTopicPage = lazy(() => import('./pages/GuideTopicPage').then((module) => ({ default: module.GuideTopicPage })));
 const PendingRequestsPage = lazy(() => import('./pages/PendingRequestsPage').then((module) => ({ default: module.PendingRequestsPage })));
+const AdminEventsPage = lazy(() => import('./pages/AdminEventsPage').then((module) => ({ default: module.AdminEventsPage })));
 const AdminStaffAttendancePage = lazy(() => import('./pages/AdminStaffAttendancePage').then((module) => ({ default: module.AdminStaffAttendancePage })));
 const AdminStaffAttendanceSessionPage = lazy(() => import('./pages/AdminStaffAttendanceSessionPage').then((module) => ({ default: module.AdminStaffAttendanceSessionPage })));
 const StaffAttendancePage = lazy(() => import('./pages/StaffAttendancePage').then((module) => ({ default: module.StaffAttendancePage })));
@@ -51,6 +54,8 @@ export function App() {
         <Route index element={<PublicListPage />} />
         <Route path="announcements" element={<Suspense fallback={<LoadingSkeleton />}><AnnouncementsPage /></Suspense>} />
         <Route path="announcements/:id" element={<Suspense fallback={<LoadingSkeleton />}><AnnouncementDetailPage /></Suspense>} />
+        <Route path="events" element={<Suspense fallback={<LoadingSkeleton />}><EventsPage /></Suspense>} />
+        <Route path="events/:eventSlug" element={<Suspense fallback={<LoadingSkeleton />}><EventDetailPage /></Suspense>} />
         <Route path="guide" element={<Suspense fallback={<LoadingSkeleton />}><GuideCenterPage /></Suspense>} />
         <Route path="guide/:category" element={<Suspense fallback={<LoadingSkeleton />}><GuideCategoryPage /></Suspense>} />
         <Route path="guide/:category/:topic" element={<Suspense fallback={<LoadingSkeleton />}><GuideTopicPage /></Suspense>} />
@@ -75,6 +80,7 @@ export function App() {
         </Route>
         <Route element={<AdminGuard />}>
           <Route path="admin/dashboard" element={<Suspense fallback={<LoadingSkeleton />}><AdminDashboardPage /></Suspense>} />
+          <Route path="admin/events" element={<Suspense fallback={<LoadingSkeleton />}><AdminEventsPage /></Suspense>} />
           <Route path="admin/announcements" element={<Suspense fallback={<LoadingSkeleton />}><AdminAnnouncementsPage /></Suspense>} />
           <Route path="admin/announcements/new" element={<Suspense fallback={<LoadingSkeleton />}><AnnouncementEditPage /></Suspense>} />
           <Route path="admin/announcements/:id/edit" element={<Suspense fallback={<LoadingSkeleton />}><AnnouncementEditPage /></Suspense>} />

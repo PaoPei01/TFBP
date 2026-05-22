@@ -20,6 +20,10 @@ export function adminEventPath(eventId = 'default') {
   return `/admin/events/${eventId}`;
 }
 
+export function adminEventsPath() {
+  return '/admin/events';
+}
+
 export function legacyDefaultEventRoute(route: 'home' | 'edit' | 'admin-dashboard' | 'staff-attendance') {
   const routes = {
     home: '/',

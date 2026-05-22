@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, FileText, HeartPulse, Home, Languages, LogOut, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
+import { Bell, CalendarDays, FileText, HeartPulse, Home, Languages, LogOut, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MobileMoreMenu } from './mobile/MobileMoreMenu';
 import { RoleAwareBottomNav } from './mobile/RoleAwareBottomNav';
@@ -86,6 +86,7 @@ export function Layout() {
         </Link>
         <div className="nav-links">
           <NavLink to="/">{t.participants}</NavLink>
+          <NavLink to="/events">{language === 'th' ? 'กิจกรรม' : 'Events'}</NavLink>
           <NavLink to="/announcements">{language === 'th' ? 'ประกาศ' : 'Info'}</NavLink>
           <NavLink to="/guide">{language === 'th' ? 'คู่มือ' : 'Guide'}</NavLink>
           <NavLink to="/edit">{t.edit}</NavLink>
@@ -98,6 +99,7 @@ export function Layout() {
               {isAdmin ? (
                 <>
                   <span className="nav-menu-label">{language === 'th' ? 'งานหลัก' : 'Core'}</span>
+                  <NavLink to="/admin/events">{language === 'th' ? 'กิจกรรม' : 'Events'}</NavLink>
                   <NavLink to="/admin/dashboard">{t.dashboard}</NavLink>
                   <NavLink to="/admin/announcements">{language === 'th' ? 'ประกาศ/ข้อมูลกิจกรรม' : 'Announcements'}</NavLink>
                   <NavLink to="/admin/groups">{t.groups}</NavLink>
@@ -252,6 +254,7 @@ export function Layout() {
         {isAdmin ? (
           <>
             <NavLink to="/admin/dashboard"><Shield size={18} />{language === 'th' ? 'แดชบอร์ด' : 'Dashboard'}</NavLink>
+            <NavLink to="/admin/events"><CalendarDays size={18} />{language === 'th' ? 'กิจกรรม' : 'Events'}</NavLink>
             <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'คู่มือ' : 'Guide'}</NavLink>
             <NavLink to="/admin/groups"><UsersRound size={18} />{language === 'th' ? 'จัดกลุ่ม' : 'Groups'}</NavLink>
             <NavLink to="/admin/staff"><UserCheck size={18} />{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
@@ -282,6 +285,7 @@ export function Layout() {
         ) : (
           <>
             <NavLink to="/"><Home size={18} />{language === 'th' ? 'รายชื่อผู้เข้าร่วม' : 'Participants'}</NavLink>
+            <NavLink to="/events"><CalendarDays size={18} />{language === 'th' ? 'กิจกรรม' : 'Events'}</NavLink>
             <NavLink to="/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
             <NavLink to="/guide"><FileText size={18} />{language === 'th' ? 'คู่มือ' : 'Guide'}</NavLink>
             <NavLink to="/edit"><Pencil size={18} />{language === 'th' ? 'แก้ไขข้อมูล' : 'Edit Info'}</NavLink>

@@ -1,10 +1,12 @@
 import type { ActivityEvent } from './eventTypes';
 
 export const DEFAULT_EVENT_SLUG = 'entaneer-bonding-69';
+export const DEFAULT_EVENT_NAME_TH = 'สานสัมพันธ์ 69';
+export const DEFAULT_EVENT_NAME_EN = 'Entaneer Bonding 69';
 
 export const DEFAULT_EVENT: ActivityEvent = {
-  name_th: 'สานสัมพันธ์ 69',
-  name_en: 'Entaneer Bonding 69',
+  name_th: DEFAULT_EVENT_NAME_TH,
+  name_en: DEFAULT_EVENT_NAME_EN,
   slug: DEFAULT_EVENT_SLUG,
   event_type: 'activity',
   academic_year: '2569',

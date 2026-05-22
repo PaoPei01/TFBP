@@ -32,6 +32,16 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Tap "ดูข้อมูลเต็ม / แก้ไขข้อมูล" and confirm it goes to `/edit`.
 - [ ] Bottom nav does not cover modal buttons.
 
+## Events
+
+- [ ] Open `/events`.
+- [ ] Default event `สานสัมพันธ์ 69 / Entaneer Bonding 69` appears after applying migrations.
+- [ ] Event card action opens `/events/entaneer-bonding-69`.
+- [ ] Event detail page shows event status and coming-soon actions.
+- [ ] Event detail page links back to the existing participant list and `/edit`.
+- [ ] `/` still loads the existing public participant list and does not depend on the events table.
+- [ ] Mobile `/events` cards fit iPhone SE width without horizontal scroll.
+
 ## Announcements
 
 - [ ] Open `/announcements`.
@@ -134,6 +144,14 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Cancel delete.
 - [ ] Mobile filter sheet works.
 - [ ] Mobile card actions are visible and tappable.
+
+## Admin Events
+
+- [ ] Admin can open `/admin/events`.
+- [ ] `/admin/events` shows the default event after applying migrations.
+- [ ] Admin Events page is read-only in this phase.
+- [ ] Public/non-admin users cannot access `/admin/events`.
+- [ ] Existing `/admin/dashboard` still loads normally.
 
 ## Pending Participant Requests
 

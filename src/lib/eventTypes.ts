@@ -25,21 +25,34 @@ export type EventFormType =
   | 'health_info'
   | 'attendance_precheck';
 
-export type ActivityEvent = {
-  id?: string;
+export type EventRecord = {
+  id: string;
   name_th: string;
-  name_en: string;
+  name_en: string | null;
   slug: string;
+  description: string | null;
+  event_type: string | null;
+  academic_year: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  location: string | null;
+  status: EventStatus;
+  visibility: EventVisibility;
+  cover_image_path: string | null;
+  created_by?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type ActivityEvent = Omit<EventRecord, 'id' | 'created_at' | 'updated_at' | 'description' | 'event_type' | 'academic_year' | 'start_date' | 'end_date' | 'location' | 'cover_image_path'> & {
+  id?: string;
   description?: string | null;
   event_type?: string | null;
   academic_year?: string | null;
   start_date?: string | null;
   end_date?: string | null;
   location?: string | null;
-  status: EventStatus;
-  visibility: EventVisibility;
   cover_image_path?: string | null;
-  created_by?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 };

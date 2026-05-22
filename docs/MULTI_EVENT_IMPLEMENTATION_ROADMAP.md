@@ -17,6 +17,8 @@ Risk: low.
 
 ## P1: Add Events Table and Default Event
 
+Status: completed initial read-only pass on 2026-05-22.
+
 Tasks:
 
 - create `events`
@@ -27,12 +29,31 @@ Tasks:
 - add event context utilities
 - keep existing UI reading the same legacy data
 
+Completed in initial pass:
+
+- Added additive migration `202605220003_events_default_event.sql`.
+- Added `public.events` with RLS policies for public event read and admin management.
+- Seeded default event `entaneer-bonding-69`.
+- Added event service helpers and read-only routes:
+  - `/events`
+  - `/events/:eventSlug`
+  - `/admin/events`
+- Kept `/`, `/edit`, `/staff/attendance`, `/admin/dashboard`, attendance, documents, and public search on legacy single-event data.
+
 Do not:
 
 - make `event_id` non-null on old tables yet
 - change public search behavior yet
 
 Risk: low to medium.
+
+Deferred from P1:
+
+- Event CRUD.
+- Admin event detail management.
+- Event switcher connected to real event context.
+- `event_id` on legacy tables.
+- Public search/event-specific registration.
 
 ## P2: Add People Table and Mapping
 

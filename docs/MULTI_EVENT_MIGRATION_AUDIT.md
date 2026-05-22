@@ -18,6 +18,27 @@ The safest path is an additive migration:
 
 Do not add `event_id` everywhere in one migration. That would risk breaking public search, staff attendance, document center, RLS, and RPCs at the same time.
 
+## Implementation Note: P1 Events Table
+
+Initial P1 implementation has started with an additive `public.events` table and default event seed only. This does not change legacy participant, staff, attendance, announcement, or document reads.
+
+Implemented scope:
+
+- `public.events`
+- default event `entaneer-bonding-69`
+- public read for `visibility = 'public'`
+- admin read/manage policies using `public.is_admin(auth.uid())`
+- read-only public `/events` and `/events/:eventSlug`
+- read-only admin `/admin/events`
+
+Still intentionally deferred:
+
+- adding `event_id` to legacy tables
+- migrating `profiles` or `staff_profiles`
+- event-scoped attendance RPCs
+- event-scoped announcements/documents
+- event registration and staff application flows
+
 ## Current Single-Event Assumptions
 
 | Area | Current assumption | Risk in multi-event mode | Safe first step |
