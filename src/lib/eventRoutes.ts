@@ -16,6 +16,10 @@ export function eventStaffApplicationStatusPath(eventSlug = DEFAULT_EVENT_SLUG) 
   return `${eventPath(eventSlug)}/staff/application-status`;
 }
 
+export function eventProfileCheckPath(eventSlug = DEFAULT_EVENT_SLUG) {
+  return `${eventPath(eventSlug)}/profile-check`;
+}
+
 export function eventAnnouncementsPath(eventSlug = DEFAULT_EVENT_SLUG) {
   return `${eventPath(eventSlug)}/announcements`;
 }

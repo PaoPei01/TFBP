@@ -48,7 +48,25 @@ function isPromoted(row: AdminStaffApplicationRow) {
 }
 
 function applicantName(row: AdminStaffApplicationRow) {
-  return row.people?.nickname || row.people?.name_th || row.people?.name_en || row.people?.student_id || 'ผู้สมัคร';
+  return row.people?.nickname || row.people?.name_th || row.people?.name_en || row.requested_name_th || row.people?.student_id || row.requested_student_id || 'ผู้สมัคร';
+}
+
+function identityStatusLabel(status: string, language: 'th' | 'en') {
+  const labels: Record<string, { th: string; en: string }> = {
+    verified: { th: 'ยืนยันแล้ว', en: 'Verified' },
+    email_mismatch: { th: 'CMU Mail ไม่ตรง', en: 'CMU Mail mismatch' },
+    pending_identity_review: { th: 'รอตรวจสอบตัวตน', en: 'Pending identity review' },
+    not_found: { th: 'ไม่พบข้อมูลในฐาน', en: 'Not found' },
+    rejected_identity: { th: 'ไม่ผ่านการยืนยัน', en: 'Rejected identity' },
+    unverified: { th: 'ยังไม่ยืนยัน', en: 'Unverified' },
+  };
+  return labels[status]?.[language] ?? status;
+}
+
+function identityTone(status: string) {
+  if (status === 'verified') return 'approved';
+  if (status === 'rejected_identity' || status === 'not_found') return 'rejected';
+  return 'pending';
 }
 
 function consentText(value: unknown, language: 'th' | 'en') {
@@ -90,6 +108,7 @@ export function AdminEventApplicationsPage() {
   const [toast, setToast] = useState<ToastState>(null);
   const [filters, setFilters] = useState({
     status: '',
+    identityStatus: '',
     finalDuty: '',
     preferredDuty: '',
     yearLevel: '',
@@ -119,6 +138,7 @@ export function AdminEventApplicationsPage() {
 
   const filteredRows = useMemo(() => rows.filter((row) => {
     if (filters.status && row.status !== filters.status) return false;
+    if (filters.identityStatus && row.identity_status !== filters.identityStatus) return false;
     if (filters.finalDuty && finalDuty(row) !== filters.finalDuty) return false;
     if (filters.preferredDuty && !duties(row).includes(filters.preferredDuty)) return false;
     if (filters.yearLevel && String(row.people?.year_level ?? '') !== filters.yearLevel) return false;
@@ -258,6 +278,8 @@ export function AdminEventApplicationsPage() {
         student_id: row.people?.student_id,
         year_level: row.people?.year_level,
         major: row.people?.major,
+        identity_status: row.identity_status,
+        requested_student_id: row.requested_student_id,
         status: row.status,
         preferred_duties: duties(row).join(', '),
         final_duty: finalDuty(row),
@@ -268,12 +290,12 @@ export function AdminEventApplicationsPage() {
         promoted_to_event_staff: isPromoted(row) ? 'yes' : 'no',
       };
       if (preset === 'contact' || preset === 'full_admin') {
-        base.email = row.people?.email;
-        base.phone = row.people?.phone;
+        base.email = row.requested_email ?? row.people?.email;
+        base.phone = row.requested_phone ?? row.people?.phone;
       }
       if (preset === 'rehearsal') {
-        base.email = row.people?.email;
-        base.phone = row.people?.phone;
+        base.email = row.requested_email ?? row.people?.email;
+        base.phone = row.requested_phone ?? row.people?.phone;
       }
       if (preset === 'full_admin') {
         base.health_or_limitations = row.answers?.health_or_limitations;
@@ -370,6 +392,12 @@ export function AdminEventApplicationsPage() {
                 onChange={(eventInput) => setFilters({ ...filters, status: eventInput.target.value })}
                 options={STAFF_APPLICATION_STATUSES.map((status) => ({ value: status, label: getApplicationStatusLabel(status, language) }))}
               />
+              <Select
+                label={language === 'th' ? 'สถานะตัวตน' : 'Identity'}
+                value={filters.identityStatus}
+                onChange={(eventInput) => setFilters({ ...filters, identityStatus: eventInput.target.value })}
+                options={['verified', 'email_mismatch', 'pending_identity_review', 'not_found', 'rejected_identity'].map((status) => ({ value: status, label: identityStatusLabel(status, language) }))}
+              />
               <Select label={language === 'th' ? 'หน้าที่สุดท้าย' : 'Final duty'} value={filters.finalDuty} onChange={(eventInput) => setFilters({ ...filters, finalDuty: eventInput.target.value })} options={finalDutyOptions} />
               <Select label={language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duty'} value={filters.preferredDuty} onChange={(eventInput) => setFilters({ ...filters, preferredDuty: eventInput.target.value })} options={filterOptions.preferred} />
               <Select label={language === 'th' ? 'ชั้นปี' : 'Year'} value={filters.yearLevel} onChange={(eventInput) => setFilters({ ...filters, yearLevel: eventInput.target.value })} options={filterOptions.years} />
@@ -392,13 +420,14 @@ export function AdminEventApplicationsPage() {
             getKey={(row) => row.id}
             emptyText={language === 'th' ? 'ไม่พบใบสมัครตามตัวกรอง' : 'No applications match the filters'}
             mobileTitle={(row) => applicantName(row)}
-            mobileSubtitle={(row) => `${getApplicationStatusLabel(row.status, language)} · ${row.people?.major ?? '-'}`}
+            mobileSubtitle={(row) => `${getApplicationStatusLabel(row.status, language)} · ${identityStatusLabel(row.identity_status ?? 'unverified', language)} · ${row.people?.major ?? row.requested_major ?? '-'}`}
             mobileMeta={(row) => formatBangkokDateTime(row.submitted_at, language)}
             mobileActions={(row) => actionButtons(row, true)}
             columns={[
               { key: 'name', header: language === 'th' ? 'ผู้สมัคร' : 'Applicant', render: (row) => <strong>{applicantName(row)}</strong>, priority: 'primary' },
               { key: 'year', header: language === 'th' ? 'ชั้นปี' : 'Year', render: (row) => row.people?.year_level ?? '-' },
               { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => row.people?.major ?? '-' },
+              { key: 'identity', header: language === 'th' ? 'ตัวตน' : 'Identity', render: (row) => <Badge status={identityTone(row.identity_status ?? 'unverified')}>{identityStatusLabel(row.identity_status ?? 'unverified', language)}</Badge> },
               { key: 'preferred', header: language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties', render: (row) => duties(row).join(', ') || '-' },
               { key: 'availability', header: language === 'th' ? 'เวลาว่าง' : 'Availability', render: (row) => text(row.availability?.text) || '-' },
               { key: 'rehearsal', header: language === 'th' ? 'ซ้อม' : 'Rehearsal', render: (row) => text(row.answers?.can_attend_rehearsal) || '-' },
@@ -459,6 +488,12 @@ export function AdminEventApplicationsPage() {
                     <p>{language === 'th' ? 'สามารถอนุมัติก่อนได้ แต่ควรจัดสรรหน้าที่ก่อนวันงาน' : 'You can approve first, but assign a final duty before the event day.'}</p>
                   </Card>
                 ) : null}
+                {reviewDraft.status === 'approved' && reviewDraft.row.identity_status !== 'verified' ? (
+                  <Card variant="warning">
+                    <strong>{language === 'th' ? 'ใบสมัครนี้ยังรอตรวจสอบตัวตน' : 'Identity still needs review'}</strong>
+                    <p>{language === 'th' ? 'สามารถอนุมัติได้ แต่ควรตรวจคำร้องหรือข้อมูล CMU Mail ก่อนใช้งานจริง' : 'You can approve, but review the identity/update request before operations.'}</p>
+                  </Card>
+                ) : null}
                 {reviewDraft.status === 'rejected' ? (
                   <Card variant="warning">
                     <strong>{language === 'th' ? 'แนะนำให้ใส่หมายเหตุ' : 'Review note recommended'}</strong>
@@ -484,14 +519,17 @@ export function AdminEventApplicationsPage() {
                   <div className="mobile-row-head">
                     <div>
                       <strong>{applicantName(detailRow)}</strong>
-                      <span>{detailRow.people?.student_id ?? '-'} · {detailRow.people?.major ?? '-'} · {detailRow.people?.year_level ?? '-'}</span>
+                      <span>{detailRow.people?.student_id ?? detailRow.requested_student_id ?? '-'} · {detailRow.people?.major ?? detailRow.requested_major ?? '-'} · {detailRow.people?.year_level ?? '-'}</span>
                     </div>
                     <Badge status={getApplicationStatusTone(detailRow.status)}>{getApplicationStatusLabel(detailRow.status, language)}</Badge>
                   </div>
                 </Card>
                 <div className="application-detail-grid">
-                  <span>Email</span><strong>{detailRow.people?.email ?? '-'}</strong>
-                  <span>{language === 'th' ? 'เบอร์โทร' : 'Phone'}</span><strong>{detailRow.people?.phone ?? '-'}</strong>
+                  <span>{language === 'th' ? 'สถานะตัวตน' : 'Identity status'}</span><strong>{identityStatusLabel(detailRow.identity_status ?? 'unverified', language)}</strong>
+                  <span>{language === 'th' ? 'CMU Mail ที่ผู้สมัครกรอก' : 'Requested CMU Mail'}</span><strong>{detailRow.requested_email ?? '-'}</strong>
+                  <span>{language === 'th' ? 'เบอร์โทรที่ผู้สมัครกรอก' : 'Requested phone'}</span><strong>{detailRow.requested_phone ?? '-'}</strong>
+                  <span>{language === 'th' ? 'รหัสนักศึกษาที่กรอก' : 'Requested student ID'}</span><strong>{detailRow.requested_student_id ?? '-'}</strong>
+                  <span>{language === 'th' ? 'ข้อมูลคนที่ match' : 'Matched person'}</span><strong>{detailRow.people ? `${detailRow.people.student_id ?? '-'} · ${detailRow.people.email ?? '-'} · ${detailRow.people.phone ?? '-'}` : '-'}</strong>
                   <span>{language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties'}</span><strong>{duties(detailRow).join(', ') || '-'}</strong>
                   <span>{language === 'th' ? 'เวลาว่าง' : 'Availability'}</span><strong>{text(detailRow.availability?.text) || text(detailRow.answers?.availability) || '-'}</strong>
                   <span>{language === 'th' ? 'วันซ้อม' : 'Rehearsal'}</span><strong>{text(detailRow.answers?.can_attend_rehearsal) || '-'}</strong>

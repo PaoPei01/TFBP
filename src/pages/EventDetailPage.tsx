@@ -9,7 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
 import { getEventContent } from '../lib/eventContent';
 import { formatBangkokDate } from '../lib/dateTime';
-import { eventAnnouncementsPath, eventRegisterPath, eventStaffApplicationStatusPath, eventStaffApplyPath, legacyDefaultEventRoute } from '../lib/eventRoutes';
+import { eventAnnouncementsPath, eventProfileCheckPath, eventRegisterPath, eventStaffApplicationStatusPath, eventStaffApplyPath, legacyDefaultEventRoute } from '../lib/eventRoutes';
 import { fetchEventBySlug } from '../services/events';
 
 function statusLabel(status: string, language: 'th' | 'en') {
@@ -246,7 +246,10 @@ export function EventDetailPage() {
                 <Link className="btn btn-secondary" to={eventRegisterPath(event.slug)}>{language === 'th' ? 'ลงทะเบียนเข้าร่วม' : 'Register'}</Link>
               )}
               {event.slug === 'parent-orientation-staff-2569' ? (
-                <Link className="btn btn-secondary" to={eventStaffApplicationStatusPath(event.slug)}>{language === 'th' ? 'ตรวจสอบสถานะใบสมัคร' : 'Check application status'}</Link>
+                <>
+                  <Link className="btn btn-secondary" to={eventProfileCheckPath(event.slug)}>{language === 'th' ? 'ตรวจสอบ/ขอแก้ไขข้อมูล' : 'Check/update profile'}</Link>
+                  <Link className="btn btn-secondary" to={eventStaffApplicationStatusPath(event.slug)}>{language === 'th' ? 'ตรวจสอบสถานะใบสมัคร' : 'Check application status'}</Link>
+                </>
               ) : null}
               <Link className="btn btn-secondary" to={eventAnnouncementsPath(event.slug)}>{language === 'th' ? 'ประกาศกิจกรรม' : 'Announcements'}</Link>
               <Link className="btn btn-primary" to={legacyDefaultEventRoute('edit')}>{language === 'th' ? 'ตรวจสอบข้อมูลของฉัน' : 'Check my info'}</Link>

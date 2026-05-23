@@ -129,6 +129,84 @@ export async function submitEventStaffApplication(input: {
   return data as EventSubmissionResult;
 }
 
+export type ApplicationIdentityStatus = 'verified' | 'email_mismatch' | 'pending_identity_review' | 'not_found' | 'rejected_identity' | 'unverified';
+
+export type PersonApplicationLookupResult = {
+  success?: boolean;
+  code?: string;
+  found: boolean;
+  person_id?: string;
+  identity_status: ApplicationIdentityStatus;
+  can_continue_application: boolean;
+  requires_update_request: boolean;
+  message_th?: string;
+  safe_person?: {
+    student_id: string | null;
+    display_name: string | null;
+    nickname: string | null;
+    major: string | null;
+    year_level: number | null;
+    masked_email: string | null;
+    masked_phone: string | null;
+  };
+};
+
+export async function lookupPersonForApplication(input: {
+  eventSlug: string;
+  studentId: string;
+  email: string;
+  phone?: string;
+  nameTh?: string;
+  nameEn?: string;
+}): Promise<PersonApplicationLookupResult> {
+  const { data, error } = await supabase.rpc('lookup_person_for_application', {
+    input_event_slug: input.eventSlug,
+    input_student_id: input.studentId.trim(),
+    input_email: cleanEmail(input.email),
+    input_phone: cleanPhone(input.phone ?? ''),
+    input_name_th: input.nameTh ?? '',
+    input_name_en: input.nameEn ?? '',
+  });
+  if (error) throw error;
+  return data as PersonApplicationLookupResult;
+}
+
+export type PersonUpdateRequestResult = {
+  success: boolean;
+  code: string;
+  message_th?: string;
+  request?: {
+    id: string;
+    status: string;
+  };
+};
+
+export async function submitPersonUpdateRequest(input: {
+  eventSlug: string;
+  studentId: string;
+  email: string;
+  phone: string;
+  nameTh: string;
+  nameEn?: string;
+  major?: string;
+  requestType?: string;
+  evidenceNote?: string;
+}): Promise<PersonUpdateRequestResult> {
+  const { data, error } = await supabase.rpc('submit_person_update_request', {
+    input_event_slug: input.eventSlug,
+    input_student_id: input.studentId.trim(),
+    input_email: cleanEmail(input.email),
+    input_phone: cleanPhone(input.phone),
+    input_name_th: input.nameTh,
+    input_name_en: input.nameEn ?? '',
+    input_major: input.major ?? '',
+    input_request_type: input.requestType ?? 'email_correction',
+    input_evidence_note: input.evidenceNote ?? '',
+  });
+  if (error) throw error;
+  return data as PersonUpdateRequestResult;
+}
+
 export type StaffApplicationStatusResult = {
   success: boolean;
   code: 'found' | 'identity_required' | 'not_found' | string;
@@ -164,7 +242,7 @@ export async function checkStaffApplicationStatus(input: {
 export type AdminStaffApplicationRow = {
   id: string;
   event_id: string;
-  person_id: string;
+  person_id: string | null;
   preferred_role: string | null;
   preferred_team: string | null;
   availability: Record<string, unknown>;
@@ -176,6 +254,15 @@ export type AdminStaffApplicationRow = {
   reviewed_at: string | null;
   review_note: string | null;
   answers: Record<string, unknown>;
+  identity_status: ApplicationIdentityStatus;
+  identity_review_note: string | null;
+  requested_email: string | null;
+  requested_phone: string | null;
+  requested_student_id: string | null;
+  requested_name_th: string | null;
+  requested_name_en: string | null;
+  requested_major: string | null;
+  update_request_id: string | null;
   people?: {
     student_id: string | null;
     name_th: string | null;
@@ -185,6 +272,42 @@ export type AdminStaffApplicationRow = {
     phone: string | null;
     major: string | null;
     year_level: number | null;
+  } | null;
+};
+
+export type PersonUpdateRequestRow = {
+  id: string;
+  person_id: string | null;
+  event_id: string | null;
+  request_type: string;
+  requested_student_id: string | null;
+  requested_email: string | null;
+  requested_phone: string | null;
+  requested_name_th: string | null;
+  requested_name_en: string | null;
+  requested_nickname: string | null;
+  requested_major: string | null;
+  verification_data: Record<string, unknown>;
+  evidence_note: string | null;
+  status: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+  created_at: string | null;
+  people?: {
+    student_id: string | null;
+    name_th: string | null;
+    name_en: string | null;
+    nickname: string | null;
+    email: string | null;
+    phone: string | null;
+    major: string | null;
+    year_level: number | null;
+  } | null;
+  events?: {
+    slug: string;
+    name_th: string;
+    name_en: string | null;
   } | null;
 };
 
@@ -291,7 +414,7 @@ export async function fetchAdminEventOverview(eventId: string): Promise<AdminEve
 export async function fetchAdminEventStaffApplications(eventId: string): Promise<AdminStaffApplicationRow[]> {
   const { data, error } = await supabase
     .from('staff_applications')
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
     .eq('event_id', eventId)
     .order('submitted_at', { ascending: false });
   if (error) throw error;
@@ -316,7 +439,7 @@ export async function updateAdminStaffApplicationReview(input: {
     const row = reviewed as AdminStaffApplicationRow;
     const { data, error } = await supabase
       .from('staff_applications')
-      .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+      .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
       .eq('id', row.id)
       .single();
     if (error) throw error;
@@ -330,7 +453,7 @@ export async function updateAdminStaffApplicationReview(input: {
     .from('staff_applications')
     .update(payload)
     .eq('id', input.id)
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
     .single();
   if (error) throw error;
   return data as unknown as AdminStaffApplicationRow;
@@ -358,4 +481,48 @@ export async function fetchAdminEventStaff(eventId: string): Promise<AdminEventS
     .order('approved_at', { ascending: false, nullsFirst: false });
   if (error) throw error;
   return (data ?? []) as unknown as AdminEventStaffRow[];
+}
+
+export async function fetchPersonUpdateRequests(filters?: {
+  status?: string;
+  requestType?: string;
+  eventId?: string;
+  search?: string;
+}): Promise<PersonUpdateRequestRow[]> {
+  let query = supabase
+    .from('person_update_requests')
+    .select('id,person_id,event_id,request_type,requested_student_id,requested_email,requested_phone,requested_name_th,requested_name_en,requested_nickname,requested_major,verification_data,evidence_note,status,reviewed_by,reviewed_at,review_note,created_at,people(student_id,name_th,name_en,nickname,email,phone,major,year_level),events(slug,name_th,name_en)')
+    .order('created_at', { ascending: false });
+  if (filters?.status) query = query.eq('status', filters.status);
+  if (filters?.requestType) query = query.eq('request_type', filters.requestType);
+  if (filters?.eventId) query = query.eq('event_id', filters.eventId);
+  const { data, error } = await query;
+  if (error) throw error;
+  const rows = (data ?? []) as unknown as PersonUpdateRequestRow[];
+  const search = filters?.search?.trim().toLowerCase();
+  if (!search) return rows;
+  return rows.filter((row) => [
+    row.requested_student_id,
+    row.requested_name_th,
+    row.requested_name_en,
+    row.requested_email,
+    row.people?.student_id,
+    row.people?.name_th,
+    row.people?.name_en,
+    row.people?.email,
+  ].some((value) => String(value ?? '').toLowerCase().includes(search)));
+}
+
+export async function reviewPersonUpdateRequest(input: {
+  id: string;
+  status: 'approved' | 'rejected' | 'cancelled';
+  reviewNote?: string;
+}): Promise<PersonUpdateRequestResult> {
+  const { data, error } = await supabase.rpc('review_person_update_request', {
+    input_request_id: input.id,
+    input_status: input.status,
+    input_review_note: input.reviewNote ?? '',
+  });
+  if (error) throw error;
+  return data as PersonUpdateRequestResult;
 }

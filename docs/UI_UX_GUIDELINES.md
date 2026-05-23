@@ -46,6 +46,9 @@ Destructive actions must live in `DangerZone` or use `ConfirmDialog`. Do not pla
 ## Privacy Rules
 
 - Public pages must never show email, phone, emergency phone, Line, Instagram, Facebook, disease, food allergy, or drug allergy.
+- Public identity lookup may show masked old CMU Mail/phone only when the user provides student ID plus CMU Mail.
+- Public staff application flows must not hard-block real users only because old email/phone data is outdated; use pending admin review copy instead.
+- Public copy for identity mismatch should say: "หาก CMU Mail ในฐานข้อมูลเดิมไม่ถูกต้อง สามารถส่งใบสมัครได้ตามปกติ ระบบจะให้ผู้ดูแลตรวจสอบตัวตนเพิ่มเติมภายหลัง"
 - Medical data is visible only to admin and emergency_staff.
 - If medical data is visible, show a confidentiality notice.
 - Do not cache private medical data unless it is access-controlled and short-lived.

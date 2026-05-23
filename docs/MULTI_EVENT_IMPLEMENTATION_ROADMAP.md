@@ -478,3 +478,33 @@ Use this as the next Codex prompt when ready:
 - [ ] RLS event-role checks tested
 - [ ] rollback plan documented
 - [ ] old routes verified after event-scoped migrations
+
+## Staff Application Identity Review Pass
+
+Status: implemented as an additive identity-review layer for `parent-orientation-staff-2569`.
+
+Completed:
+
+- Added `identity_status` and requested identity/contact fields to `staff_applications`.
+- Added `person_update_requests` for admin-reviewed corrections.
+- Added `lookup_person_for_application()` with student ID as the primary key.
+- Required CMU Mail (`@cmu.ac.th`) for public staff applications and profile checks.
+- Updated `submit_event_staff_application()` so outdated email/phone no longer hard-blocks real applicants.
+- Added `/events/:eventSlug/profile-check` for safe profile lookup and correction requests.
+- Added `/admin/people/update-requests` for admin review of person update requests.
+- Added identity status badges/filter/warnings to admin staff application review.
+
+Privacy/security notes:
+
+- Public users cannot directly update `people`.
+- Public lookup returns only safe/masked old email and phone.
+- Health data is not returned by lookup, update requests, or public profile check.
+- Admin approval updates only safe identity/contact fields and never health data.
+- No email sending or duty auto-assignment was added in this pass.
+
+QA focus:
+
+- CMU Mail validation rejects Gmail/personal email and malformed CMU addresses.
+- Student ID + mismatched CMU Mail can continue with `email_mismatch`.
+- Unknown student ID can continue with `not_found` / pending review.
+- Admin can approve/reject correction requests.

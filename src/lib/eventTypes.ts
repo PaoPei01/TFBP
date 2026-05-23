@@ -83,8 +83,9 @@ export type EventForm = {
 
 export type EventSubmissionResult = {
   success: boolean;
-  code: 'submitted' | 'identity_verification_failed' | 'event_not_open' | 'staff_recruiting_closed' | string;
+  code: 'submitted' | 'submitted_pending_identity_review' | 'identity_verification_failed' | 'event_not_open' | 'staff_recruiting_closed' | string;
   message?: string;
+  message_th?: string;
   event?: {
     id: string;
     slug: string;
@@ -98,9 +99,10 @@ export type EventSubmissionResult = {
   application?: {
     id: string;
     status: string;
+    identity_status?: string;
   };
   person?: {
     person_id: string;
     display_name: string;
-  };
+  } | null;
 };

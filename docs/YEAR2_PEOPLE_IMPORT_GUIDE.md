@@ -156,3 +156,29 @@ Use the dedupe tool only after reviewing source data:
 - confirm the checkbox only when both records are the same person.
 - merged records are archived with `merged_into`; they are not hard deleted.
 - health fields are not shown or merged by this tool.
+
+## Staff Application Identity Policy
+
+For `parent-orientation-staff-2569`, staff application identity now uses a review-friendly policy:
+
+- Primary identity key is `student_id`.
+- Applicants must enter current CMU Mail ending with `@cmu.ac.th`.
+- Phone is treated as current contact information, not the main blocking identity factor.
+- If student ID exists and CMU Mail matches `people.email`, the application is marked `verified`.
+- If student ID exists but CMU Mail differs from old data, the application is allowed with `identity_status = email_mismatch`.
+- If student ID exists but old email is missing/uncertain, the application is allowed with `identity_status = pending_identity_review`.
+- If student ID is not found, the application is allowed with `identity_status = not_found` and requested identity fields for admin review.
+
+Important privacy rule:
+
+- Public lookup never returns full old email or full old phone.
+- Public lookup never returns health data.
+- Public users cannot update `people` directly.
+- Corrections go to `person_update_requests` and require admin review.
+
+Admin review:
+
+- Open `/admin/people/update-requests`.
+- Approve valid CMU Mail/phone/name/major corrections after checking the request.
+- Approval updates `people` safe identity/contact fields only.
+- Health data is never updated through this flow.

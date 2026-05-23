@@ -58,6 +58,18 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Registration submit fails safely if no matching `people` row exists.
 - [ ] Open `/events/parent-orientation-staff-2569/staff/apply`.
 - [ ] Staff application page asks for student ID, email, phone, duties, availability, rehearsal availability, event-day availability, optional experience, health limitations, note, and consent.
+- [ ] Staff application requires CMU Mail ending with `@cmu.ac.th`.
+- [ ] Staff application rejects Gmail/Hotmail/personal email.
+- [ ] Staff application rejects malformed CMU Mail and CMU Mail with spaces.
+- [ ] Staff application identity lookup uses student ID as the primary key.
+- [ ] Student ID + matching CMU Mail shows verified identity.
+- [ ] Student ID + different CMU Mail shows "พบข้อมูลนักศึกษา แต่ CMU Mail ที่กรอกไม่ตรงกับข้อมูลเดิม" and still allows continuing.
+- [ ] Unknown student ID shows "ไม่พบข้อมูลจากรหัสนักศึกษานี้" and still allows submitting for admin identity review.
+- [ ] Email/phone mismatch does not hard-block a real applicant.
+- [ ] Applicant can submit a person update request from the staff application flow.
+- [ ] `/events/parent-orientation-staff-2569/profile-check` loads.
+- [ ] Profile check shows only safe/masked old email/phone.
+- [ ] Profile check does not show health data, private notes, or full old contact fields publicly.
 - [ ] Staff application submit fails safely if staff recruiting is closed or identity is missing.
 - [ ] Open `/events/parent-orientation-staff-2569/staff/application-status`.
 - [ ] Status checker requires email and phone.
@@ -226,6 +238,10 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Changing EventSwitcher selection persists after reload on the same device.
 - [ ] Switching events does not redirect or change legacy public search; admin attendance, announcements, and documents use the selected event where implemented.
 - [ ] Admin can open `/admin/events/:eventId/applications` from the parent orientation event.
+- [ ] Application review shows identity status badges: verified, CMU Mail mismatch, pending identity review, not found, rejected identity.
+- [ ] Application review can filter by identity status.
+- [ ] Application detail shows requested CMU Mail, requested phone, requested student ID, matched person, and a warning for pending identity review.
+- [ ] Approving an application with pending identity review shows a clear warning but is not blocked.
 - [ ] Application review shows duty summary, waitlisted count, rejected count, and approved applicants missing final duty.
 - [ ] Filters work for status, final duty, preferred duty, year level, major, rehearsal availability, and event day availability.
 - [ ] Admin can assign a final duty from the dropdown and sees a success toast after saving.
@@ -256,6 +272,22 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Event edit does not change legacy public search or attendance behavior.
 - [ ] Public/non-admin users cannot access `/admin/events`.
 - [ ] Existing `/admin/dashboard` still loads normally.
+
+## People Update Requests
+
+- [ ] Migration `202605230014_staff_application_identity_review.sql` applies successfully.
+- [ ] `public.person_update_requests` exists.
+- [ ] Public/anon users cannot read `person_update_requests` directly.
+- [ ] Public users can submit a correction only through `submit_person_update_request`.
+- [ ] Open `/admin/people/update-requests` as admin.
+- [ ] Public/non-admin users cannot access `/admin/people/update-requests`.
+- [ ] Requests can be filtered by status, request type, event, and search text.
+- [ ] Detail modal shows submitted values and matched person data for admin review.
+- [ ] Approving an email correction updates `people.email` only when requested email is valid CMU Mail.
+- [ ] Approving can update phone/name/major when provided.
+- [ ] Approving does not update health data.
+- [ ] Rejecting sets request status to rejected and saves review note.
+- [ ] Review actions create an audit trail in `change_logs` if available.
 
 ## People Foundation
 

@@ -22,6 +22,7 @@ const EventsPage = lazy(() => import('./pages/EventsPage').then((module) => ({ d
 const EventAnnouncementDetailPage = lazy(() => import('./pages/EventAnnouncementDetailPage').then((module) => ({ default: module.EventAnnouncementDetailPage })));
 const EventAnnouncementsPage = lazy(() => import('./pages/EventAnnouncementsPage').then((module) => ({ default: module.EventAnnouncementsPage })));
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage').then((module) => ({ default: module.EventDetailPage })));
+const EventProfileCheckPage = lazy(() => import('./pages/EventProfileCheckPage').then((module) => ({ default: module.EventProfileCheckPage })));
 const EventRegisterPage = lazy(() => import('./pages/EventRegisterPage').then((module) => ({ default: module.EventRegisterPage })));
 const EventStaffApplyPage = lazy(() => import('./pages/EventStaffApplyPage').then((module) => ({ default: module.EventStaffApplyPage })));
 const EventStaffApplicationStatusPage = lazy(() => import('./pages/EventStaffApplicationStatusPage').then((module) => ({ default: module.EventStaffApplicationStatusPage })));
@@ -40,6 +41,7 @@ const AdminEventDetailPage = lazy(() => import('./pages/AdminEventDetailPage').t
 const AdminEventApplicationsPage = lazy(() => import('./pages/AdminEventApplicationsPage').then((module) => ({ default: module.AdminEventApplicationsPage })));
 const AdminPeopleDedupePage = lazy(() => import('./pages/AdminPeopleDedupePage').then((module) => ({ default: module.AdminPeopleDedupePage })));
 const AdminPeoplePage = lazy(() => import('./pages/AdminPeoplePage').then((module) => ({ default: module.AdminPeoplePage })));
+const AdminPeopleUpdateRequestsPage = lazy(() => import('./pages/AdminPeopleUpdateRequestsPage').then((module) => ({ default: module.AdminPeopleUpdateRequestsPage })));
 const AdminStaffAttendancePage = lazy(() => import('./pages/AdminStaffAttendancePage').then((module) => ({ default: module.AdminStaffAttendancePage })));
 const AdminStaffAttendanceSessionPage = lazy(() => import('./pages/AdminStaffAttendanceSessionPage').then((module) => ({ default: module.AdminStaffAttendanceSessionPage })));
 const StaffAttendancePage = lazy(() => import('./pages/StaffAttendancePage').then((module) => ({ default: module.StaffAttendancePage })));
@@ -68,6 +70,7 @@ export function App() {
         <Route path="events/:eventSlug" element={<Suspense fallback={<LoadingSkeleton />}><EventDetailPage /></Suspense>} />
         <Route path="events/:eventSlug/announcements" element={<Suspense fallback={<LoadingSkeleton />}><EventAnnouncementsPage /></Suspense>} />
         <Route path="events/:eventSlug/announcements/:announcementId" element={<Suspense fallback={<LoadingSkeleton />}><EventAnnouncementDetailPage /></Suspense>} />
+        <Route path="events/:eventSlug/profile-check" element={<Suspense fallback={<LoadingSkeleton />}><EventProfileCheckPage /></Suspense>} />
         <Route path="events/:eventSlug/register" element={<Suspense fallback={<LoadingSkeleton />}><EventRegisterPage /></Suspense>} />
         <Route path="events/:eventSlug/staff/apply" element={<Suspense fallback={<LoadingSkeleton />}><EventStaffApplyPage /></Suspense>} />
         <Route path="events/:eventSlug/staff/application-status" element={<Suspense fallback={<LoadingSkeleton />}><EventStaffApplicationStatusPage /></Suspense>} />
@@ -114,6 +117,7 @@ export function App() {
           <Route path="admin/people" element={<Suspense fallback={<LoadingSkeleton />}><AdminPeoplePage /></Suspense>} />
           <Route path="admin/people/dedupe" element={<Suspense fallback={<LoadingSkeleton />}><AdminPeopleDedupePage /></Suspense>} />
           <Route path="admin/people/import-year2" element={<Suspense fallback={<LoadingSkeleton />}><Year2PeopleImportPage /></Suspense>} />
+          <Route path="admin/people/update-requests" element={<Suspense fallback={<LoadingSkeleton />}><AdminPeopleUpdateRequestsPage /></Suspense>} />
           <Route path="admin/documents" element={<Suspense fallback={<LoadingSkeleton />}><DocumentCenterPage /></Suspense>} />
           <Route path="admin/documents/settings" element={<Suspense fallback={<LoadingSkeleton />}><DocumentSettingsPage /></Suspense>} />
           <Route path="admin/documents/templates" element={<Suspense fallback={<LoadingSkeleton />}><DocumentTemplatesPage /></Suspense>} />

@@ -112,6 +112,7 @@ export function Layout() {
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
                   <NavLink to="/admin/staff/requests">{language === 'th' ? 'คำขอแก้ไขทีมงาน' : 'Staff Requests'}</NavLink>
                   <NavLink to="/admin/people">{language === 'th' ? 'ฐานข้อมูลกลาง' : 'People'}</NavLink>
+                  <NavLink to="/admin/people/update-requests">{language === 'th' ? 'คำร้องแก้ข้อมูลบุคคล' : 'People Update Requests'}</NavLink>
                   <NavLink to="/admin/people/dedupe">{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'People Dedupe'}</NavLink>
                   <NavLink to="/admin/people/import-year2">{language === 'th' ? 'นำเข้า people ปี 2' : 'Import Year 2 People'}</NavLink>
                   <span className="nav-menu-label">{language === 'th' ? 'ระบบเสริม' : 'More tools'}</span>
@@ -265,6 +266,7 @@ export function Layout() {
             <NavLink to="/admin/staff/operations"><UsersRound size={18} />{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
             <NavLink to="/admin/staff/requests"><Pencil size={18} />{language === 'th' ? 'คำขอทีมงาน' : 'Staff Requests'}</NavLink>
             <NavLink to="/admin/people"><Database size={18} />{language === 'th' ? 'ฐานข้อมูลกลาง' : 'People'}</NavLink>
+            <NavLink to="/admin/people/update-requests"><Database size={18} />{language === 'th' ? 'คำร้องแก้ข้อมูลบุคคล' : 'People Update Requests'}</NavLink>
             <NavLink to="/admin/people/dedupe"><Database size={18} />{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'People Dedupe'}</NavLink>
             <NavLink to="/admin/people/import-year2"><Database size={18} />{language === 'th' ? 'นำเข้า people ปี 2' : 'Import Year 2 People'}</NavLink>
             <NavLink to="/admin/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
