@@ -100,6 +100,19 @@ export type EventSubmissionResult = {
     id: string;
     status: string;
     identity_status?: string;
+    assigned_duty?: string | null;
+    assigned_duty_label_th?: string | null;
+    assignment_method?: string | null;
+    assignment_note?: string | null;
+  };
+  assignment?: {
+    assigned_duty: string | null;
+    assigned_label_th: string | null;
+    assignment_method: string | null;
+    assignment_note: string | null;
+    quota?: number | null;
+    used?: number | null;
+    remaining?: number | null;
   };
   person?: {
     person_id: string;

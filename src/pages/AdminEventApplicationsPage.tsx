@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle, Clock, Download, Eye, MessageSquare, RefreshCw, Save, ShieldAlert, UserPlus, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, Download, Eye, FileSpreadsheet, MessageSquare, RefreshCw, Save, ShieldAlert, UserPlus, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { HelpButton } from '../components/help/HelpButton';
@@ -19,10 +19,10 @@ import { useAsync } from '../hooks/useAsync';
 import { formatBangkokDateTime } from '../lib/dateTime';
 import { getEventContent } from '../lib/eventContent';
 import { eventPath } from '../lib/eventRoutes';
-import { fetchAdminEventById, fetchAdminEventStaffApplications, promoteStaffApplicationToEventStaff, type AdminStaffApplicationRow, updateAdminStaffApplicationReview } from '../services/events';
+import { fetchAdminEventById, fetchAdminEventStaffApplications, fetchEventDutyQuotaStatus, promoteStaffApplicationToEventStaff, type AdminStaffApplicationRow, type EventDutyQuotaRow, updateAdminStaffApplicationAssignment, updateAdminStaffApplicationReview } from '../services/events';
 import { errorMessage } from '../utils/error';
 
-type ExportPreset = 'all' | 'approved' | 'by_final_duty' | 'rehearsal' | 'contact' | 'full_admin';
+type ExportPreset = 'all' | 'filtered' | 'by_assigned_duty';
 
 function text(value: unknown) {
   if (Array.isArray(value)) return value.join(', ');
@@ -35,8 +35,29 @@ function duties(row: AdminStaffApplicationRow) {
   return Array.isArray(value) ? value.map(String) : text(value).split(',').map((item) => item.trim()).filter(Boolean);
 }
 
+function preferredDutyLabels(row: AdminStaffApplicationRow, dutiesByKey: Map<string, EventDutyQuotaRow>) {
+  const explicitLabels = row.answers?.preferred_duty_labels;
+  if (Array.isArray(explicitLabels) && explicitLabels.length) return explicitLabels.map(String);
+  return duties(row).map((duty) => dutiesByKey.get(duty)?.duty_label_th ?? duty);
+}
+
 function finalDuty(row: AdminStaffApplicationRow) {
   return text(row.answers?.final_duty);
+}
+
+function assignedDutyLabel(row: AdminStaffApplicationRow, dutiesByKey: Map<string, EventDutyQuotaRow>) {
+  if (!row.assigned_duty) return '';
+  return dutiesByKey.get(row.assigned_duty)?.duty_label_th ?? text(row.answers?.assigned_duty_label_th) ?? row.assigned_duty;
+}
+
+function assignmentMethodLabel(method: string | null | undefined, language: 'th' | 'en') {
+  const labels: Record<string, { th: string; en: string }> = {
+    auto_quota: { th: 'ระบบจัดตามโควต้า', en: 'Auto quota' },
+    manual_admin: { th: 'ผู้ดูแลปรับเอง', en: 'Manual admin' },
+    fallback_general: { th: 'สำรองเข้าฝ่ายทั่วไป', en: 'General fallback' },
+    pending: { th: 'รอจัดสรร', en: 'Pending' },
+  };
+  return method ? labels[method]?.[language] ?? method : (language === 'th' ? 'ยังไม่จัดฝ่าย' : 'Not assigned');
 }
 
 function promotedEventStaffId(row: AdminStaffApplicationRow) {
@@ -80,18 +101,7 @@ function consentText(value: unknown, language: 'th' | 'en') {
   return text(value) || '-';
 }
 
-function csvValue(value: unknown) {
-  const clean = text(value).replace(/\r?\n/g, ' ').trim();
-  return `"${clean.replace(/"/g, '""')}"`;
-}
-
-function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
-  const headers = Object.keys(rows[0] ?? { empty: '' });
-  const csv = [
-    headers.map(csvValue).join(','),
-    ...rows.map((row) => headers.map((header) => csvValue(row[header])).join(',')),
-  ].join('\n');
-  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -105,10 +115,13 @@ export function AdminEventApplicationsPage() {
   const { eventId = '' } = useParams();
   const eventState = useAsync(() => fetchAdminEventById(eventId), [eventId]);
   const applicationsState = useAsync(() => fetchAdminEventStaffApplications(eventId), [eventId]);
+  const quotaState = useAsync(() => eventId ? fetchEventDutyQuotaStatus(eventId) : Promise.resolve(null), [eventId]);
   const [toast, setToast] = useState<ToastState>(null);
   const [filters, setFilters] = useState({
     status: '',
     identityStatus: '',
+    assignedDuty: '',
+    assignmentMethod: '',
     finalDuty: '',
     preferredDuty: '',
     yearLevel: '',
@@ -118,16 +131,23 @@ export function AdminEventApplicationsPage() {
   });
   const [savingId, setSavingId] = useState<string | null>(null);
   const [draftFinalDuties, setDraftFinalDuties] = useState<Record<string, string>>({});
+  const [draftAssignedDuties, setDraftAssignedDuties] = useState<Record<string, string>>({});
   const [reviewDraft, setReviewDraft] = useState<{ row: AdminStaffApplicationRow; status: StaffApplicationStatus; finalDuty: string; reviewNote: string } | null>(null);
   const [detailRow, setDetailRow] = useState<AdminStaffApplicationRow | null>(null);
+  const [assignmentOverride, setAssignmentOverride] = useState<{ row: AdminStaffApplicationRow; dutyKey: string; isFull: boolean } | null>(null);
+  const [excelExport, setExcelExport] = useState<{ rows: AdminStaffApplicationRow[]; filename: string } | null>(null);
   const event = eventState.data;
   const rows = useMemo(() => applicationsState.data ?? [], [applicationsState.data]);
   const content = getEventContent(event?.slug);
+  const quotaDuties = useMemo(() => quotaState.data?.duties ?? [], [quotaState.data?.duties]);
+  const dutiesByKey = useMemo(() => new Map(quotaDuties.map((duty) => [duty.duty_key, duty])), [quotaDuties]);
+  const assignedDutyOptions = useMemo(() => quotaDuties.map((duty) => ({ value: duty.duty_key, label: duty.duty_label_th })), [quotaDuties]);
   const finalDutyOptions = useMemo(() => {
     const fromContent = content?.staffRecruitment?.dutiesTh ?? [];
     const fromRows = rows.map(finalDuty).filter(Boolean);
-    return [...new Set([...fromContent, ...fromRows])].sort((a, b) => a.localeCompare(b, 'th'));
-  }, [content?.staffRecruitment?.dutiesTh, rows]);
+    const fromQuota = quotaDuties.map((duty) => duty.duty_label_th);
+    return [...new Set([...fromQuota, ...fromContent, ...fromRows])].sort((a, b) => a.localeCompare(b, 'th'));
+  }, [content?.staffRecruitment?.dutiesTh, quotaDuties, rows]);
 
   const filterOptions = useMemo(() => {
     const majors = [...new Set(rows.map((row) => row.people?.major).filter(Boolean).map(String))].sort();
@@ -139,6 +159,8 @@ export function AdminEventApplicationsPage() {
   const filteredRows = useMemo(() => rows.filter((row) => {
     if (filters.status && row.status !== filters.status) return false;
     if (filters.identityStatus && row.identity_status !== filters.identityStatus) return false;
+    if (filters.assignedDuty && row.assigned_duty !== filters.assignedDuty) return false;
+    if (filters.assignmentMethod && row.assignment_method !== filters.assignmentMethod) return false;
     if (filters.finalDuty && finalDuty(row) !== filters.finalDuty) return false;
     if (filters.preferredDuty && !duties(row).includes(filters.preferredDuty)) return false;
     if (filters.yearLevel && String(row.people?.year_level ?? '') !== filters.yearLevel) return false;
@@ -176,6 +198,39 @@ export function AdminEventApplicationsPage() {
       await applicationsState.reload();
     } catch (err) {
       setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'บันทึกหน้าที่ไม่สำเร็จ' : 'Could not save final duty') });
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function saveAssignedDuty(row: AdminStaffApplicationRow, allowFullOverride = false) {
+    const value = draftAssignedDuties[row.id] ?? row.assigned_duty ?? '';
+    const quota = dutiesByKey.get(value);
+    const selectingDifferentDuty = value !== row.assigned_duty;
+    if (quota?.is_full && selectingDifferentDuty && !allowFullOverride) {
+      setAssignmentOverride({ row, dutyKey: value, isFull: true });
+      return;
+    }
+    try {
+      setSavingId(row.id);
+      await updateAdminStaffApplicationAssignment({
+        id: row.id,
+        assignedDuty: value || null,
+        assignmentNote: value
+          ? (language === 'th' ? 'ผู้ดูแลปรับฝ่ายเบื้องต้นด้วยตนเอง' : 'Manual preliminary duty override')
+          : (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment'),
+      });
+      setToast({ type: 'success', message: language === 'th' ? 'บันทึกฝ่ายเบื้องต้นแล้ว' : 'Preliminary duty saved' });
+      setDraftAssignedDuties((current) => {
+        const next = { ...current };
+        delete next[row.id];
+        return next;
+      });
+      setAssignmentOverride(null);
+      await applicationsState.reload();
+      await quotaState.reload();
+    } catch (err) {
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'บันทึกฝ่ายเบื้องต้นไม่สำเร็จ' : 'Could not save preliminary duty') });
     } finally {
       setSavingId(null);
     }
@@ -267,55 +322,70 @@ export function AdminEventApplicationsPage() {
     );
   }
 
-  function rowsForExport(preset: ExportPreset) {
-    const source = preset === 'approved'
-      ? filteredRows.filter((row) => row.status === 'approved')
-      : filteredRows;
-    const byFinalDuty = preset === 'by_final_duty' ? [...source].sort((a, b) => finalDuty(a).localeCompare(finalDuty(b), 'th')) : source;
-    return byFinalDuty.map((row) => {
-      const base: Record<string, unknown> = {
-        name: applicantName(row),
-        student_id: row.people?.student_id,
-        year_level: row.people?.year_level,
-        major: row.people?.major,
-        identity_status: row.identity_status,
-        requested_student_id: row.requested_student_id,
-        status: row.status,
-        preferred_duties: duties(row).join(', '),
-        final_duty: finalDuty(row),
-        rehearsal: row.answers?.can_attend_rehearsal,
-        event_day: row.answers?.can_work_event_day,
-        availability: row.availability?.text ?? row.answers?.availability,
-        submitted_at: row.submitted_at,
-        promoted_to_event_staff: isPromoted(row) ? 'yes' : 'no',
-      };
-      if (preset === 'contact' || preset === 'full_admin') {
-        base.email = row.requested_email ?? row.people?.email;
-        base.phone = row.requested_phone ?? row.people?.phone;
-      }
-      if (preset === 'rehearsal') {
-        base.email = row.requested_email ?? row.people?.email;
-        base.phone = row.requested_phone ?? row.people?.phone;
-      }
-      if (preset === 'full_admin') {
-        base.health_or_limitations = row.answers?.health_or_limitations;
-        base.staff_experience = row.answers?.staff_experience ?? row.experience;
-        base.note = row.answers?.note;
-        base.review_note = row.review_note;
-      }
-      return base;
-    });
+  function exportRows(rowsToExport: AdminStaffApplicationRow[]) {
+    return rowsToExport.map((row, index) => ({
+      'ลำดับ': index + 1,
+      'วันที่สมัคร': formatBangkokDateTime(row.submitted_at, language),
+      'สถานะใบสมัคร': getApplicationStatusLabel(row.status, language),
+      'สถานะยืนยันตัวตน': identityStatusLabel(row.identity_status ?? 'unverified', language),
+      'ฝ่ายที่ระบบจัดให้เบื้องต้น': assignedDutyLabel(row, dutiesByKey) || '-',
+      'วิธีการจัดฝ่าย': assignmentMethodLabel(row.assignment_method, language),
+      'รหัสนักศึกษา': row.people?.student_id ?? row.requested_student_id ?? '',
+      'ชื่อ-นามสกุลไทยจากฐานข้อมูล': row.people?.name_th ?? '',
+      'ชื่อ-นามสกุลอังกฤษจากฐานข้อมูล': row.people?.name_en ?? '',
+      'ชื่อเล่นจากฐานข้อมูล': row.people?.nickname ?? '',
+      'สาขาจากฐานข้อมูล': row.people?.major ?? '',
+      'ชั้นปีจากฐานข้อมูล': row.people?.year_level ?? '',
+      'CMU Mail จากฐานข้อมูล': row.people?.email ?? '',
+      'เบอร์จากฐานข้อมูล': row.people?.phone ?? '',
+      'CMU Mail ที่ผู้สมัครกรอก': row.requested_email ?? '',
+      'เบอร์ที่ผู้สมัครกรอก': row.requested_phone ?? '',
+      'ชื่อ-นามสกุลที่ผู้สมัครกรอก หากมี': row.requested_name_th ?? row.requested_name_en ?? '',
+      'สาขาที่ผู้สมัครกรอก หากมี': row.requested_major ?? '',
+      'ฝ่ายที่เลือก': preferredDutyLabels(row, dutiesByKey).join(', '),
+      'เข้าซ้อมวันที่ 10 มิ.ย. ได้หรือไม่': text(row.answers?.can_attend_rehearsal),
+      'ปฏิบัติงานวันที่ 12 มิ.ย. ได้หรือไม่': text(row.answers?.can_work_event_day),
+      'ช่วงเวลาที่สะดวก': text(row.availability?.text ?? row.answers?.availability),
+      'ประสบการณ์สตาฟ': text(row.answers?.staff_experience ?? row.experience),
+      'ข้อจำกัดด้านสุขภาพ/การแพ้อาหารที่จำเป็นต้องแจ้ง': text(row.answers?.health_or_limitations),
+      'หมายเหตุเพิ่มเติม': text(row.answers?.note ?? row.motivation),
+      'หมายเหตุจากผู้ดูแล': row.review_note ?? '',
+      'final_duty/manual override if exists': finalDuty(row) || assignedDutyLabel(row, dutiesByKey) || '',
+    }));
   }
 
-  function exportPreset(preset: ExportPreset) {
-    const exportRows = rowsForExport(preset);
-    if (!exportRows.length) {
+  async function downloadExcel(rowsToExport: AdminStaffApplicationRow[], filename: string) {
+    const exportData = exportRows(rowsToExport);
+    if (!exportData.length) {
       setToast({ type: 'error', message: language === 'th' ? 'ไม่มีข้อมูลสำหรับ export' : 'No rows to export' });
       return;
     }
-    const sensitive = preset === 'full_admin' ? '-full-admin-sensitive' : '';
-    downloadCsv(`staff-applications-${preset}${sensitive}.csv`, exportRows);
-    setToast({ type: 'success', message: preset === 'full_admin' ? (language === 'th' ? 'Export แบบเต็มรวมข้อมูลละเอียดแล้ว' : 'Full admin export downloaded') : (language === 'th' ? 'Export แล้ว' : 'Export downloaded') });
+    const ExcelJS = await import('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Staff Applications');
+    const headers = Object.keys(exportData[0]);
+    worksheet.columns = headers.map((header) => ({ header, key: header, width: Math.min(Math.max(header.length + 4, 16), 42) }));
+    exportData.forEach((row) => worksheet.addRow(row));
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = { from: 'A1', to: `${String.fromCharCode(64 + Math.min(headers.length, 26))}1` };
+    const buffer = await workbook.xlsx.writeBuffer();
+    downloadBlob(filename, new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    setToast({ type: 'success', message: language === 'th' ? 'ดาวน์โหลด Excel แล้ว' : 'Excel downloaded' });
+  }
+
+  function requestExcelExport(preset: ExportPreset, dutyKey?: string) {
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const base = 'parent-orientation-staff';
+    if (preset === 'all') {
+      setExcelExport({ rows, filename: `${base}-all-${date}.xlsx` });
+      return;
+    }
+    if (preset === 'by_assigned_duty' && dutyKey) {
+      setExcelExport({ rows: rows.filter((row) => row.assigned_duty === dutyKey), filename: `${base}-${dutyKey}-${date}.xlsx` });
+      return;
+    }
+    setExcelExport({ rows: filteredRows, filename: `${base}-filtered-${date}.xlsx` });
   }
 
   return (
@@ -331,7 +401,7 @@ export function AdminEventApplicationsPage() {
             <HelpButton topicId="admin.event-applications" variant="link" />
             <Link className="btn btn-secondary" to="/admin/events"><ArrowLeft size={17} />{language === 'th' ? 'กลับกิจกรรม' : 'Back'}</Link>
             {event ? <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'หน้าสาธารณะ' : 'Public page'}</Link> : null}
-            <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={() => { void eventState.reload(); void applicationsState.reload(); }}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
+            <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={() => { void eventState.reload(); void applicationsState.reload(); void quotaState.reload(); }}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
           </>
         )}
       />
@@ -367,16 +437,24 @@ export function AdminEventApplicationsPage() {
 
           <Card className="event-detail-card">
             <div>
-              <p className="eyebrow">{language === 'th' ? 'สรุปตามหน้าที่สุดท้าย' : 'Final duty summary'}</p>
-              <h2>{language === 'th' ? 'จำนวนผู้ผ่านตามหน้าที่' : 'Approved by final duty'}</h2>
+              <p className="eyebrow">{language === 'th' ? 'โควต้าฝ่าย' : 'Duty quotas'}</p>
+              <h2>{language === 'th' ? 'สรุปฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty summary'}</h2>
+              <p className="muted">{language === 'th' ? 'นับใบสมัครที่ยังไม่ถูกปฏิเสธหรือถอนตัว เพื่อดูโควต้าที่เหลือแบบใช้งานจริง' : 'Counts active applications to show operational remaining quota.'}</p>
             </div>
             <div className="event-mini-grid">
-              {summary.approvedByDuty.map((item) => (
-                <div className="event-mini-card" key={item.duty}>
-                  <strong>{item.count}</strong>
-                  <span>{item.duty}</span>
+              {quotaDuties.map((duty) => (
+                <div className={`event-mini-card ${duty.is_full ? 'is-warning' : ''}`} key={duty.duty_key}>
+                  <strong>{duty.assigned_count}/{duty.quota}</strong>
+                  <span>{duty.duty_label_th}</span>
+                  <small>{language === 'th' ? `เหลือ ${duty.remaining} คน` : `${duty.remaining} remaining`}</small>
+                  {duty.is_full ? <Badge status="pending">{language === 'th' ? 'รับเต็มจำนวนแล้ว' : 'Full'}</Badge> : null}
+                  {duty.assigned_count > duty.quota ? <small className="field-error">{language === 'th' ? 'เกินโควต้า' : 'Over quota'}</small> : null}
+                  <Button size="sm" variant="secondary" icon={<FileSpreadsheet size={16} />} onClick={() => requestExcelExport('by_assigned_duty', duty.duty_key)}>
+                    {language === 'th' ? 'Excel รายฝ่าย' : 'Duty Excel'}
+                  </Button>
                 </div>
               ))}
+              {!quotaDuties.length ? <p className="muted">{language === 'th' ? 'ยังไม่มีข้อมูลโควต้าฝ่าย' : 'No duty quota data yet.'}</p> : null}
             </div>
           </Card>
 
@@ -398,6 +476,8 @@ export function AdminEventApplicationsPage() {
                 onChange={(eventInput) => setFilters({ ...filters, identityStatus: eventInput.target.value })}
                 options={['verified', 'email_mismatch', 'pending_identity_review', 'not_found', 'rejected_identity'].map((status) => ({ value: status, label: identityStatusLabel(status, language) }))}
               />
+              <Select label={language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'} value={filters.assignedDuty} onChange={(eventInput) => setFilters({ ...filters, assignedDuty: eventInput.target.value })} options={assignedDutyOptions} />
+              <Select label={language === 'th' ? 'วิธีการจัดฝ่าย' : 'Assignment method'} value={filters.assignmentMethod} onChange={(eventInput) => setFilters({ ...filters, assignmentMethod: eventInput.target.value })} options={['auto_quota', 'manual_admin', 'fallback_general', 'pending'].map((method) => ({ value: method, label: assignmentMethodLabel(method, language) }))} />
               <Select label={language === 'th' ? 'หน้าที่สุดท้าย' : 'Final duty'} value={filters.finalDuty} onChange={(eventInput) => setFilters({ ...filters, finalDuty: eventInput.target.value })} options={finalDutyOptions} />
               <Select label={language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duty'} value={filters.preferredDuty} onChange={(eventInput) => setFilters({ ...filters, preferredDuty: eventInput.target.value })} options={filterOptions.preferred} />
               <Select label={language === 'th' ? 'ชั้นปี' : 'Year'} value={filters.yearLevel} onChange={(eventInput) => setFilters({ ...filters, yearLevel: eventInput.target.value })} options={filterOptions.years} />
@@ -406,12 +486,8 @@ export function AdminEventApplicationsPage() {
               <Select label={language === 'th' ? 'วันจริง' : 'Event day'} value={filters.eventDay} onChange={(eventInput) => setFilters({ ...filters, eventDay: eventInput.target.value })} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} />
             </div>
             <div className="event-card-actions">
-              <Button variant="secondary" icon={<Download size={17} />} onClick={() => exportPreset('all')}>{language === 'th' ? 'Export ทั้งหมด' : 'All'}</Button>
-              <Button variant="secondary" icon={<Download size={17} />} onClick={() => exportPreset('approved')}>{language === 'th' ? 'ผ่านเท่านั้น' : 'Approved'}</Button>
-              <Button variant="secondary" icon={<Download size={17} />} onClick={() => exportPreset('by_final_duty')}>{language === 'th' ? 'ตามหน้าที่' : 'By duty'}</Button>
-              <Button variant="secondary" icon={<Download size={17} />} onClick={() => exportPreset('rehearsal')}>{language === 'th' ? 'รายชื่อวันซ้อม' : 'Rehearsal list'}</Button>
-              <Button variant="secondary" icon={<Download size={17} />} onClick={() => exportPreset('contact')}>{language === 'th' ? 'Contact list' : 'Contact list'}</Button>
-              <Button variant="danger" icon={<Download size={17} />} onClick={() => exportPreset('full_admin')}>{language === 'th' ? 'Full admin export (มีข้อมูลละเอียด)' : 'Full admin export (sensitive)'}</Button>
+              <Button variant="secondary" icon={<Download size={17} />} onClick={() => requestExcelExport('all')}>{language === 'th' ? 'ดาวน์โหลด Excel ทั้งหมด' : 'Download all Excel'}</Button>
+              <Button variant="secondary" icon={<Download size={17} />} onClick={() => requestExcelExport('filtered')}>{language === 'th' ? 'ดาวน์โหลด Excel ตาม filter ปัจจุบัน' : 'Download filtered Excel'}</Button>
             </div>
           </Card>
 
@@ -428,11 +504,37 @@ export function AdminEventApplicationsPage() {
               { key: 'year', header: language === 'th' ? 'ชั้นปี' : 'Year', render: (row) => row.people?.year_level ?? '-' },
               { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => row.people?.major ?? '-' },
               { key: 'identity', header: language === 'th' ? 'ตัวตน' : 'Identity', render: (row) => <Badge status={identityTone(row.identity_status ?? 'unverified')}>{identityStatusLabel(row.identity_status ?? 'unverified', language)}</Badge> },
-              { key: 'preferred', header: language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties', render: (row) => duties(row).join(', ') || '-' },
+              { key: 'preferred', header: language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties', render: (row) => preferredDutyLabels(row, dutiesByKey).join(', ') || '-' },
+              { key: 'assigned', header: language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty', render: (row) => (
+                <div className="application-duty-stack">
+                  <Badge status={row.assigned_duty ? 'approved' : 'pending'}>{assignedDutyLabel(row, dutiesByKey) || (language === 'th' ? 'รอจัดสรร' : 'Pending')}</Badge>
+                  <small>{assignmentMethodLabel(row.assignment_method, language)}</small>
+                  {row.assignment_note ? <small>{row.assignment_note}</small> : null}
+                </div>
+              ) },
               { key: 'availability', header: language === 'th' ? 'เวลาว่าง' : 'Availability', render: (row) => text(row.availability?.text) || '-' },
               { key: 'rehearsal', header: language === 'th' ? 'ซ้อม' : 'Rehearsal', render: (row) => text(row.answers?.can_attend_rehearsal) || '-' },
               { key: 'event_day', header: language === 'th' ? 'วันจริง' : 'Event day', render: (row) => text(row.answers?.can_work_event_day) || '-' },
               { key: 'status', header: language === 'th' ? 'สถานะ' : 'Status', render: (row) => <span className={`status-pill status-${row.status}`}>{getApplicationStatusLabel(row.status, language)}</span> },
+              { key: 'assigned_edit', header: language === 'th' ? 'ปรับฝ่ายเบื้องต้น' : 'Override duty', render: (row) => (
+                <div className="table-action-row">
+                  <Select
+                    className="inline-select"
+                    label={language === 'th' ? 'ฝ่าย' : 'Duty'}
+                    value={draftAssignedDuties[row.id] ?? row.assigned_duty ?? ''}
+                    onChange={(eventInput) => setDraftAssignedDuties({ ...draftAssignedDuties, [row.id]: eventInput.target.value })}
+                    options={assignedDutyOptions}
+                  />
+                  <Button
+                    variant="ghost"
+                    icon={<Save size={16} />}
+                    loading={savingId === row.id}
+                    onClick={() => void saveAssignedDuty(row)}
+                  >
+                    {language === 'th' ? 'บันทึก' : 'Save'}
+                  </Button>
+                </div>
+              ), align: 'right' },
               { key: 'final', header: language === 'th' ? 'หน้าที่สุดท้าย' : 'Final duty', render: (row) => (
                 <div className="table-action-row">
                   <Select
@@ -512,6 +614,41 @@ export function AdminEventApplicationsPage() {
             ) : null}
           </Modal>
 
+          <Modal open={Boolean(assignmentOverride)} title={language === 'th' ? 'ยืนยันการบันทึกเกินโควต้า' : 'Confirm over-quota assignment'} onClose={() => setAssignmentOverride(null)}>
+            {assignmentOverride ? (
+              <div className="modal-body page-stack">
+                <Card variant="warning">
+                  <strong>{language === 'th' ? 'ฝ่ายนี้เต็มแล้ว หากบันทึกต่อจะเกินโควต้า' : 'This duty is full. Saving will exceed quota.'}</strong>
+                  <p>{dutiesByKey.get(assignmentOverride.dutyKey)?.duty_label_th ?? assignmentOverride.dutyKey}</p>
+                </Card>
+                <div className="form-actions">
+                  <Button icon={<Save size={18} />} loading={savingId === assignmentOverride.row.id} onClick={() => void saveAssignedDuty(assignmentOverride.row, true)}>
+                    {language === 'th' ? 'ยืนยันบันทึกเกินโควต้า' : 'Save anyway'}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setAssignmentOverride(null)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
+                </div>
+              </div>
+            ) : null}
+          </Modal>
+
+          <Modal open={Boolean(excelExport)} title={language === 'th' ? 'ยืนยันการดาวน์โหลด Excel' : 'Confirm Excel export'} onClose={() => setExcelExport(null)}>
+            {excelExport ? (
+              <div className="modal-body page-stack">
+                <Card variant="warning">
+                  <strong>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคลและข้อมูลด้านสุขภาพบางส่วน' : 'This file contains personal and some health-related information.'}</strong>
+                  <p>{language === 'th' ? 'ใช้เพื่อการจัดงานเท่านั้น ห้ามเผยแพร่ต่อสาธารณะ' : 'Use it only for event operations. Do not publish publicly.'}</p>
+                </Card>
+                <p className="muted">{language === 'th' ? `จำนวน ${excelExport.rows.length} รายการ` : `${excelExport.rows.length} rows`}</p>
+                <div className="form-actions">
+                  <Button icon={<FileSpreadsheet size={18} />} onClick={() => { void downloadExcel(excelExport.rows, excelExport.filename); setExcelExport(null); }}>
+                    {language === 'th' ? 'ดาวน์โหลด Excel' : 'Download Excel'}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setExcelExport(null)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
+                </div>
+              </div>
+            ) : null}
+          </Modal>
+
           <Modal open={Boolean(detailRow)} title={language === 'th' ? 'รายละเอียดใบสมัคร' : 'Application details'} onClose={() => setDetailRow(null)}>
             {detailRow ? (
               <div className="modal-body page-stack">
@@ -530,7 +667,10 @@ export function AdminEventApplicationsPage() {
                   <span>{language === 'th' ? 'เบอร์โทรที่ผู้สมัครกรอก' : 'Requested phone'}</span><strong>{detailRow.requested_phone ?? '-'}</strong>
                   <span>{language === 'th' ? 'รหัสนักศึกษาที่กรอก' : 'Requested student ID'}</span><strong>{detailRow.requested_student_id ?? '-'}</strong>
                   <span>{language === 'th' ? 'ข้อมูลคนที่ match' : 'Matched person'}</span><strong>{detailRow.people ? `${detailRow.people.student_id ?? '-'} · ${detailRow.people.email ?? '-'} · ${detailRow.people.phone ?? '-'}` : '-'}</strong>
-                  <span>{language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties'}</span><strong>{duties(detailRow).join(', ') || '-'}</strong>
+                  <span>{language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties'}</span><strong>{preferredDutyLabels(detailRow, dutiesByKey).join(', ') || '-'}</strong>
+                  <span>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</span><strong>{assignedDutyLabel(detailRow, dutiesByKey) || '-'}</strong>
+                  <span>{language === 'th' ? 'วิธีการจัดฝ่าย' : 'Assignment method'}</span><strong>{assignmentMethodLabel(detailRow.assignment_method, language)}</strong>
+                  <span>{language === 'th' ? 'หมายเหตุการจัดฝ่าย' : 'Assignment note'}</span><strong>{detailRow.assignment_note ?? '-'}</strong>
                   <span>{language === 'th' ? 'เวลาว่าง' : 'Availability'}</span><strong>{text(detailRow.availability?.text) || text(detailRow.answers?.availability) || '-'}</strong>
                   <span>{language === 'th' ? 'วันซ้อม' : 'Rehearsal'}</span><strong>{text(detailRow.answers?.can_attend_rehearsal) || '-'}</strong>
                   <span>{language === 'th' ? 'วันจริง' : 'Event day'}</span><strong>{text(detailRow.answers?.can_work_event_day) || '-'}</strong>

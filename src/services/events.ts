@@ -263,6 +263,9 @@ export type AdminStaffApplicationRow = {
   requested_name_en: string | null;
   requested_major: string | null;
   update_request_id: string | null;
+  assigned_duty: string | null;
+  assignment_method: 'auto_quota' | 'manual_admin' | 'fallback_general' | 'pending' | string | null;
+  assignment_note: string | null;
   people?: {
     student_id: string | null;
     name_th: string | null;
@@ -273,6 +276,25 @@ export type AdminStaffApplicationRow = {
     major: string | null;
     year_level: number | null;
   } | null;
+};
+
+export type EventDutyQuotaRow = {
+  duty_key: string;
+  duty_label_th: string;
+  description_th: string | null;
+  quota: number;
+  assigned_count: number;
+  remaining: number;
+  is_full: boolean;
+  priority: number;
+  is_general: boolean;
+};
+
+export type EventDutyQuotaStatus = {
+  duties: EventDutyQuotaRow[];
+  total_quota: number;
+  total_assigned: number;
+  total_remaining: number;
 };
 
 export type PersonUpdateRequestRow = {
@@ -414,11 +436,19 @@ export async function fetchAdminEventOverview(eventId: string): Promise<AdminEve
 export async function fetchAdminEventStaffApplications(eventId: string): Promise<AdminStaffApplicationRow[]> {
   const { data, error } = await supabase
     .from('staff_applications')
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
     .eq('event_id', eventId)
     .order('submitted_at', { ascending: false });
   if (error) throw error;
   return (data ?? []) as unknown as AdminStaffApplicationRow[];
+}
+
+export async function fetchEventDutyQuotaStatus(eventId: string): Promise<EventDutyQuotaStatus> {
+  const { data, error } = await supabase.rpc('get_event_staff_duty_quota_status', {
+    input_event_id: eventId,
+  });
+  if (error) throw error;
+  return (data ?? { duties: [], total_quota: 0, total_assigned: 0, total_remaining: 0 }) as EventDutyQuotaStatus;
 }
 
 export async function updateAdminStaffApplicationReview(input: {
@@ -439,7 +469,7 @@ export async function updateAdminStaffApplicationReview(input: {
     const row = reviewed as AdminStaffApplicationRow;
     const { data, error } = await supabase
       .from('staff_applications')
-      .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+      .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
       .eq('id', row.id)
       .single();
     if (error) throw error;
@@ -453,7 +483,28 @@ export async function updateAdminStaffApplicationReview(input: {
     .from('staff_applications')
     .update(payload)
     .eq('id', input.id)
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .single();
+  if (error) throw error;
+  return data as unknown as AdminStaffApplicationRow;
+}
+
+export async function updateAdminStaffApplicationAssignment(input: {
+  id: string;
+  assignedDuty: string | null;
+  assignmentNote?: string;
+}): Promise<AdminStaffApplicationRow> {
+  const { data: assigned, error: assignError } = await supabase.rpc('update_staff_application_assignment', {
+    input_application_id: input.id,
+    input_assigned_duty: input.assignedDuty ?? '',
+    input_assignment_note: input.assignmentNote ?? '',
+  });
+  if (assignError) throw assignError;
+  const row = assigned as AdminStaffApplicationRow;
+  const { data, error } = await supabase
+    .from('staff_applications')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .eq('id', row.id)
     .single();
   if (error) throw error;
   return data as unknown as AdminStaffApplicationRow;

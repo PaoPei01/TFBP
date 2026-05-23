@@ -643,6 +643,33 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Thai/English switching updates guide text.
 - [ ] No real user data appears in guide examples.
 
+## Parent Orientation Duty Quotas and Excel Export
+
+- [ ] Parent Orientation duty quotas total 130.
+- [ ] Applicant can select multiple preferred duties.
+- [ ] Duty cards show quota, remaining slots, and descriptions.
+- [ ] A full duty is disabled/dimmed and shows `รับเต็มจำนวนแล้ว`.
+- [ ] Full duty helper says `ฝ่ายนี้รับครบตามจำนวนแล้ว กรุณาเลือกฝ่ายอื่น`.
+- [ ] Backend does not assign into a full duty when another selected duty or general fallback is available.
+- [ ] Smaller/specialized quotas fill before general according to priority.
+- [ ] General fallback works when selected duties are full.
+- [ ] All-full state returns pending assignment and does not fail the application.
+- [ ] Confirmation summary shows `ฝ่ายที่ระบบจัดให้เบื้องต้น`.
+- [ ] Confirmation and success screens say the duty is preliminary and admins may adjust it later.
+- [ ] Success screen asks the applicant to screenshot the page.
+- [ ] Admin application review shows assigned duty, assignment method, and assignment note.
+- [ ] Admin can filter by assigned duty.
+- [ ] Admin can filter by assignment method.
+- [ ] Admin can manually override assigned duty.
+- [ ] Admin sees warning `ฝ่ายนี้เต็มแล้ว หากบันทึกต่อจะเกินโควต้า` before over-quota override.
+- [ ] Admin can export Excel for all applications.
+- [ ] Admin can export Excel for current filters.
+- [ ] Admin can export Excel by duty from the duty summary.
+- [ ] Excel includes `people` base data and application-submitted data.
+- [ ] Excel export warning appears before files that include health/limitation text.
+- [ ] Exported file uses `.xlsx`, not CSV-only.
+- [ ] Mobile admin review keeps export actions inside a readable card and does not cover bottom navigation.
+
 ## Change Logs
 
 - [ ] Open `/admin/logs`.

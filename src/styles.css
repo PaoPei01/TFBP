@@ -1537,6 +1537,38 @@ a {
   margin-top: 0.25rem;
 }
 
+.duty-option-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.duty-option-card > span {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.duty-option-card strong {
+  font-weight: 900;
+}
+
+.duty-option-card em {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.duty-option-card.is-disabled {
+  opacity: 0.62;
+  filter: grayscale(0.35);
+}
+
 .field small {
   color: var(--text-soft);
   font-weight: 700;
@@ -4850,6 +4882,16 @@ th {
 .application-detail-grid strong {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.application-duty-stack {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.application-duty-stack small {
+  color: var(--text-soft);
+  font-weight: 750;
 }
 
 .scan-verify-card {

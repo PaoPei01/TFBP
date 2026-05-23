@@ -508,3 +508,34 @@ QA focus:
 - Student ID + mismatched CMU Mail can continue with `email_mismatch`.
 - Unknown student ID can continue with `not_found` / pending review.
 - Admin can approve/reject correction requests.
+
+## Parent Orientation Duty Quota Assignment Pass
+
+Status: implemented as an additive staff-application operations layer for `parent-orientation-staff-2569`.
+
+Completed:
+
+- Added `event_staff_duty_quotas` with eight seeded Parent Orientation duties totaling 130 people.
+- Added preliminary assignment fields on `staff_applications`: `assigned_duty`, `assignment_method`, and `assignment_note`.
+- Added quota status RPC and preliminary duty assignment RPC.
+- Updated staff application submission so the backend stores "ฝ่ายที่ระบบจัดให้เบื้องต้น" based on quotas and preferred duties.
+- Added applicant duty cards with quota/remaining counts and disabled full-duty states.
+- Added applicant confirmation and success copy that clearly says the assignment is preliminary and can be adjusted later by admins.
+- Added admin quota summary, assigned-duty and assignment-method filters, and manual preliminary duty override with an over-quota warning.
+- Added Excel `.xlsx` export for all applications, current filtered rows, and per-duty rows, with a sensitive-data warning before download.
+
+Security/privacy notes:
+
+- No identity verification rules were changed in this pass.
+- No automatic email sending was added.
+- Public quota reads are limited to public events; application rows remain admin-only.
+- Excel export warns admins before including health/limitation text and is intended for event operations only.
+
+QA focus:
+
+- Quotas total 130.
+- Full duties are disabled in the applicant UI and backend assignment falls back safely.
+- Specialized/smaller roles fill before general by priority.
+- Applicant sees "ฝ่ายที่ระบบจัดให้เบื้องต้น" before and after submit.
+- Admin can override preliminary duty and sees a warning when a selected duty is already full.
+- Excel export includes base `people` data plus application-submitted data.

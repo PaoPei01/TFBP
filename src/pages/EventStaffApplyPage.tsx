@@ -16,7 +16,7 @@ import { useAsync } from '../hooks/useAsync';
 import { getEventContent } from '../lib/eventContent';
 import { eventPath, eventProfileCheckPath } from '../lib/eventRoutes';
 import type { EventSubmissionResult } from '../lib/eventTypes';
-import { fetchEventBySlug, lookupPersonForApplication, submitEventStaffApplication, submitPersonUpdateRequest, type PersonApplicationLookupResult } from '../services/events';
+import { fetchEventBySlug, fetchEventDutyQuotaStatus, lookupPersonForApplication, submitEventStaffApplication, submitPersonUpdateRequest, type EventDutyQuotaRow, type PersonApplicationLookupResult } from '../services/events';
 import { errorMessage } from '../utils/error';
 
 const cmuEmailPattern = /^[a-zA-Z0-9._%+-]+@cmu\.ac\.th$/;
@@ -38,10 +38,22 @@ function identityStatusLabel(status: string, language: 'th' | 'en') {
   return labels[status]?.[language] ?? status;
 }
 
+function previewAssignedDuty(duties: EventDutyQuotaRow[], selectedDutyKeys: string[]) {
+  const selected = duties
+    .filter((duty) => selectedDutyKeys.includes(duty.duty_key) && !duty.is_full && duty.remaining > 0)
+    .sort((a, b) => a.priority - b.priority || a.remaining - b.remaining || a.duty_label_th.localeCompare(b.duty_label_th, 'th'));
+  const preferred = selected[0];
+  if (preferred) return { duty: preferred, method: 'auto_quota', note: 'ระบบจะจัดฝ่ายเบื้องต้นตามโควต้าและฝ่ายที่เลือก' };
+  const general = duties.find((duty) => duty.is_general && !duty.is_full && duty.remaining > 0);
+  if (general) return { duty: general, method: 'fallback_general', note: 'ถ้าฝ่ายที่เลือกเต็ม ระบบจะจัดให้อยู่ฝ่ายทั่วไปเบื้องต้น' };
+  return { duty: null, method: 'pending', note: 'โควต้าฝ่ายเต็มแล้ว รอผู้ดูแลจัดสรรเพิ่มเติม' };
+}
+
 export function EventStaffApplyPage() {
   const { language } = useLanguage();
   const { eventSlug = '' } = useParams();
   const state = useAsync(() => fetchEventBySlug(eventSlug), [eventSlug]);
+  const quotaState = useAsync(() => state.data?.id ? fetchEventDutyQuotaStatus(state.data.id) : Promise.resolve(null), [state.data?.id]);
   const content = getEventContent(eventSlug);
   const recruitment = content?.staffRecruitment;
   const [email, setEmail] = useState('');
@@ -70,6 +82,9 @@ export function EventStaffApplyPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const event = state.data;
   const eventName = event ? (language === 'th' ? event.name_th : event.name_en || event.name_th) : '';
+  const quotaDuties = quotaState.data?.duties ?? [];
+  const selectedDutyLabels = selectedDuties.map((key) => quotaDuties.find((duty) => duty.duty_key === key)?.duty_label_th ?? key);
+  const assignmentPreview = previewAssignedDuty(quotaDuties, selectedDuties);
 
   function toggleDuty(duty: string) {
     setSelectedDuties((current) => current.includes(duty) ? current.filter((item) => item !== duty) : [...current, duty]);
@@ -180,8 +195,9 @@ export function EventStaffApplyPage() {
           requested_major: requestedMajor,
           update_request_id: updateRequestId,
           preferred_role: selectedDuties[0] ?? null,
-          preferred_team: selectedDuties.join(', '),
+          preferred_team: selectedDutyLabels.join(', '),
           preferred_duties: selectedDuties,
+          preferred_duty_labels: selectedDutyLabels,
           availability: { text: availability, can_attend_rehearsal: canAttendRehearsal, can_work_event_day: canWorkEventDay },
           can_attend_rehearsal: canAttendRehearsal,
           can_work_event_day: canWorkEventDay,
@@ -258,6 +274,9 @@ export function EventStaffApplyPage() {
               <CheckCircle2 size={28} />
               <strong>{language === 'th' ? 'ส่งใบสมัครแล้ว' : 'Application submitted'}</strong>
               <span>{language === 'th' ? 'สถานะ: submitted ผู้ดูแลจะตรวจสอบและจัดสรรหน้าที่ภายหลัง' : 'Status: submitted. Admins will review and assign duties later.'}</span>
+              <span><strong>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</strong>: {result.assignment?.assigned_label_th ?? result.application?.assigned_duty_label_th ?? (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment')}</span>
+              <span>{language === 'th' ? 'กรุณาแคปหน้าจอนี้ไว้เป็นหลักฐาน' : 'Please screenshot this page as your submission proof.'}</span>
+              <span>{language === 'th' ? 'ตำแหน่งที่แสดงเป็นการจัดสรรเบื้องต้น อาจมีการปรับเปลี่ยนตามความเหมาะสมโดยผู้ดูแล' : 'This is a preliminary assignment and may be adjusted later by admins.'}</span>
               {result.application?.identity_status && result.application.identity_status !== 'verified' ? (
                 <span>{language === 'th' ? 'ส่งใบสมัครแล้ว แต่ยังรอตรวจสอบตัวตน' : 'Submitted, pending identity review.'}</span>
               ) : null}
@@ -318,7 +337,28 @@ export function EventStaffApplyPage() {
               </div>
               <fieldset className="event-checkbox-grid full-span">
                 <legend>{language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties'}</legend>
-                {recruitment?.dutiesTh.map((duty) => (
+                {quotaState.loading ? <span className="muted">{language === 'th' ? 'กำลังโหลดโควต้าฝ่าย...' : 'Loading duty quotas...'}</span> : null}
+                {quotaDuties.length ? quotaDuties.map((duty) => (
+                  <label key={duty.duty_key} className={`duty-option-card ${duty.is_full ? 'is-disabled' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={selectedDuties.includes(duty.duty_key)}
+                      disabled={duty.is_full}
+                      onChange={() => toggleDuty(duty.duty_key)}
+                    />
+                    <span>
+                      <strong>{duty.duty_label_th}</strong>
+                      <small>{duty.description_th}</small>
+                      <small>{language === 'th' ? `เหลือ ${duty.remaining}/${duty.quota} คน` : `${duty.remaining}/${duty.quota} remaining`}</small>
+                      {duty.is_full ? (
+                        <>
+                          <em>{language === 'th' ? 'รับเต็มจำนวนแล้ว' : 'Full'}</em>
+                          <small>{language === 'th' ? 'ฝ่ายนี้รับครบตามจำนวนแล้ว กรุณาเลือกฝ่ายอื่น' : 'This duty is full. Please choose another duty.'}</small>
+                        </>
+                      ) : null}
+                    </span>
+                  </label>
+                )) : recruitment?.dutiesTh.map((duty) => (
                   <label key={duty}>
                     <input type="checkbox" checked={selectedDuties.includes(duty)} onChange={() => toggleDuty(duty)} />
                     <span>{duty}</span>
@@ -332,9 +372,9 @@ export function EventStaffApplyPage() {
                 <small>{language === 'th' ? 'หากสามารถอยู่ได้ทั้งวันให้ระบุว่า “ทั้งวัน”' : 'If you are available all day, write “all day”.'}</small>
                 {errors.availability ? <small className="field-error" role="alert">{errors.availability}</small> : null}
               </label>
-              <Select label={language === 'th' ? 'เข้าซ้อมวันที่ 10 มิ.ย. 2569 เวลา 16:00 น. ได้หรือไม่' : 'Can attend rehearsal?'} value={canAttendRehearsal} onChange={(eventInput) => setCanAttendRehearsal(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
+              <Select label={language === 'th' ? 'สามารถเข้าซ้อมวันที่ 10 มิ.ย. 2569 เวลา 16:00 น. ได้หรือไม่' : 'Can attend rehearsal?'} placeholder={language === 'th' ? 'โปรดเลือก' : 'Please select'} value={canAttendRehearsal} onChange={(eventInput) => setCanAttendRehearsal(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
               {errors.can_attend_rehearsal ? <small className="field-error full-span" role="alert">{errors.can_attend_rehearsal}</small> : null}
-              <Select label={language === 'th' ? 'ปฏิบัติงานวันที่ 12 มิ.ย. 2569 ได้หรือไม่' : 'Can work on event day?'} value={canWorkEventDay} onChange={(eventInput) => setCanWorkEventDay(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
+              <Select label={language === 'th' ? 'ปฏิบัติงานวันที่ 12 มิ.ย. 2569 ได้หรือไม่' : 'Can work on event day?'} placeholder={language === 'th' ? 'โปรดเลือก' : 'Please select'} value={canWorkEventDay} onChange={(eventInput) => setCanWorkEventDay(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
               {errors.can_work_event_day ? <small className="field-error full-span" role="alert">{errors.can_work_event_day}</small> : null}
 
               <div className="event-form-section full-span">
@@ -364,6 +404,20 @@ export function EventStaffApplyPage() {
                 ))}
                 {errors.consent ? <small className="field-error" role="alert">{errors.consent}</small> : null}
               </fieldset>
+              <Card className="full-span" variant="soft">
+                <div className="mobile-row-head">
+                  <div>
+                    <strong>{language === 'th' ? 'สรุปก่อนส่งใบสมัคร' : 'Submission summary'}</strong>
+                    <span>{language === 'th' ? 'ตรวจสอบฝ่ายที่เลือกและฝ่ายที่ระบบคาดว่าจะจัดให้เบื้องต้น' : 'Check selected duties and expected preliminary assignment.'}</span>
+                  </div>
+                </div>
+                <div className="event-fact-grid">
+                  <span><strong>{language === 'th' ? 'ฝ่ายที่เลือก' : 'Selected duties'}</strong>{selectedDutyLabels.length ? selectedDutyLabels.join(', ') : '-'}</span>
+                  <span><strong>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</strong>{assignmentPreview.duty?.duty_label_th ?? (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment')}</span>
+                  <span><strong>{language === 'th' ? 'หมายเหตุ' : 'Note'}</strong>{assignmentPreview.note}</span>
+                </div>
+                <p className="muted">{language === 'th' ? 'ตำแหน่งที่แสดงเป็นการจัดสรรเบื้องต้น อาจมีการปรับเปลี่ยนตามความเหมาะสมโดยผู้ดูแล' : 'This is a preliminary assignment and may be adjusted later by admins.'}</p>
+              </Card>
               <div className="form-actions full-span">
                 <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Link>
                 <Button type="submit" loading={saving} disabled={saving}>{language === 'th' ? 'ส่งใบสมัคร' : 'Submit application'}</Button>

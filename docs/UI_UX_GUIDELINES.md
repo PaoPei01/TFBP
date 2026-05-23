@@ -49,6 +49,9 @@ Destructive actions must live in `DangerZone` or use `ConfirmDialog`. Do not pla
 - Public identity lookup may show masked old CMU Mail/phone only when the user provides student ID plus CMU Mail.
 - Public staff application flows must not hard-block real users only because old email/phone data is outdated; use pending admin review copy instead.
 - Public copy for identity mismatch should say: "หาก CMU Mail ในฐานข้อมูลเดิมไม่ถูกต้อง สามารถส่งใบสมัครได้ตามปกติ ระบบจะให้ผู้ดูแลตรวจสอบตัวตนเพิ่มเติมภายหลัง"
+- Applicant-facing duty assignment must use the wording "ฝ่ายที่ระบบจัดให้เบื้องต้น" and must say admins may adjust it later.
+- Full-duty choices should be disabled, visually subdued, and labelled "รับเต็มจำนวนแล้ว" with a clear next step to choose another duty.
+- Admin exports that include health/limitation text must show a privacy warning before download.
 - Medical data is visible only to admin and emergency_staff.
 - If medical data is visible, show a confidentiality notice.
 - Do not cache private medical data unless it is access-controlled and short-lived.
