@@ -148,9 +148,9 @@ export function AdminPeoplePage() {
             value={filters.search ?? ''}
             onChange={(event) => updateFilter('search', event.target.value)}
           />
-          <Select label={language === 'th' ? 'source' : 'Source'} value={filters.source ?? ''} onChange={(event) => updateFilter('source', event.target.value)} options={sourceOptions} />
-          <Select label={language === 'th' ? 'ชั้นปี' : 'Year'} value={filters.year_level ? String(filters.year_level) : ''} onChange={(event) => updateFilter('year_level', event.target.value ? Number(event.target.value) : '')} options={yearOptions} />
-          <Select label={language === 'th' ? 'สาขา' : 'Major'} value={filters.major ?? ''} onChange={(event) => updateFilter('major', event.target.value)} options={majorOptions} />
+          <Select label={language === 'th' ? 'source' : 'Source'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.source ?? ''} onChange={(event) => updateFilter('source', event.target.value)} options={sourceOptions} />
+          <Select label={language === 'th' ? 'ชั้นปี' : 'Year'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.year_level ? String(filters.year_level) : ''} onChange={(event) => updateFilter('year_level', event.target.value ? Number(event.target.value) : '')} options={yearOptions} />
+          <Select label={language === 'th' ? 'สาขา' : 'Major'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.major ?? ''} onChange={(event) => updateFilter('major', event.target.value)} options={majorOptions} />
           <Select
             label={language === 'th' ? 'ข้อมูลที่ขาด' : 'Missing field'}
             value={filters.missing_field ?? ''}

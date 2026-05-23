@@ -89,6 +89,11 @@ function hasNicknameWithoutFullName(row: AdminStaffApplicationRow) {
   return Boolean(row.people && !row.people.name_th && !row.people.name_en && applicantNickname(row));
 }
 
+function hasNameNicknameConflict(row: AdminStaffApplicationRow) {
+  const nicknames = [row.people?.nickname, row.people?.nickname_th, row.people?.nickname_en].filter(Boolean).map((value) => String(value).trim());
+  return Boolean(row.people && nicknames.length && [row.people.name_th, row.people.name_en].filter(Boolean).some((name) => nicknames.includes(String(name).trim())));
+}
+
 function identityStatusLabel(status: string, language: 'th' | 'en') {
   const labels: Record<string, { th: string; en: string }> = {
     verified: { th: 'ยืนยันแล้ว', en: 'Verified' },
@@ -599,31 +604,33 @@ export function AdminEventApplicationsPage() {
               />
               <Select
                 label={language === 'th' ? 'สถานะ' : 'Status'}
+                placeholder={language === 'th' ? 'ทั้งหมด' : 'All'}
                 value={filters.status}
                 onChange={(eventInput) => setFilters({ ...filters, status: eventInput.target.value })}
                 options={STAFF_APPLICATION_STATUSES.map((status) => ({ value: status, label: getApplicationStatusLabel(status, language) }))}
               />
               <Select
                 label={language === 'th' ? 'สถานะตัวตน' : 'Identity'}
+                placeholder={language === 'th' ? 'ทั้งหมด' : 'All'}
                 value={filters.identityStatus}
                 onChange={(eventInput) => setFilters({ ...filters, identityStatus: eventInput.target.value })}
                 options={['verified', 'email_mismatch', 'pending_identity_review', 'not_found', 'rejected_identity'].map((status) => ({ value: status, label: identityStatusLabel(status, language) }))}
               />
-              <Select label={language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'} value={filters.assignedDuty} onChange={(eventInput) => setFilters({ ...filters, assignedDuty: eventInput.target.value })} options={assignedDutyOptions} />
-              <Select label={language === 'th' ? 'วิธีการจัดฝ่าย' : 'Assignment method'} value={filters.assignmentMethod} onChange={(eventInput) => setFilters({ ...filters, assignmentMethod: eventInput.target.value })} options={['auto_quota', 'manual_admin', 'fallback_general', 'pending'].map((method) => ({ value: method, label: assignmentMethodLabel(method, language) }))} />
-              <Select label={language === 'th' ? 'หน้าที่สุดท้าย' : 'Final duty'} value={filters.finalDuty} onChange={(eventInput) => setFilters({ ...filters, finalDuty: eventInput.target.value })} options={finalDutyOptions} />
-              <Select label={language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duty'} value={filters.preferredDuty} onChange={(eventInput) => setFilters({ ...filters, preferredDuty: eventInput.target.value })} options={filterOptions.preferred} />
-              <Select label={language === 'th' ? 'ชั้นปี' : 'Year'} value={filters.yearLevel} onChange={(eventInput) => setFilters({ ...filters, yearLevel: eventInput.target.value })} options={filterOptions.years} />
-              <Select label={language === 'th' ? 'สาขา' : 'Major'} value={filters.major} onChange={(eventInput) => setFilters({ ...filters, major: eventInput.target.value })} options={filterOptions.majors} />
-              <Select label={language === 'th' ? 'วันซ้อม' : 'Rehearsal'} value={filters.rehearsal} onChange={(eventInput) => setFilters({ ...filters, rehearsal: eventInput.target.value })} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} />
-              <Select label={language === 'th' ? 'วันจริง' : 'Event day'} value={filters.eventDay} onChange={(eventInput) => setFilters({ ...filters, eventDay: eventInput.target.value })} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} />
+              <Select label={language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.assignedDuty} onChange={(eventInput) => setFilters({ ...filters, assignedDuty: eventInput.target.value })} options={assignedDutyOptions} />
+              <Select label={language === 'th' ? 'วิธีการจัดฝ่าย' : 'Assignment method'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.assignmentMethod} onChange={(eventInput) => setFilters({ ...filters, assignmentMethod: eventInput.target.value })} options={['auto_quota', 'manual_admin', 'fallback_general', 'pending'].map((method) => ({ value: method, label: assignmentMethodLabel(method, language) }))} />
+              <Select label={language === 'th' ? 'หน้าที่สุดท้าย' : 'Final duty'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.finalDuty} onChange={(eventInput) => setFilters({ ...filters, finalDuty: eventInput.target.value })} options={finalDutyOptions} />
+              <Select label={language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duty'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.preferredDuty} onChange={(eventInput) => setFilters({ ...filters, preferredDuty: eventInput.target.value })} options={filterOptions.preferred} />
+              <Select label={language === 'th' ? 'ชั้นปี' : 'Year'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.yearLevel} onChange={(eventInput) => setFilters({ ...filters, yearLevel: eventInput.target.value })} options={filterOptions.years} />
+              <Select label={language === 'th' ? 'สาขา' : 'Major'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.major} onChange={(eventInput) => setFilters({ ...filters, major: eventInput.target.value })} options={filterOptions.majors} />
+              <Select label={language === 'th' ? 'วันซ้อม' : 'Rehearsal'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.rehearsal} onChange={(eventInput) => setFilters({ ...filters, rehearsal: eventInput.target.value })} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} />
+              <Select label={language === 'th' ? 'วันจริง' : 'Event day'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.eventDay} onChange={(eventInput) => setFilters({ ...filters, eventDay: eventInput.target.value })} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} />
             </div>
             <div>
               <p className="eyebrow">{language === 'th' ? 'ดาวน์โหลดข้อมูลผู้สมัคร' : 'Download applications'}</p>
             </div>
             <div className="event-card-actions">
               <Button variant="secondary" icon={<Download size={17} />} onClick={() => requestExcelExport('all')}>{language === 'th' ? 'ดาวน์โหลด Excel ทั้งหมด' : 'Download all Excel'}</Button>
-              <Button variant="secondary" icon={<Download size={17} />} onClick={() => requestExcelExport('filtered')}>{language === 'th' ? 'ดาวน์โหลด Excel ตาม filter ปัจจุบัน' : 'Download filtered Excel'}</Button>
+              <Button variant="secondary" icon={<Download size={17} />} onClick={() => requestExcelExport('filtered')}>{language === 'th' ? 'ดาวน์โหลด Excel ตามตัวกรองปัจจุบัน' : 'Download current filtered Excel'}</Button>
             </div>
           </Card>
 
@@ -641,6 +648,7 @@ export function AdminEventApplicationsPage() {
                   <strong>{applicantName(row)}</strong>
                   {applicantNickname(row) ? <small>{language === 'th' ? `ชื่อเล่น: ${applicantNickname(row)}` : `Nickname: ${applicantNickname(row)}`}</small> : null}
                   {hasNicknameWithoutFullName(row) ? <small className="field-error">{language === 'th' ? 'ข้อมูลนี้มีชื่อเล่น แต่ไม่มีชื่อ-นามสกุลในฐานข้อมูลกลาง' : 'Nickname exists, but full name is missing in the central database.'}</small> : null}
+                  {hasNameNicknameConflict(row) ? <small className="field-error">{language === 'th' ? 'ชื่อ-นามสกุลในฐานข้อมูลตรงกับชื่อเล่น ควรตรวจข้อมูลก่อนใช้งานจริง' : 'Full name matches nickname. Review this person data before real use.'}</small> : null}
                 </div>
               ), priority: 'primary' },
               { key: 'year', header: language === 'th' ? 'ชั้นปี' : 'Year', render: (row) => row.people?.year_level ?? '-' },
@@ -773,12 +781,12 @@ export function AdminEventApplicationsPage() {
             ) : null}
           </Modal>
 
-          <Modal open={Boolean(excelExport)} title={language === 'th' ? 'ยืนยันการส่งออกข้อมูลส่วนบุคคล' : 'Confirm personal data export'} onClose={() => { setExcelExport(null); setExportConfirmed(false); }}>
+          <Modal open={Boolean(excelExport)} title={language === 'th' ? 'ยืนยันการดาวน์โหลดข้อมูล' : 'Confirm data download'} onClose={() => { setExcelExport(null); setExportConfirmed(false); }}>
             {excelExport ? (
               <div className="modal-body page-stack">
                 <Card variant="warning">
-                  <strong>{language === 'th' ? 'ไฟล์นี้อาจมีข้อมูลส่วนบุคคล' : 'This file may contain personal data.'}</strong>
-                  <p>{language === 'th' ? 'ไฟล์นี้อาจมีข้อมูลส่วนบุคคล เช่น เบอร์โทร อีเมล และข้อจำกัดด้านสุขภาพ/การแพ้อาหาร ควรใช้เพื่อการดำเนินงานกิจกรรมเท่านั้น ห้ามเผยแพร่ต่อสาธารณะ' : 'This file may include phone numbers, emails, and health/limitation information. Use it only for event operations and do not publish it publicly.'}</p>
+                  <strong>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคล' : 'This file contains personal data.'}</strong>
+                  <p>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคล และอาจมีข้อมูลด้านสุขภาพที่ผู้สมัครกรอกเพื่อใช้ในการจัดงานเท่านั้น กรุณาใช้ข้อมูลอย่างระมัดระวัง และห้ามเผยแพร่ต่อสาธารณะ' : 'This file contains personal data and may include health information submitted only for event operations. Use it carefully and do not publish it publicly.'}</p>
                 </Card>
                 <p className="muted">{language === 'th' ? `จำนวน ${excelExport.rows.length} รายการ` : `${excelExport.rows.length} rows`}</p>
                 <label className="checkbox-row">
@@ -787,7 +795,7 @@ export function AdminEventApplicationsPage() {
                 </label>
                 <div className="form-actions">
                   <Button icon={<FileSpreadsheet size={18} />} disabled={!exportConfirmed} onClick={() => void confirmExcelExport()}>
-                    {language === 'th' ? 'ดาวน์โหลด Excel' : 'Download Excel'}
+                    {language === 'th' ? 'ยืนยันดาวน์โหลด' : 'Confirm download'}
                   </Button>
                   <Button variant="secondary" onClick={() => { setExcelExport(null); setExportConfirmed(false); }}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
                 </div>
@@ -811,6 +819,12 @@ export function AdminEventApplicationsPage() {
                   <Card variant="warning">
                     <strong>{language === 'th' ? 'ข้อมูลนี้มีชื่อเล่น แต่ไม่มีชื่อ-นามสกุลในฐานข้อมูลกลาง' : 'This record has a nickname but no full name.'}</strong>
                     <p>{language === 'th' ? 'ควรตรวจข้อมูลนำเข้าหรือคำร้องแก้ไขข้อมูลก่อนใช้งานจริง' : 'Review imported data or update requests before real operations.'}</p>
+                  </Card>
+                ) : null}
+                {hasNameNicknameConflict(detailRow) ? (
+                  <Card variant="warning">
+                    <strong>{language === 'th' ? 'ชื่อ-นามสกุลตรงกับชื่อเล่น' : 'Full name matches nickname'}</strong>
+                    <p>{language === 'th' ? 'ควรตรวจข้อมูลในฐานข้อมูลกลางหรือคำร้องแก้ไขข้อมูลก่อนใช้งานจริง' : 'Review the central people record or update requests before real operations.'}</p>
                   </Card>
                 ) : null}
                 <div className="application-detail-grid">

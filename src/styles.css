@@ -1044,6 +1044,32 @@ a {
   padding-bottom: calc(var(--mobile-bottom-nav-height) + var(--safe-bottom) + 1rem);
 }
 
+/* Quality-of-life layout helpers: additive utilities for responsive cleanup. */
+.compact-helper-text,
+.ql-muted {
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.ql-card {
+  min-width: 0;
+  border-radius: var(--radius-md);
+  padding: clamp(0.9rem, 2vw, 1.15rem);
+}
+
+.ql-warning {
+  border-color: rgba(163, 101, 0, 0.18);
+  color: #6d4400;
+  background: var(--warning-surface);
+}
+
+.ql-success {
+  border-color: rgba(25, 122, 70, 0.18);
+  color: #145c38;
+  background: var(--success-surface);
+}
+
 .health-issue-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1575,6 +1601,8 @@ a {
   border-radius: 14px;
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 .duty-option-card > span {
@@ -1584,6 +1612,21 @@ a {
 
 .duty-option-card strong {
   font-weight: 900;
+}
+
+.duty-option-card input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--accent-strong);
+}
+
+.duty-option-card:focus-within {
+  border-color: rgba(40, 104, 232, 0.7);
+  box-shadow: 0 0 0 4px rgba(40, 104, 232, 0.12);
+}
+
+.duty-option-card small {
+  overflow-wrap: anywhere;
 }
 
 .duty-option-card em {
@@ -1598,6 +1641,7 @@ a {
 }
 
 .duty-option-card.is-disabled {
+  cursor: not-allowed;
   opacity: 0.62;
   filter: grayscale(0.35);
 }
@@ -1605,6 +1649,7 @@ a {
 .duty-option-card.is-selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.12);
+  background: rgba(40, 104, 232, 0.08);
 }
 
 .duty-option-card .selected-badge {

@@ -56,9 +56,9 @@ export function StaffDirectoryPage() {
           <Search size={18} />
           <Input label={language === 'th' ? 'ค้นหา' : 'Search'} value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
-        <Select label={language === 'th' ? 'หน้าที่' : 'Role'} value={role} onChange={(event) => setRole(event.target.value)} options={roles} />
-        <Select label={language === 'th' ? 'สี' : 'Color'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((group) => ({ value: group, label: language === 'th' ? groupMeta[group].th : groupMeta[group].en }))} />
-        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups} />
+        <Select label={language === 'th' ? 'หน้าที่' : 'Role'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={role} onChange={(event) => setRole(event.target.value)} options={roles} />
+        <Select label={language === 'th' ? 'สี' : 'Color'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((group) => ({ value: group, label: language === 'th' ? groupMeta[group].th : groupMeta[group].en }))} />
+        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups} />
       </Card>
       <MobileFilterSheet
         open={filterOpen}
@@ -69,9 +69,9 @@ export function StaffDirectoryPage() {
         onClose={() => setFilterOpen(false)}
         onClear={clearFilters}
       >
-        <Select label={language === 'th' ? 'หน้าที่' : 'Role'} value={role} onChange={(event) => setRole(event.target.value)} options={roles} />
-        <Select label={language === 'th' ? 'สี' : 'Color'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((group) => ({ value: group, label: language === 'th' ? groupMeta[group].th : groupMeta[group].en }))} />
-        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups} />
+        <Select label={language === 'th' ? 'หน้าที่' : 'Role'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={role} onChange={(event) => setRole(event.target.value)} options={roles} />
+        <Select label={language === 'th' ? 'สี' : 'Color'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((group) => ({ value: group, label: language === 'th' ? groupMeta[group].th : groupMeta[group].en }))} />
+        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups} />
       </MobileFilterSheet>
       {state.loading ? <LoadingSkeleton /> : null}
       {state.error ? <div className="error-state">{state.error}</div> : null}

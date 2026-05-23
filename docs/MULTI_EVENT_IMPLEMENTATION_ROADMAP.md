@@ -597,3 +597,25 @@ Deferred:
 - Production migrations still must be applied manually in Supabase after backup and staging verification.
 - Email notification is intentionally not implemented.
 - Advanced real-time monitoring remains out of scope until core launch is stable.
+
+## UI/UX QOL Audit and Polish Pass
+
+Status: implemented as a product quality pass with no database/schema changes.
+
+Completed:
+
+- Added `docs/UI_UX_QOL_AUDIT.md` covering device, page, component, wording, and QOL roadmap findings.
+- Standardized safe form select placeholder behavior so forms use `โปรดเลือก`, while touched admin filters explicitly use `ทั้งหมด`.
+- Tightened full-name/nickname display rules in staff application and profile-check surfaces.
+- Improved Parent Orientation staff application success/confirmation details with nickname, submitted time, preliminary duty, screenshot reminder, and calmer identity-warning copy.
+- Updated duty card descriptions, disabled/full state affordance, and keyboard focus styling.
+- Refined admin application export wording and sensitive-data confirmation modal.
+- Added guide topics for staff application, CMU Mail identity, preliminary duty assignment, status check, admin export, and people update requests.
+
+QA focus:
+
+- Full name never falls back to nickname.
+- CMU Mail mismatch remains non-blocking where admin review is allowed.
+- Full duty cards are readable, disabled, and not color-only.
+- Excel export warning appears before download.
+- No public sensitive data exposure or schema/RLS change was introduced.

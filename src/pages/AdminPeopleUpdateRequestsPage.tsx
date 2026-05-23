@@ -112,9 +112,9 @@ export function AdminPeopleUpdateRequestsPage() {
         </div>
         <div className="filter-panel-grid">
           <Input label={language === 'th' ? 'ค้นหา' : 'Search'} value={filters.search} onChange={(input) => setFilters({ ...filters, search: input.target.value })} />
-          <Select label={language === 'th' ? 'สถานะ' : 'Status'} value={filters.status} onChange={(input) => setFilters({ ...filters, status: input.target.value })} options={['pending', 'approved', 'rejected', 'cancelled'].map((status) => ({ value: status, label: statusLabel(status, language) }))} />
-          <Select label={language === 'th' ? 'ประเภทคำร้อง' : 'Request type'} value={filters.requestType} onChange={(input) => setFilters({ ...filters, requestType: input.target.value })} options={['email_correction', 'phone_update', 'profile_update', 'identity_not_found'].map((type) => ({ value: type, label: requestTypeLabel(type, language) }))} />
-          <Select label={language === 'th' ? 'กิจกรรม' : 'Event'} value={filters.eventId} onChange={(input) => setFilters({ ...filters, eventId: input.target.value })} options={(eventsState.data ?? []).map((event) => ({ value: event.id, label: language === 'th' ? event.name_th : event.name_en || event.name_th }))} />
+          <Select label={language === 'th' ? 'สถานะ' : 'Status'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.status} onChange={(input) => setFilters({ ...filters, status: input.target.value })} options={['pending', 'approved', 'rejected', 'cancelled'].map((status) => ({ value: status, label: statusLabel(status, language) }))} />
+          <Select label={language === 'th' ? 'ประเภทคำร้อง' : 'Request type'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.requestType} onChange={(input) => setFilters({ ...filters, requestType: input.target.value })} options={['email_correction', 'phone_update', 'profile_update', 'identity_not_found'].map((type) => ({ value: type, label: requestTypeLabel(type, language) }))} />
+          <Select label={language === 'th' ? 'กิจกรรม' : 'Event'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={filters.eventId} onChange={(input) => setFilters({ ...filters, eventId: input.target.value })} options={(eventsState.data ?? []).map((event) => ({ value: event.id, label: language === 'th' ? event.name_th : event.name_en || event.name_th }))} />
         </div>
       </Card>
 

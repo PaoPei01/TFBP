@@ -32,7 +32,7 @@ function fallbackForContext(language: Language, context?: ErrorContext) {
     case 'documents':
       return th ? 'ดำเนินการเอกสารไม่สำเร็จ กรุณาลองใหม่' : 'Document action failed. Please try again.';
     case 'export':
-      return th ? 'Export ไม่สำเร็จ กรุณาลองใหม่' : 'Export failed. Please try again.';
+      return th ? 'ดาวน์โหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่' : 'Export failed. Please try again.';
     case 'profile':
       return th ? 'ดำเนินการข้อมูลโปรไฟล์ไม่สำเร็จ กรุณาลองใหม่' : 'Profile action failed. Please try again.';
     case 'qr':
@@ -66,7 +66,7 @@ function technicalMessageToFriendly(message: string, language: Language, context
     return fallbackForContext(language, 'camera');
   }
   if (lower.includes('failed to fetch') || lower.includes('network') || lower.includes('timeout')) {
-    return th ? 'เชื่อมต่อไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่' : 'Connection failed. Please check your internet and try again.';
+    return th ? 'เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' : 'Connection failed. Please check your internet and try again.';
   }
   if (lower.includes('rpc') || lower.includes('function') || lower.includes('relation') || lower.includes('column') || lower.includes('constraint') || lower.includes('invalid input syntax') || lower.includes('schema cache') || lower.includes('pgrst') || lower.includes('postgres') || lower.includes('sql')) {
     return fallbackForContext(language, context);

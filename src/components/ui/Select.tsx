@@ -14,7 +14,7 @@ export function Select({ label, options, placeholder, id, className = '', ...pro
     <label className={`field ${className}`} htmlFor={selectId}>
       <span>{label}</span>
       <select id={selectId} {...props}>
-        <option value="">{placeholder ?? (language === 'th' ? 'ทั้งหมด' : 'All')}</option>
+        <option value="">{placeholder ?? (language === 'th' ? 'โปรดเลือก' : 'Please select')}</option>
         {options.map((option) => {
           const value = typeof option === 'string' ? option : option.value;
           const optionLabel = typeof option === 'string' ? option : option.label;

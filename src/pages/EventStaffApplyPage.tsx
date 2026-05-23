@@ -49,10 +49,54 @@ function previewAssignedDuty(duties: EventDutyQuotaRow[], selectedDutyKeys: stri
   return { duty: null, method: 'pending', note: 'โควต้าฝ่ายเต็มแล้ว รอผู้ดูแลจัดสรรเพิ่มเติม' };
 }
 
+const dutyContent: Record<string, { labelTh: string; descriptionTh: string }> = {
+  traffic: {
+    labelTh: 'ฝ่ายจราจรและอำนวยทาง',
+    descriptionTh: 'ดูแลการเดินทาง การบอกทาง และช่วยจัดระเบียบเส้นทางภายในพื้นที่กิจกรรม',
+  },
+  medical: {
+    labelTh: 'ฝ่ายพยาบาลและดูแลความปลอดภัย',
+    descriptionTh: 'ดูแลการปฐมพยาบาลเบื้องต้น ประสานงานกรณีฉุกเฉิน และช่วยดูแลความปลอดภัยของผู้เข้าร่วม',
+  },
+  registration: {
+    labelTh: 'ฝ่ายลงทะเบียน',
+    descriptionTh: 'ตรวจสอบรายชื่อ ต้อนรับผู้เข้าร่วม และช่วยจัดการจุดลงทะเบียนให้เป็นระเบียบ',
+  },
+  welfare: {
+    labelTh: 'ฝ่ายสวัสดิการ',
+    descriptionTh: 'ดูแลอาหาร น้ำดื่ม อุปกรณ์ และความเรียบร้อยด้านสวัสดิการของทีมงานและผู้เข้าร่วม',
+  },
+  benefits_sales: {
+    labelTh: 'ฝ่ายสิทธิประโยชน์และจำหน่ายสินค้า',
+    descriptionTh: 'ดูแลบูธสิทธิประโยชน์ การจำหน่ายสินค้า หรือกิจกรรมสนับสนุนรายได้และประชาสัมพันธ์ของงาน',
+  },
+  registration_it: {
+    labelTh: 'ฝ่ายสนับสนุนระบบลงทะเบียน (IT)',
+    descriptionTh: 'ช่วยดูแลอุปกรณ์ ระบบลงทะเบียน การแก้ปัญหาหน้างาน และการประสานงานด้านเทคนิค',
+  },
+  backstage: {
+    labelTh: 'ฝ่าย Backstage และประสานงานเวที',
+    descriptionTh: 'ดูแลหลังเวที คิวกิจกรรม การประสานงานผู้เกี่ยวข้อง และความพร้อมของช่วงพิธีการหรือการแสดง',
+  },
+  general: {
+    labelTh: 'ฝ่ายทั่วไป',
+    descriptionTh: 'สนับสนุนงานทั่วไปตามที่ได้รับมอบหมาย เช่น ช่วยประจำจุดต่าง ๆ อำนวยความสะดวก และช่วยเสริมกำลังฝ่ายที่ต้องการคนเพิ่ม',
+  },
+};
+
+function dutyLabel(duty: EventDutyQuotaRow) {
+  return dutyContent[duty.duty_key]?.labelTh ?? duty.duty_label_th;
+}
+
+function dutyDescription(duty: EventDutyQuotaRow) {
+  return dutyContent[duty.duty_key]?.descriptionTh ?? duty.description_th;
+}
+
 function safeFullName(person: PersonApplicationLookupResult['safe_person'] | undefined, fallback?: string) {
-  return person?.display_full_name
-    || person?.name_th
+  return person?.name_th
     || person?.name_en
+    || person?.full_name_th
+    || person?.full_name_en
     || fallback?.trim()
     || 'ไม่พบชื่อ-นามสกุลในระบบ';
 }
@@ -103,11 +147,15 @@ export function EventStaffApplyPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const [result, setResult] = useState<EventSubmissionResult | null>(null);
+  const [submittedAt, setSubmittedAt] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const event = state.data;
   const eventName = event ? (language === 'th' ? event.name_th : event.name_en || event.name_th) : '';
   const quotaDuties = quotaState.data?.duties ?? [];
-  const selectedDutyLabels = selectedDuties.map((key) => quotaDuties.find((duty) => duty.duty_key === key)?.duty_label_th ?? key);
+  const selectedDutyLabels = selectedDuties.map((key) => {
+    const duty = quotaDuties.find((item) => item.duty_key === key);
+    return duty ? dutyLabel(duty) : key;
+  });
   const assignmentPreview = previewAssignedDuty(quotaDuties, selectedDuties);
   const applicantDisplayName = identityLookup?.safe_person
     ? safeFullName(identityLookup.safe_person, requestedNameTh)
@@ -281,6 +329,7 @@ export function EventStaffApplyPage() {
         },
       });
       setResult(submitted);
+      setSubmittedAt(new Date().toISOString());
       if (!submitted.success) {
         setToast({ type: 'error', message: submitted.code === 'invalid_cmu_email'
           ? (language === 'th' ? 'กรุณากรอก CMU Mail ที่ลงท้ายด้วย @cmu.ac.th เท่านั้น' : 'Please enter a valid CMU Mail ending with @cmu.ac.th')
@@ -347,9 +396,11 @@ export function EventStaffApplyPage() {
               <span>{language === 'th' ? 'ระบบได้รับใบสมัครของคุณแล้ว' : 'Your application has been received.'}</span>
               <div className="event-fact-grid">
                 <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Name'}</strong>{applicantDisplayName}</span>
+                <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{safeNickname(identityLookup?.safe_person)}</span>
                 <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{studentId || '-'}</span>
                 <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{applicantMajor}</span>
                 <span><strong>{language === 'th' ? 'สถานะการยืนยันตัวตน' : 'Identity status'}</strong>{identityStatusLabel(result.application?.identity_status ?? identityLookup?.identity_status ?? 'pending_identity_review', language)}</span>
+                <span><strong>{language === 'th' ? 'เวลาที่ส่งใบสมัคร' : 'Submitted at'}</strong>{submittedAt ? new Date(submittedAt).toLocaleString(language === 'th' ? 'th-TH' : 'en-US') : '-'}</span>
                 <span><strong>{language === 'th' ? 'รหัสใบสมัคร' : 'Application ID'}</strong>{result.application?.id ?? '-'}</span>
               </div>
               <span><strong>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</strong>: {result.assignment?.assigned_label_th ?? result.application?.assigned_duty_label_th ?? (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment')}</span>
@@ -397,7 +448,7 @@ export function EventStaffApplyPage() {
                       <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{safeNickname(identityLookup.safe_person)}</span>
                       <span><strong>{language === 'th' ? 'รหัส' : 'ID'}</strong>{identityLookup.safe_person.student_id ?? '-'}</span>
                       <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{identityLookup.safe_person.major ?? '-'}</span>
-                      <span><strong>{language === 'th' ? 'CMU Mail เดิม' : 'Old CMU Mail'}</strong>{identityLookup.safe_person.masked_email ?? '-'}</span>
+                      <span><strong>{language === 'th' ? 'CMU Mail ในระบบ' : 'System CMU Mail'}</strong>{identityLookup.safe_person.masked_email ?? '-'}</span>
                     </div>
                   ) : (
                     <p>{language === 'th' ? 'ไม่พบข้อมูลจากรหัสนักศึกษานี้ แต่คุณยังสามารถส่งใบสมัครเพื่อให้ผู้ดูแลตรวจสอบได้' : 'No record found for this student ID, but you can still submit for admin review.'}</p>
@@ -440,8 +491,8 @@ export function EventStaffApplyPage() {
                     <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{identityLookup.safe_person.student_id ?? '-'}</span>
                     <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{identityLookup.safe_person.major ?? '-'}</span>
                     <span><strong>{language === 'th' ? 'ชั้นปี' : 'Year'}</strong>{identityLookup.safe_person.year_level ?? '-'}</span>
-                    <span><strong>{language === 'th' ? 'CMU Mail เดิม' : 'Old CMU Mail'}</strong>{identityLookup.safe_person.masked_email ?? '-'}</span>
-                    <span><strong>{language === 'th' ? 'เบอร์เดิม' : 'Old phone'}</strong>{identityLookup.safe_person.masked_phone ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'CMU Mail ในระบบ' : 'System CMU Mail'}</strong>{identityLookup.safe_person.masked_email ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'เบอร์โทรในระบบ' : 'System phone'}</strong>{identityLookup.safe_person.masked_phone ?? '-'}</span>
                   </div>
                   <Button type="button" variant="secondary" onClick={() => setShowUpdateModal(true)}>{language === 'th' ? 'ขอแก้ไขข้อมูล' : 'Request update'}</Button>
                 </Card>
@@ -480,8 +531,8 @@ export function EventStaffApplyPage() {
                       onChange={() => toggleDuty(duty.duty_key)}
                     />
                     <span>
-                      <strong>{duty.duty_label_th}</strong>
-                      <small>{duty.description_th}</small>
+                      <strong>{dutyLabel(duty)}</strong>
+                      <small>{dutyDescription(duty)}</small>
                       <small>{language === 'th' ? `คงเหลือ ${duty.remaining} จาก ${duty.quota} คน` : `${duty.remaining} of ${duty.quota} remaining`}</small>
                       {selected ? <em className="selected-badge">{language === 'th' ? 'เลือกแล้ว' : 'Selected'}</em> : null}
                       {duty.is_full ? (
@@ -557,6 +608,7 @@ export function EventStaffApplyPage() {
                 </div>
                 <div className="event-fact-grid">
                   <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Name'}</strong>{applicantDisplayName}</span>
+                  <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{safeNickname(identityLookup?.safe_person)}</span>
                   <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{studentId || '-'}</span>
                   <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{applicantMajor}</span>
                   <span><strong>{language === 'th' ? 'ชั้นปี' : 'Year'}</strong>{applicantYear}</span>
@@ -568,7 +620,7 @@ export function EventStaffApplyPage() {
                   <span><strong>{language === 'th' ? 'ช่วงเวลาที่สะดวก' : 'Availability'}</strong>{availability || '-'}</span>
                   <span><strong>{language === 'th' ? 'หมายเหตุ' : 'Note'}</strong>{note || '-'}</span>
                   <span><strong>{language === 'th' ? 'สถานะการยืนยันตัวตน' : 'Identity status'}</strong>{identityStatusLabel(identityLookup?.identity_status ?? 'pending_identity_review', language)}</span>
-                  <span><strong>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</strong>{assignmentPreview.duty?.duty_label_th ?? (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment')}</span>
+                  <span><strong>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</strong>{assignmentPreview.duty ? dutyLabel(assignmentPreview.duty) : (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment')}</span>
                   <span><strong>{language === 'th' ? 'หมายเหตุการจัดฝ่าย' : 'Assignment note'}</strong>{assignmentPreview.note}</span>
                 </div>
                 {identityLookup?.identity_status !== 'verified' ? (
@@ -594,8 +646,8 @@ export function EventStaffApplyPage() {
           <p className="muted">{language === 'th' ? 'กรอกข้อมูลที่ถูกต้องเพื่อให้ผู้ดูแลตรวจสอบและอัปเดตข้อมูลในฐานกลาง คุณสามารถดำเนินการสมัครต่อได้ ไม่ต้องรออนุมัติคำร้อง' : 'Enter correct details for admin review. You can continue applying without waiting for approval.'}</p>
           <div className="form-grid">
             <Input label={language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'} value={studentId} onChange={(eventInput) => setStudentId(eventInput.target.value)} required />
-            <Input label={language === 'th' ? 'CMU Mail ที่ถูกต้อง' : 'Correct CMU Mail'} value={email} onChange={(eventInput) => setEmail(eventInput.target.value)} error={errors.email} required />
-            <Input label={language === 'th' ? 'เบอร์โทรปัจจุบัน' : 'Current phone'} value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} required />
+            <Input label={language === 'th' ? 'CMU Mail ที่ถูกต้อง' : 'Correct CMU Mail'} type="email" value={email} onChange={(eventInput) => setEmail(eventInput.target.value)} error={errors.email} required />
+            <Input label={language === 'th' ? 'เบอร์โทรปัจจุบัน' : 'Current phone'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} required />
             <Input label={language === 'th' ? 'ชื่อ-นามสกุล' : 'Full name'} value={requestedNameTh} onChange={(eventInput) => setRequestedNameTh(eventInput.target.value)} />
             <Input label={language === 'th' ? 'สาขา' : 'Major'} value={requestedMajor} onChange={(eventInput) => setRequestedMajor(eventInput.target.value)} />
             <label className="field full-span">

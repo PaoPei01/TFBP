@@ -177,10 +177,10 @@ export function AdminDashboardPage() {
         ) : null}
       >
         <Input label={t.searchParticipants} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={language === 'th' ? 'ชื่อ อีเมล เบอร์ Line IG Facebook' : 'Name, email, phone, Line, IG, Facebook'} />
-        <Select label={t.filterMajor} value={major} onChange={(event) => setMajor(event.target.value)} options={majorOptions} />
-        <Select label={t.filterGroup} value={group} onChange={(event) => setGroup(event.target.value)} options={groupOptions} />
-        <Select label={t.filterSubgroup} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
-        <Select label={t.filterHealth} value={healthFilter} onChange={(event) => setHealthFilter(event.target.value)} options={healthOptions} />
+        <Select label={t.filterMajor} placeholder={t.all} value={major} onChange={(event) => setMajor(event.target.value)} options={majorOptions} />
+        <Select label={t.filterGroup} placeholder={t.all} value={group} onChange={(event) => setGroup(event.target.value)} options={groupOptions} />
+        <Select label={t.filterSubgroup} placeholder={t.all} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
+        <Select label={t.filterHealth} placeholder={t.all} value={healthFilter} onChange={(event) => setHealthFilter(event.target.value)} options={healthOptions} />
       </FilterPanel>
 
       <MobileFilterSheet
@@ -192,10 +192,10 @@ export function AdminDashboardPage() {
         onClose={() => setFilterOpen(false)}
         onClear={clearFilters}
       >
-        <Select label={t.filterMajor} value={major} onChange={(event) => setMajor(event.target.value)} options={majorOptions} />
-        <Select label={t.filterGroup} value={group} onChange={(event) => setGroup(event.target.value)} options={groupOptions} />
-        <Select label={t.filterSubgroup} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
-        <Select label={t.filterHealth} value={healthFilter} onChange={(event) => setHealthFilter(event.target.value)} options={healthOptions} />
+        <Select label={t.filterMajor} placeholder={t.all} value={major} onChange={(event) => setMajor(event.target.value)} options={majorOptions} />
+        <Select label={t.filterGroup} placeholder={t.all} value={group} onChange={(event) => setGroup(event.target.value)} options={groupOptions} />
+        <Select label={t.filterSubgroup} placeholder={t.all} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
+        <Select label={t.filterHealth} placeholder={t.all} value={healthFilter} onChange={(event) => setHealthFilter(event.target.value)} options={healthOptions} />
       </MobileFilterSheet>
 
       {profilesState.loading ? <LoadingSkeleton /> : null}

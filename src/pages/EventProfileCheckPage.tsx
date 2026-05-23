@@ -22,9 +22,10 @@ function isValidCmuEmail(value: string) {
 }
 
 function safeFullName(person: PersonApplicationLookupResult['safe_person'] | undefined, fallback?: string) {
-  return person?.display_full_name
-    || person?.name_th
+  return person?.name_th
     || person?.name_en
+    || person?.full_name_th
+    || person?.full_name_en
     || fallback?.trim()
     || 'ไม่พบชื่อ-นามสกุลในระบบ';
 }
@@ -111,7 +112,7 @@ export function EventProfileCheckPage() {
       <PageHeader
         eyebrow="Profile Check"
         title={language === 'th' ? 'ตรวจสอบข้อมูลของฉัน' : 'Check My Profile'}
-        description={language === 'th' ? 'ตรวจข้อมูลพื้นฐานแบบปลอดภัย และส่งคำร้องแก้ไขหาก CMU Mail หรือข้อมูลติดต่อเดิมไม่ถูกต้อง' : 'Safely check basic profile details and request corrections if old contact data is outdated.'}
+        description={language === 'th' ? 'หน้านี้ใช้สำหรับตรวจสอบข้อมูลที่พบในฐานข้อมูลกลาง และส่งคำร้องแก้ไขหากข้อมูลไม่ถูกต้อง' : 'Check the safe data found in the central people database and request corrections if needed.'}
         actions={<Button variant="secondary" icon={<RefreshCw size={18} />} onClick={eventState.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>}
       />
 
@@ -128,7 +129,7 @@ export function EventProfileCheckPage() {
           <div className="form-grid">
             <Input label={language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'} value={studentId} onChange={(input) => setStudentId(input.target.value)} required />
             <Input label={language === 'th' ? 'CMU Mail ปัจจุบัน' : 'Current CMU Mail'} type="email" value={email} onChange={(input) => setEmail(input.target.value)} required />
-            <Input label={language === 'th' ? 'เบอร์โทรที่ติดต่อได้' : 'Current phone'} value={phone} onChange={(input) => setPhone(input.target.value)} />
+            <Input label={language === 'th' ? 'เบอร์โทรที่ติดต่อได้' : 'Current phone'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(input) => setPhone(input.target.value)} />
             <Input label={language === 'th' ? 'ชื่อ-นามสกุล' : 'Full name'} value={nameTh} onChange={(input) => setNameTh(input.target.value)} />
             <Input label={language === 'th' ? 'ชื่อภาษาอังกฤษ (ถ้ามี)' : 'English name (optional)'} value={nameEn} onChange={(input) => setNameEn(input.target.value)} />
             <Input label={language === 'th' ? 'สาขา' : 'Major'} value={major} onChange={(input) => setMajor(input.target.value)} />
@@ -144,7 +145,8 @@ export function EventProfileCheckPage() {
         <Card className="event-detail-card" variant={lookup.identity_status === 'verified' ? 'success' : 'warning'}>
           <div>
             <p className="eyebrow">{language === 'th' ? 'ผลการตรวจสอบ' : 'Lookup result'}</p>
-            <h2>{lookup.message_th ?? (language === 'th' ? 'ตรวจสอบข้อมูลแล้ว' : 'Profile checked')}</h2>
+            <h2>{language === 'th' ? 'ข้อมูลที่พบในระบบ' : 'Data found in the system'}</h2>
+            <p className="muted">{lookup.message_th ?? (language === 'th' ? 'ข้อมูลบางรายการอาจไม่เป็นปัจจุบัน หากพบข้อมูลผิด สามารถส่งคำร้องแก้ไขได้' : 'Some details may be outdated. You can request corrections if needed.')}</p>
           </div>
           {lookup.safe_person ? (
             <div className="event-fact-grid">
@@ -152,8 +154,8 @@ export function EventProfileCheckPage() {
               <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{safeNickname(lookup.safe_person)}</span>
               <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{lookup.safe_person.student_id ?? '-'}</span>
               <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{lookup.safe_person.major ?? '-'}</span>
-              <span><strong>{language === 'th' ? 'CMU Mail เดิม' : 'Old CMU Mail'}</strong>{lookup.safe_person.masked_email ?? '-'}</span>
-              <span><strong>{language === 'th' ? 'เบอร์เดิม' : 'Old phone'}</strong>{lookup.safe_person.masked_phone ?? '-'}</span>
+              <span><strong>{language === 'th' ? 'CMU Mail ในระบบ' : 'System CMU Mail'}</strong>{lookup.safe_person.masked_email ?? '-'}</span>
+              <span><strong>{language === 'th' ? 'เบอร์โทรในระบบ' : 'System phone'}</strong>{lookup.safe_person.masked_phone ?? '-'}</span>
             </div>
           ) : (
             <p>{language === 'th' ? 'ไม่พบข้อมูลจากรหัสนักศึกษานี้ แต่คุณยังสามารถส่งคำร้องให้ผู้ดูแลตรวจสอบได้' : 'No record was found for this student ID. You can submit a request for admin review.'}</p>

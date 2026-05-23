@@ -174,10 +174,10 @@ export function StaffManagementPage() {
           <Search size={18} aria-hidden="true" />
           <Input label={language === 'th' ? 'ค้นหา' : 'Search'} value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
-        <Select label={language === 'th' ? 'ตำแหน่ง' : 'Position'} value={position} onChange={(event) => setPosition(event.target.value)} options={positions} />
-        <Select label={language === 'th' ? 'สี' : 'Color'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} />
-        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} />
-        <Select label={language === 'th' ? 'สาขา' : 'Major'} value={major} onChange={(event) => setMajor(event.target.value)} options={majors.map((code) => ({ value: code, label: majorLabel(`(${code})`, language) }))} />
+        <Select label={language === 'th' ? 'ตำแหน่ง' : 'Position'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={position} onChange={(event) => setPosition(event.target.value)} options={positions} />
+        <Select label={language === 'th' ? 'สี' : 'Color'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} />
+        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} />
+        <Select label={language === 'th' ? 'สาขา' : 'Major'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={major} onChange={(event) => setMajor(event.target.value)} options={majors.map((code) => ({ value: code, label: majorLabel(`(${code})`, language) }))} />
       </div>
 
       <MobileFilterSheet
@@ -189,10 +189,10 @@ export function StaffManagementPage() {
         onClose={() => setFilterOpen(false)}
         onClear={clearFilters}
       >
-        <Select label={language === 'th' ? 'ตำแหน่ง' : 'Position'} value={position} onChange={(event) => setPosition(event.target.value)} options={positions} />
-        <Select label={language === 'th' ? 'สี' : 'Color'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} />
-        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} />
-        <Select label={language === 'th' ? 'สาขา' : 'Major'} value={major} onChange={(event) => setMajor(event.target.value)} options={majors.map((code) => ({ value: code, label: majorLabel(`(${code})`, language) }))} />
+        <Select label={language === 'th' ? 'ตำแหน่ง' : 'Position'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={position} onChange={(event) => setPosition(event.target.value)} options={positions} />
+        <Select label={language === 'th' ? 'สี' : 'Color'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={mainGroup} onChange={(event) => setMainGroup(event.target.value)} options={mainGroups.map((item) => ({ value: item, label: language === 'th' ? groupMeta[item].th : groupMeta[item].en }))} />
+        <Select label={language === 'th' ? 'กลุ่มย่อย' : 'Subgroup'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroups.map((item) => ({ value: item, label: `Group ${item}` }))} />
+        <Select label={language === 'th' ? 'สาขา' : 'Major'} placeholder={language === 'th' ? 'ทั้งหมด' : 'All'} value={major} onChange={(event) => setMajor(event.target.value)} options={majors.map((code) => ({ value: code, label: majorLabel(`(${code})`, language) }))} />
       </MobileFilterSheet>
 
       {state.loading ? <LoadingSkeleton /> : null}

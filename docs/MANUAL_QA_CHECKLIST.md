@@ -703,6 +703,8 @@ Use this checklist before real event operations and after every production-readi
 ## Mobile QA
 
 - [ ] iPhone SE width: no horizontal scroll.
+- [ ] iPhone SE width: staff application stepper, duty cards, confirmation screen, and success screen do not overflow.
+- [ ] iPhone SE width: `/events/parent-orientation-staff-2569/profile-check`, `/admin/events/:eventId/applications`, `/admin/people/update-requests`, and `/admin/people` do not horizontally scroll.
 - [ ] iPhone SE width: public `/`, `/events`, event detail, staff application, `/edit`, `/announcements`, and `/guide` do not horizontally scroll.
 - [ ] iPhone SE width: admin dashboard, admin applications, people directory, year 2 import, staff list, attendance, documents, announcements, and data health either show mobile cards or clean responsive layouts.
 - [ ] iPhone SE width: public search appears near top.
@@ -717,6 +719,15 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Long names, emails, student IDs, phone numbers, and badges wrap without breaking cards.
 - [ ] Mobile admin application review uses one obvious primary action and keeps secondary actions readable.
 - [ ] Phone fields open a phone keypad on mobile; email fields open an email keyboard.
+- [ ] Full name and nickname display correctly and never duplicate by fallback.
+- [ ] CMU Mail mismatch warning is clear, calm, and does not block submitting when admin review is allowed.
+- [ ] Not-found student flow explains that admins will review identity later.
+- [ ] Full duty cards remain visible, disabled, and readable.
+- [ ] Confirmation screen appears before staff application submit.
+- [ ] Success screen asks the applicant to screenshot the page.
+- [ ] Excel export warning appears before downloading applicant data.
+- [ ] Admin application filters are usable on mobile and use `ทั้งหมด` only as all-results filters.
+- [ ] Form selects use `โปรดเลือก` instead of `ทั้งหมด`.
 
 ## Accessibility
 

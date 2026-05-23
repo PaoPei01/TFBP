@@ -78,6 +78,10 @@ Destructive actions must live in `DangerZone` or use `ConfirmDialog`. Do not pla
 - Staff copy should be action-oriented.
 - Admin copy should be precise.
 - Emergency copy should be short and direct.
+- Avoid technical user-facing words such as Auth, RPC, token, database error, JSON, RLS, invalid input syntax, and function does not exist. Use plain recovery copy instead.
+- Use `โปรดเลือก` for form select placeholders. Use `ทั้งหมด` only for admin filters where the empty value truly means all results.
+- Keep full name and nickname separate. A full-name field must never fall back to nickname; show `ไม่พบชื่อ-นามสกุลในระบบ` instead.
+- CMU Mail mismatch should use warning tone and explain that the applicant can continue while admins review identity later.
 
 Preferred wording:
 
@@ -87,6 +91,11 @@ Preferred wording:
 - Medical visible -> ข้อมูลสุขภาพที่มองเห็น
 - No participants match your search -> ไม่พบรายชื่อ ลองค้นด้วยชื่อเล่นหรือสาขา
 - Groups generated -> จัดกลุ่มใหม่แล้ว อย่าลืมกดบันทึก
+- Download all Excel -> ดาวน์โหลด Excel ทั้งหมด
+- Download filtered Excel -> ดาวน์โหลด Excel ตามตัวกรองปัจจุบัน
+- Confirm data download -> ยืนยันการดาวน์โหลดข้อมูล
+- Preliminary duty -> ฝ่ายที่ระบบจัดให้เบื้องต้น
+- Pending admin assignment -> รอผู้ดูแลจัดสรร
 
 ## Accessibility
 
