@@ -14,7 +14,7 @@ import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
 import { getEventContent } from '../lib/eventContent';
-import { eventPath, eventProfileCheckPath } from '../lib/eventRoutes';
+import { eventPath, eventProfileCheckPath, eventStaffApplicationStatusPath } from '../lib/eventRoutes';
 import type { EventSubmissionResult } from '../lib/eventTypes';
 import { fetchEventBySlug, fetchEventDutyQuotaStatus, lookupPersonForApplication, submitEventStaffApplication, submitPersonUpdateRequest, type EventDutyQuotaRow, type PersonApplicationLookupResult } from '../services/events';
 import { errorMessage } from '../utils/error';
@@ -49,6 +49,13 @@ function previewAssignedDuty(duties: EventDutyQuotaRow[], selectedDutyKeys: stri
   return { duty: null, method: 'pending', note: 'โควต้าฝ่ายเต็มแล้ว รอผู้ดูแลจัดสรรเพิ่มเติม' };
 }
 
+const applicationSteps = [
+  { id: 1, th: 'ยืนยันตัวตน', en: 'Identity' },
+  { id: 2, th: 'ตรวจสอบข้อมูล', en: 'Review' },
+  { id: 3, th: 'เลือกฝ่ายและตอบคำถาม', en: 'Duties' },
+  { id: 4, th: 'ตรวจสอบก่อนส่ง', en: 'Confirm' },
+] as const;
+
 export function EventStaffApplyPage() {
   const { language } = useLanguage();
   const { eventSlug = '' } = useParams();
@@ -68,6 +75,7 @@ export function EventStaffApplyPage() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateEvidenceNote, setUpdateEvidenceNote] = useState('');
   const [submittingUpdate, setSubmittingUpdate] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [selectedDuties, setSelectedDuties] = useState<string[]>([]);
   const [availability, setAvailability] = useState('');
   const [canAttendRehearsal, setCanAttendRehearsal] = useState('');
@@ -85,6 +93,9 @@ export function EventStaffApplyPage() {
   const quotaDuties = quotaState.data?.duties ?? [];
   const selectedDutyLabels = selectedDuties.map((key) => quotaDuties.find((duty) => duty.duty_key === key)?.duty_label_th ?? key);
   const assignmentPreview = previewAssignedDuty(quotaDuties, selectedDuties);
+  const applicantDisplayName = identityLookup?.safe_person?.display_name || requestedNameTh || '-';
+  const applicantMajor = identityLookup?.safe_person?.major || requestedMajor || '-';
+  const applicantYear = identityLookup?.safe_person?.year_level ? String(identityLookup.safe_person.year_level) : '-';
 
   function toggleDuty(duty: string) {
     setSelectedDuties((current) => current.includes(duty) ? current.filter((item) => item !== duty) : [...current, duty]);
@@ -108,6 +119,46 @@ export function EventStaffApplyPage() {
     if (missingConsent) nextErrors.consent = language === 'th' ? 'กรุณายืนยันทุกข้อก่อนส่งใบสมัคร' : 'Please confirm every consent item';
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
+  }
+
+  function validateStep(step: number) {
+    const nextErrors: Record<string, string> = {};
+    if (step === 1) {
+      if (!studentId.trim()) nextErrors.student_id = language === 'th' ? 'กรุณากรอกรหัสนักศึกษา' : 'Student ID is required';
+      if (!email.trim() || !isValidCmuEmail(email)) nextErrors.email = language === 'th' ? 'กรุณากรอก CMU Mail ที่ลงท้ายด้วย @cmu.ac.th เท่านั้น' : 'Please enter a valid CMU Mail ending with @cmu.ac.th';
+      if (!phone.trim()) nextErrors.phone = language === 'th' ? 'กรุณากรอกเบอร์โทรปัจจุบัน' : 'Current phone is required';
+      if (!identityLookup?.can_continue_application) nextErrors.identity = language === 'th' ? 'กรุณากดตรวจสอบข้อมูลก่อนดำเนินการต่อ' : 'Please check your identity before continuing';
+    }
+    if (step === 2 && identityLookup?.identity_status === 'not_found') {
+      if (!requestedNameTh.trim()) nextErrors.requested_name_th = language === 'th' ? 'กรุณากรอกชื่อ-นามสกุล' : 'Full name is required';
+      if (!requestedMajor.trim()) nextErrors.requested_major = language === 'th' ? 'กรุณากรอกสาขา' : 'Major is required';
+    }
+    if (step === 3) {
+      if (!selectedDuties.length) nextErrors.preferred_duties = language === 'th' ? 'กรุณาเลือกอย่างน้อย 1 ฝ่าย' : 'Choose at least one duty';
+      if (!availability.trim()) nextErrors.availability = language === 'th' ? 'กรุณาระบุช่วงเวลาที่สะดวก' : 'Availability is required';
+      if (!canAttendRehearsal) nextErrors.can_attend_rehearsal = language === 'th' ? 'กรุณาตอบคำถามวันซ้อม' : 'Please answer the rehearsal question';
+      if (!canWorkEventDay) nextErrors.can_work_event_day = language === 'th' ? 'กรุณาตอบคำถามวันปฏิบัติงาน' : 'Please answer the event day question';
+      const missingConsent = recruitment?.consentItemsTh.some((item) => !consents[item]);
+      if (missingConsent) nextErrors.consent = language === 'th' ? 'กรุณายืนยันทุกข้อก่อนส่งใบสมัคร' : 'Please confirm every consent item';
+    }
+    setErrors((current) => ({ ...current, ...nextErrors }));
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  function goNext() {
+    if (!validateStep(currentStep)) {
+      setToast({ type: 'error', message: language === 'th' ? 'กรุณาตรวจข้อมูลในขั้นตอนนี้' : 'Please check this step.' });
+      return;
+    }
+    setErrors({});
+    setCurrentStep((step) => Math.min(step + 1, 4));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goBack() {
+    setErrors({});
+    setCurrentStep((step) => Math.max(step - 1, 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function checkIdentity() {
@@ -265,36 +316,53 @@ export function EventStaffApplyPage() {
             <p className="muted">{language === 'th' ? 'การสมัครนี้ยังไม่ให้สิทธิ์ทีมงานทันที ต้องรอผู้ดูแลตรวจสอบและจัดสรรหน้าที่' : 'This does not grant staff access immediately. Admin review and duty assignment are required.'}</p>
           </div>
           <div className="edit-stepper" aria-label={language === 'th' ? 'ขั้นตอนสมัครสตาฟ' : 'Staff application steps'}>
-            <span className="edit-step edit-step-active">1. {language === 'th' ? 'ยืนยันตัวตน' : 'Verify'}</span>
-            <span className="edit-step edit-step-active">2. {language === 'th' ? 'เลือกหน้าที่' : 'Duties'}</span>
-            <span className="edit-step edit-step-active">3. {language === 'th' ? 'ยืนยันและส่ง' : 'Submit'}</span>
+            {applicationSteps.map((step) => (
+              <span key={step.id} className={`edit-step ${currentStep >= step.id ? 'edit-step-active' : ''}`} aria-current={currentStep === step.id ? 'step' : undefined}>
+                {step.id}. {language === 'th' ? step.th : step.en}
+              </span>
+            ))}
           </div>
           {result?.success ? (
             <div className="edit-success-card" role="status">
               <CheckCircle2 size={28} />
-              <strong>{language === 'th' ? 'ส่งใบสมัครแล้ว' : 'Application submitted'}</strong>
-              <span>{language === 'th' ? 'สถานะ: submitted ผู้ดูแลจะตรวจสอบและจัดสรรหน้าที่ภายหลัง' : 'Status: submitted. Admins will review and assign duties later.'}</span>
+              <strong>{language === 'th' ? 'ส่งใบสมัครสำเร็จ' : 'Application submitted'}</strong>
+              <span>{language === 'th' ? 'ระบบได้รับใบสมัครของคุณแล้ว' : 'Your application has been received.'}</span>
+              <div className="event-fact-grid">
+                <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Name'}</strong>{applicantDisplayName}</span>
+                <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{studentId || '-'}</span>
+                <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{applicantMajor}</span>
+                <span><strong>{language === 'th' ? 'สถานะการยืนยันตัวตน' : 'Identity status'}</strong>{identityStatusLabel(result.application?.identity_status ?? identityLookup?.identity_status ?? 'pending_identity_review', language)}</span>
+                <span><strong>{language === 'th' ? 'รหัสใบสมัคร' : 'Application ID'}</strong>{result.application?.id ?? '-'}</span>
+              </div>
               <span><strong>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</strong>: {result.assignment?.assigned_label_th ?? result.application?.assigned_duty_label_th ?? (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment')}</span>
               <span>{language === 'th' ? 'กรุณาแคปหน้าจอนี้ไว้เป็นหลักฐาน' : 'Please screenshot this page as your submission proof.'}</span>
               <span>{language === 'th' ? 'ตำแหน่งที่แสดงเป็นการจัดสรรเบื้องต้น อาจมีการปรับเปลี่ยนตามความเหมาะสมโดยผู้ดูแล' : 'This is a preliminary assignment and may be adjusted later by admins.'}</span>
               {result.application?.identity_status && result.application.identity_status !== 'verified' ? (
                 <span>{language === 'th' ? 'ส่งใบสมัครแล้ว แต่ยังรอตรวจสอบตัวตน' : 'Submitted, pending identity review.'}</span>
               ) : null}
-              <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'กลับไปหน้ากิจกรรม' : 'Back to event'}</Link>
+              <div className="event-card-actions">
+                <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'กลับไปหน้ากิจกรรม' : 'Back to event'}</Link>
+                <Link className="btn btn-secondary" to={eventStaffApplicationStatusPath(event.slug)}>{language === 'th' ? 'ตรวจสอบสถานะใบสมัคร' : 'Check application status'}</Link>
+              </div>
             </div>
           ) : (
             <form className="form-grid" onSubmit={submit} noValidate>
+              {currentStep === 1 ? (
+                <>
               <div className="event-form-section full-span">
-                <h3>{language === 'th' ? '1. ยืนยันตัวตน' : '1. Verify identity'}</h3>
-                <p className="muted">{language === 'th' ? 'กรอก CMU Mail ปัจจุบันของคุณ หาก CMU Mail ในฐานข้อมูลเดิมไม่ถูกต้อง สามารถส่งใบสมัครได้ตามปกติ ระบบจะให้ผู้ดูแลตรวจสอบตัวตนเพิ่มเติมภายหลัง' : 'Enter your current CMU Mail. If old data is outdated, you can still submit and admins will review identity later.'}</p>
+                <h3>{language === 'th' ? 'ยืนยันตัวตน' : 'Identity verification'}</h3>
+                <p className="muted">{language === 'th' ? 'กรอกรหัสนักศึกษาและ CMU Mail เพื่อค้นหาข้อมูลในฐานข้อมูลกลาง' : 'Enter your student ID and CMU Mail to search the Central People Database.'}</p>
               </div>
-              <Input label={language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'} value={studentId} onChange={(eventInput) => { setStudentId(eventInput.target.value); setIdentityLookup(null); }} error={errors.student_id} required />
-              <Input label={language === 'th' ? 'CMU Mail ปัจจุบัน' : 'Current CMU Mail'} type="email" value={email} onChange={(eventInput) => { setEmail(eventInput.target.value); setIdentityLookup(null); }} error={errors.email} required />
-              <Input label={language === 'th' ? 'เบอร์โทรที่ติดต่อได้' : 'Current phone'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} error={errors.phone} required />
+              <Input label={language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'} placeholder="เช่น 680610xxx" hint={language === 'th' ? 'ใช้สำหรับค้นหาข้อมูลจากฐานข้อมูลกลาง' : 'Used to find your record in the Central People Database.'} value={studentId} onChange={(eventInput) => { setStudentId(eventInput.target.value); setIdentityLookup(null); }} error={errors.student_id} required />
+              <Input label={language === 'th' ? 'CMU Mail ปัจจุบัน' : 'Current CMU Mail'} placeholder="yourname@cmu.ac.th" hint={language === 'th' ? 'ต้องเป็นอีเมลที่ลงท้ายด้วย @cmu.ac.th เท่านั้น' : 'Must end with @cmu.ac.th.'} type="email" value={email} onChange={(eventInput) => { setEmail(eventInput.target.value); setIdentityLookup(null); }} error={errors.email} required />
+              <Input label={language === 'th' ? 'เบอร์โทรปัจจุบัน' : 'Current phone'} placeholder="08x-xxx-xxxx" hint={language === 'th' ? 'ใช้สำหรับติดต่อประสานงานเท่านั้น ไม่ใช้เป็นเงื่อนไขหลักในการยืนยันตัวตน' : 'Used only for event coordination, not as the main identity condition.'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} error={errors.phone} required />
               <div className="full-span event-card-actions">
-                <Button type="button" variant="secondary" loading={checkingIdentity} onClick={() => void checkIdentity()}>{language === 'th' ? 'ตรวจสอบข้อมูล' : 'Check identity'}</Button>
+                <Button type="button" variant="secondary" loading={checkingIdentity} onClick={() => void checkIdentity()}>{checkingIdentity ? (language === 'th' ? 'กำลังตรวจสอบข้อมูล...' : 'Checking...') : (language === 'th' ? 'ตรวจสอบข้อมูล' : 'Check identity')}</Button>
                 <Link className="btn btn-secondary" to={eventProfileCheckPath(eventSlug)}>{language === 'th' ? 'ตรวจ/ขอแก้ไขข้อมูล' : 'Check/update profile'}</Link>
               </div>
+              <Card className="full-span" variant="soft">
+                <p className="muted">{language === 'th' ? 'หาก CMU Mail ในฐานข้อมูลเดิมไม่ถูกต้อง สามารถส่งใบสมัครได้ตามปกติ ระบบจะให้ผู้ดูแลตรวจสอบตัวตนเพิ่มเติมภายหลัง' : 'If the old CMU Mail is incorrect, you can still submit. Admins will review identity later.'}</p>
+              </Card>
               {errors.identity ? <small className="field-error full-span" role="alert">{errors.identity}</small> : null}
               {identityLookup ? (
                 <Card className="full-span" variant={identityLookup.identity_status === 'verified' ? 'success' : 'warning'}>
@@ -321,6 +389,42 @@ export function EventStaffApplyPage() {
                       <Button type="button" variant="secondary" onClick={() => setShowUpdateModal(true)}>{language === 'th' ? 'รายงานข้อมูลไม่ถูกต้อง / ขอแก้ไขข้อมูล' : 'Report incorrect data'}</Button>
                     </>
                   ) : null}
+                  <div className="event-card-actions">
+                    <Button type="button" onClick={goNext}>{language === 'th' ? 'ดำเนินการสมัครต่อ' : 'Continue application'}</Button>
+                  </div>
+                </Card>
+              ) : null}
+              <div className="form-actions full-span">
+                <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Link>
+                <Button type="button" onClick={goNext}>{language === 'th' ? 'ถัดไป' : 'Next'}</Button>
+              </div>
+                </>
+              ) : null}
+              {currentStep === 2 ? (
+                <>
+              <div className="event-form-section full-span">
+                <h3>{language === 'th' ? 'ตรวจสอบข้อมูล' : 'Review information'}</h3>
+                <p className="muted">{language === 'th' ? 'ตรวจข้อมูลที่พบในระบบ หรือกรอกข้อมูลเพิ่มเติมหากไม่พบรหัสนักศึกษา' : 'Review the safe record found, or add details if your student ID was not found.'}</p>
+              </div>
+              {identityLookup?.safe_person ? (
+                <Card className="full-span" variant="soft">
+                  <div className="mobile-row-head">
+                    <div>
+                      <strong>{language === 'th' ? 'ข้อมูลที่พบในระบบ' : 'Record found'}</strong>
+                      <span>{language === 'th' ? 'ข้อมูลบางรายการอาจไม่เป็นปัจจุบัน หากพบข้อมูลผิด สามารถส่งคำร้องแก้ไขได้' : 'Some details may be outdated. You can request an update if needed.'}</span>
+                    </div>
+                    <span className={`status-pill status-${identityLookup.identity_status}`}>{identityStatusLabel(identityLookup.identity_status, language)}</span>
+                  </div>
+                  <div className="event-fact-grid">
+                    <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Name'}</strong>{identityLookup.safe_person.display_name ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{identityLookup.safe_person.nickname ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{identityLookup.safe_person.student_id ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{identityLookup.safe_person.major ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'ชั้นปี' : 'Year'}</strong>{identityLookup.safe_person.year_level ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'CMU Mail เดิม' : 'Old CMU Mail'}</strong>{identityLookup.safe_person.masked_email ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'เบอร์เดิม' : 'Old phone'}</strong>{identityLookup.safe_person.masked_phone ?? '-'}</span>
+                  </div>
+                  <Button type="button" variant="secondary" onClick={() => setShowUpdateModal(true)}>{language === 'th' ? 'ขอแก้ไขข้อมูล' : 'Request update'}</Button>
                 </Card>
               ) : null}
               {identityLookup?.identity_status === 'not_found' ? (
@@ -330,26 +434,37 @@ export function EventStaffApplyPage() {
                   <Input label={language === 'th' ? 'สาขา' : 'Major'} value={requestedMajor} onChange={(eventInput) => setRequestedMajor(eventInput.target.value)} error={errors.requested_major} required />
                 </>
               ) : null}
+              <div className="form-actions full-span">
+                <Button type="button" variant="secondary" onClick={goBack}>{language === 'th' ? 'ย้อนกลับ' : 'Back'}</Button>
+                <Button type="button" onClick={goNext}>{language === 'th' ? 'ดำเนินการสมัครต่อ' : 'Continue application'}</Button>
+              </div>
+                </>
+              ) : null}
 
+              {currentStep === 3 ? (
+                <>
               <div className="event-form-section full-span">
                 <h3>{language === 'th' ? '2. เลือกหน้าที่และเวลาที่สะดวก' : '2. Duties and availability'}</h3>
-                <p className="muted">{language === 'th' ? 'เลือกได้มากกว่าหนึ่งฝ่าย มีการแบ่งหน้าที่จริงอีกครั้งหลังปิดรับสมัคร' : 'You can choose more than one duty. Final assignment happens after applications close.'}</p>
+                <p className="muted">{language === 'th' ? 'สามารถเลือกได้มากกว่า 1 ฝ่าย ระบบจะจัดสรรฝ่ายเบื้องต้นตามโควต้าและความเหมาะสม' : 'You can choose more than one duty. The system will make a preliminary assignment by quota and fit.'}</p>
               </div>
               <fieldset className="event-checkbox-grid full-span">
                 <legend>{language === 'th' ? 'ฝ่ายที่สนใจ' : 'Preferred duties'}</legend>
                 {quotaState.loading ? <span className="muted">{language === 'th' ? 'กำลังโหลดโควต้าฝ่าย...' : 'Loading duty quotas...'}</span> : null}
-                {quotaDuties.length ? quotaDuties.map((duty) => (
-                  <label key={duty.duty_key} className={`duty-option-card ${duty.is_full ? 'is-disabled' : ''}`}>
+                {quotaDuties.length ? quotaDuties.map((duty) => {
+                  const selected = selectedDuties.includes(duty.duty_key);
+                  return (
+                  <label key={duty.duty_key} className={`duty-option-card ${duty.is_full ? 'is-disabled' : ''} ${selected ? 'is-selected' : ''}`} aria-disabled={duty.is_full}>
                     <input
                       type="checkbox"
-                      checked={selectedDuties.includes(duty.duty_key)}
+                      checked={selected}
                       disabled={duty.is_full}
                       onChange={() => toggleDuty(duty.duty_key)}
                     />
                     <span>
                       <strong>{duty.duty_label_th}</strong>
                       <small>{duty.description_th}</small>
-                      <small>{language === 'th' ? `เหลือ ${duty.remaining}/${duty.quota} คน` : `${duty.remaining}/${duty.quota} remaining`}</small>
+                      <small>{language === 'th' ? `คงเหลือ ${duty.remaining} จาก ${duty.quota} คน` : `${duty.remaining} of ${duty.quota} remaining`}</small>
+                      {selected ? <em className="selected-badge">{language === 'th' ? 'เลือกแล้ว' : 'Selected'}</em> : null}
                       {duty.is_full ? (
                         <>
                           <em>{language === 'th' ? 'รับเต็มจำนวนแล้ว' : 'Full'}</em>
@@ -358,7 +473,8 @@ export function EventStaffApplyPage() {
                       ) : null}
                     </span>
                   </label>
-                )) : recruitment?.dutiesTh.map((duty) => (
+                  );
+                }) : recruitment?.dutiesTh.map((duty) => (
                   <label key={duty}>
                     <input type="checkbox" checked={selectedDuties.includes(duty)} onChange={() => toggleDuty(duty)} />
                     <span>{duty}</span>
@@ -368,13 +484,13 @@ export function EventStaffApplyPage() {
               </fieldset>
               <label className="field full-span">
                 <span>{language === 'th' ? 'เวลาที่สะดวก' : 'Availability'}</span>
-                <textarea value={availability} onChange={(eventInput) => setAvailability(eventInput.target.value)} rows={3} aria-invalid={Boolean(errors.availability) || undefined} />
+                <textarea value={availability} onChange={(eventInput) => setAvailability(eventInput.target.value)} rows={3} aria-invalid={Boolean(errors.availability) || undefined} placeholder={language === 'th' ? 'เช่น ทั้งวัน / ช่วงเช้า / ช่วงบ่าย / ระบุเวลาที่สะดวก' : 'Example: all day / morning / afternoon / specific available time'} />
                 <small>{language === 'th' ? 'หากสามารถอยู่ได้ทั้งวันให้ระบุว่า “ทั้งวัน”' : 'If you are available all day, write “all day”.'}</small>
                 {errors.availability ? <small className="field-error" role="alert">{errors.availability}</small> : null}
               </label>
               <Select label={language === 'th' ? 'สามารถเข้าซ้อมวันที่ 10 มิ.ย. 2569 เวลา 16:00 น. ได้หรือไม่' : 'Can attend rehearsal?'} placeholder={language === 'th' ? 'โปรดเลือก' : 'Please select'} value={canAttendRehearsal} onChange={(eventInput) => setCanAttendRehearsal(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
               {errors.can_attend_rehearsal ? <small className="field-error full-span" role="alert">{errors.can_attend_rehearsal}</small> : null}
-              <Select label={language === 'th' ? 'ปฏิบัติงานวันที่ 12 มิ.ย. 2569 ได้หรือไม่' : 'Can work on event day?'} placeholder={language === 'th' ? 'โปรดเลือก' : 'Please select'} value={canWorkEventDay} onChange={(eventInput) => setCanWorkEventDay(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
+              <Select label={language === 'th' ? 'สามารถปฏิบัติงานวันที่ 12 มิ.ย. 2569 ได้หรือไม่' : 'Can work on event day?'} placeholder={language === 'th' ? 'โปรดเลือก' : 'Please select'} value={canWorkEventDay} onChange={(eventInput) => setCanWorkEventDay(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
               {errors.can_work_event_day ? <small className="field-error full-span" role="alert">{errors.can_work_event_day}</small> : null}
 
               <div className="event-form-section full-span">
@@ -382,7 +498,7 @@ export function EventStaffApplyPage() {
               </div>
               <label className="field full-span">
                 <span>{language === 'th' ? 'เคยมีประสบการณ์เป็นสตาฟหรือไม่' : 'Staff experience'}</span>
-                <textarea value={staffExperience} onChange={(eventInput) => setStaffExperience(eventInput.target.value)} rows={3} />
+                <textarea value={staffExperience} onChange={(eventInput) => setStaffExperience(eventInput.target.value)} rows={3} placeholder={language === 'th' ? 'ระบุประสบการณ์ที่ผ่านมา หากไม่มีสามารถเว้นว่างได้' : 'Add past staff experience, or leave blank if none.'} />
               </label>
               <label className="field full-span">
                 <span>{language === 'th' ? 'ข้อจำกัดด้านสุขภาพ/การแพ้อาหารที่จำเป็นต้องแจ้ง' : 'Health or food limitations needed for assignment'}</span>
@@ -404,35 +520,63 @@ export function EventStaffApplyPage() {
                 ))}
                 {errors.consent ? <small className="field-error" role="alert">{errors.consent}</small> : null}
               </fieldset>
+              <div className="form-actions full-span">
+                <Button type="button" variant="secondary" onClick={goBack}>{language === 'th' ? 'ย้อนกลับไปแก้ไข' : 'Back'}</Button>
+                <Button type="button" onClick={goNext}>{language === 'th' ? 'ตรวจสอบก่อนส่ง' : 'Review before submit'}</Button>
+              </div>
+                </>
+              ) : null}
+
+              {currentStep === 4 ? (
+                <>
               <Card className="full-span" variant="soft">
                 <div className="mobile-row-head">
                   <div>
-                    <strong>{language === 'th' ? 'สรุปก่อนส่งใบสมัคร' : 'Submission summary'}</strong>
-                    <span>{language === 'th' ? 'ตรวจสอบฝ่ายที่เลือกและฝ่ายที่ระบบคาดว่าจะจัดให้เบื้องต้น' : 'Check selected duties and expected preliminary assignment.'}</span>
+                    <strong>{language === 'th' ? 'ตรวจสอบข้อมูลก่อนส่งใบสมัคร' : 'Review before submitting'}</strong>
+                    <span>{language === 'th' ? 'กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนยืนยันการส่งใบสมัคร' : 'Please check your information before confirming submission.'}</span>
                   </div>
                 </div>
                 <div className="event-fact-grid">
+                  <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Name'}</strong>{applicantDisplayName}</span>
+                  <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{studentId || '-'}</span>
+                  <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{applicantMajor}</span>
+                  <span><strong>{language === 'th' ? 'ชั้นปี' : 'Year'}</strong>{applicantYear}</span>
+                  <span><strong>{language === 'th' ? 'CMU Mail' : 'CMU Mail'}</strong>{email || '-'}</span>
+                  <span><strong>{language === 'th' ? 'เบอร์โทร' : 'Phone'}</strong>{phone || '-'}</span>
                   <span><strong>{language === 'th' ? 'ฝ่ายที่เลือก' : 'Selected duties'}</strong>{selectedDutyLabels.length ? selectedDutyLabels.join(', ') : '-'}</span>
+                  <span><strong>{language === 'th' ? 'วันซ้อม' : 'Rehearsal'}</strong>{canAttendRehearsal || '-'}</span>
+                  <span><strong>{language === 'th' ? 'วันปฏิบัติงาน' : 'Event day'}</strong>{canWorkEventDay || '-'}</span>
+                  <span><strong>{language === 'th' ? 'ช่วงเวลาที่สะดวก' : 'Availability'}</strong>{availability || '-'}</span>
+                  <span><strong>{language === 'th' ? 'หมายเหตุ' : 'Note'}</strong>{note || '-'}</span>
+                  <span><strong>{language === 'th' ? 'สถานะการยืนยันตัวตน' : 'Identity status'}</strong>{identityStatusLabel(identityLookup?.identity_status ?? 'pending_identity_review', language)}</span>
                   <span><strong>{language === 'th' ? 'ฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty'}</strong>{assignmentPreview.duty?.duty_label_th ?? (language === 'th' ? 'รอผู้ดูแลจัดสรรเพิ่มเติม' : 'Pending admin assignment')}</span>
-                  <span><strong>{language === 'th' ? 'หมายเหตุ' : 'Note'}</strong>{assignmentPreview.note}</span>
+                  <span><strong>{language === 'th' ? 'หมายเหตุการจัดฝ่าย' : 'Assignment note'}</strong>{assignmentPreview.note}</span>
                 </div>
+                {identityLookup?.identity_status !== 'verified' ? (
+                  <Card variant="warning">
+                    <strong>{language === 'th' ? 'ใบสมัครนี้จะถูกส่งพร้อมสถานะรอตรวจสอบตัวตน' : 'This application will be submitted pending identity review.'}</strong>
+                    <p>{language === 'th' ? 'ผู้ดูแลจะตรวจสอบข้อมูลเพิ่มเติมภายหลัง' : 'Admins will review the identity details later.'}</p>
+                  </Card>
+                ) : null}
                 <p className="muted">{language === 'th' ? 'ตำแหน่งที่แสดงเป็นการจัดสรรเบื้องต้น อาจมีการปรับเปลี่ยนตามความเหมาะสมโดยผู้ดูแล' : 'This is a preliminary assignment and may be adjusted later by admins.'}</p>
               </Card>
               <div className="form-actions full-span">
-                <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Link>
-                <Button type="submit" loading={saving} disabled={saving}>{language === 'th' ? 'ส่งใบสมัคร' : 'Submit application'}</Button>
+                <Button type="button" variant="secondary" onClick={goBack}>{language === 'th' ? 'ย้อนกลับไปแก้ไข' : 'Back to edit'}</Button>
+                <Button type="submit" loading={saving} disabled={saving}>{language === 'th' ? 'ยืนยันส่งใบสมัคร' : 'Confirm submission'}</Button>
               </div>
+                </>
+              ) : null}
             </form>
           )}
         </Card>
       ) : null}
-      <Modal open={showUpdateModal} title={language === 'th' ? 'ขอแก้ไขข้อมูลบุคคล' : 'Request profile correction'} onClose={() => setShowUpdateModal(false)}>
+      <Modal open={showUpdateModal} title={language === 'th' ? 'ขอแก้ไขข้อมูล' : 'Update request'} onClose={() => setShowUpdateModal(false)}>
         <div className="modal-body page-stack">
-          <p className="muted">{language === 'th' ? 'คำร้องนี้จะส่งให้ผู้ดูแลตรวจสอบ ไม่ได้แก้ไขฐานข้อมูลทันที' : 'This request goes to admins for review and does not update the database immediately.'}</p>
+          <p className="muted">{language === 'th' ? 'กรอกข้อมูลที่ถูกต้องเพื่อให้ผู้ดูแลตรวจสอบและอัปเดตข้อมูลในฐานกลาง คุณสามารถดำเนินการสมัครต่อได้ ไม่ต้องรออนุมัติคำร้อง' : 'Enter correct details for admin review. You can continue applying without waiting for approval.'}</p>
           <div className="form-grid">
             <Input label={language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'} value={studentId} onChange={(eventInput) => setStudentId(eventInput.target.value)} required />
             <Input label={language === 'th' ? 'CMU Mail ที่ถูกต้อง' : 'Correct CMU Mail'} value={email} onChange={(eventInput) => setEmail(eventInput.target.value)} error={errors.email} required />
-            <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} required />
+            <Input label={language === 'th' ? 'เบอร์โทรปัจจุบัน' : 'Current phone'} value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} required />
             <Input label={language === 'th' ? 'ชื่อ-นามสกุล' : 'Full name'} value={requestedNameTh} onChange={(eventInput) => setRequestedNameTh(eventInput.target.value)} />
             <Input label={language === 'th' ? 'สาขา' : 'Major'} value={requestedMajor} onChange={(eventInput) => setRequestedMajor(eventInput.target.value)} />
             <label className="field full-span">
@@ -442,7 +586,7 @@ export function EventStaffApplyPage() {
           </div>
           <div className="form-actions">
             <Button loading={submittingUpdate} onClick={() => void submitUpdateRequest()}>{language === 'th' ? 'ส่งคำร้องแก้ไขข้อมูล' : 'Submit request'}</Button>
-            <Button variant="secondary" onClick={() => setShowUpdateModal(false)}>{language === 'th' ? 'ปิด' : 'Close'}</Button>
+            <Button variant="secondary" onClick={() => setShowUpdateModal(false)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
           </div>
         </div>
       </Modal>

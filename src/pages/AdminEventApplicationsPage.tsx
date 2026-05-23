@@ -8,6 +8,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
@@ -52,10 +53,10 @@ function assignedDutyLabel(row: AdminStaffApplicationRow, dutiesByKey: Map<strin
 
 function assignmentMethodLabel(method: string | null | undefined, language: 'th' | 'en') {
   const labels: Record<string, { th: string; en: string }> = {
-    auto_quota: { th: 'ระบบจัดตามโควต้า', en: 'Auto quota' },
+    auto_quota: { th: 'ระบบจัดให้ตามโควต้า', en: 'Auto quota' },
     manual_admin: { th: 'ผู้ดูแลปรับเอง', en: 'Manual admin' },
-    fallback_general: { th: 'สำรองเข้าฝ่ายทั่วไป', en: 'General fallback' },
-    pending: { th: 'รอจัดสรร', en: 'Pending' },
+    fallback_general: { th: 'จัดเข้าฝ่ายทั่วไป', en: 'General fallback' },
+    pending: { th: 'รอผู้ดูแลจัดสรร', en: 'Pending admin assignment' },
   };
   return method ? labels[method]?.[language] ?? method : (language === 'th' ? 'ยังไม่จัดฝ่าย' : 'Not assigned');
 }
@@ -118,6 +119,7 @@ export function AdminEventApplicationsPage() {
   const quotaState = useAsync(() => eventId ? fetchEventDutyQuotaStatus(eventId) : Promise.resolve(null), [eventId]);
   const [toast, setToast] = useState<ToastState>(null);
   const [filters, setFilters] = useState({
+    search: '',
     status: '',
     identityStatus: '',
     assignedDuty: '',
@@ -157,6 +159,20 @@ export function AdminEventApplicationsPage() {
   }, [rows]);
 
   const filteredRows = useMemo(() => rows.filter((row) => {
+    const search = filters.search.trim().toLowerCase();
+    if (search && ![
+      applicantName(row),
+      row.people?.student_id,
+      row.requested_student_id,
+      row.people?.name_th,
+      row.people?.name_en,
+      row.requested_name_th,
+      row.requested_email,
+      row.requested_phone,
+      row.people?.major,
+      row.requested_major,
+      assignedDutyLabel(row, dutiesByKey),
+    ].some((value) => String(value ?? '').toLowerCase().includes(search))) return false;
     if (filters.status && row.status !== filters.status) return false;
     if (filters.identityStatus && row.identity_status !== filters.identityStatus) return false;
     if (filters.assignedDuty && row.assigned_duty !== filters.assignedDuty) return false;
@@ -168,7 +184,7 @@ export function AdminEventApplicationsPage() {
     if (filters.rehearsal && text(row.answers?.can_attend_rehearsal) !== filters.rehearsal) return false;
     if (filters.eventDay && text(row.answers?.can_work_event_day) !== filters.eventDay) return false;
     return true;
-  }), [filters, rows]);
+  }), [dutiesByKey, filters, rows]);
 
   const summary = useMemo(() => {
     const approved = rows.filter((row) => row.status === 'approved');
@@ -178,11 +194,16 @@ export function AdminEventApplicationsPage() {
     }));
     return {
       approvedByDuty,
+      verified: rows.filter((row) => row.identity_status === 'verified').length,
+      pendingIdentity: rows.filter((row) => row.identity_status !== 'verified').length,
+      approved: approved.length,
       waitlisted: rows.filter((row) => row.status === 'waitlisted').length,
       rejected: rows.filter((row) => row.status === 'rejected').length,
+      missingAssignedDuty: rows.filter((row) => !row.assigned_duty).length,
       missingFinalDuty: approved.filter((row) => !finalDuty(row)).length,
+      totalRemainingQuota: quotaState.data?.total_remaining ?? 0,
     };
-  }, [finalDutyOptions, rows]);
+  }, [finalDutyOptions, quotaState.data?.total_remaining, rows]);
 
   async function saveFinalDuty(row: AdminStaffApplicationRow) {
     const value = draftFinalDuties[row.id] ?? finalDuty(row);
@@ -362,7 +383,7 @@ export function AdminEventApplicationsPage() {
     }
     const ExcelJS = await import('exceljs');
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Staff Applications');
+    const worksheet = workbook.addWorksheet('รายชื่อผู้สมัคร');
     const headers = Object.keys(exportData[0]);
     worksheet.columns = headers.map((header) => ({ header, key: header, width: Math.min(Math.max(header.length + 4, 16), 42) }));
     exportData.forEach((row) => worksheet.addRow(row));
@@ -371,7 +392,7 @@ export function AdminEventApplicationsPage() {
     worksheet.autoFilter = { from: 'A1', to: `${String.fromCharCode(64 + Math.min(headers.length, 26))}1` };
     const buffer = await workbook.xlsx.writeBuffer();
     downloadBlob(filename, new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
-    setToast({ type: 'success', message: language === 'th' ? 'ดาวน์โหลด Excel แล้ว' : 'Excel downloaded' });
+    setToast({ type: 'success', message: language === 'th' ? 'ดาวน์โหลดไฟล์สำเร็จ' : 'File downloaded' });
   }
 
   function requestExcelExport(preset: ExportPreset, dutyKey?: string) {
@@ -386,6 +407,16 @@ export function AdminEventApplicationsPage() {
       return;
     }
     setExcelExport({ rows: filteredRows, filename: `${base}-filtered-${date}.xlsx` });
+  }
+
+  async function confirmExcelExport() {
+    if (!excelExport) return;
+    try {
+      await downloadExcel(excelExport.rows, excelExport.filename);
+      setExcelExport(null);
+    } catch (err) {
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ดาวน์โหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่' : 'Could not download the file. Please try again.') });
+    }
   }
 
   return (
@@ -422,6 +453,18 @@ export function AdminEventApplicationsPage() {
               <span>{language === 'th' ? 'ใบสมัครทั้งหมด' : 'Total applications'}</span>
             </Card>
             <Card className="event-detail-card" variant="soft">
+              <strong>{summary.verified}</strong>
+              <span>{language === 'th' ? 'ยืนยันตัวตนแล้ว' : 'Verified identity'}</span>
+            </Card>
+            <Card className="event-detail-card" variant="soft">
+              <strong>{summary.pendingIdentity}</strong>
+              <span>{language === 'th' ? 'รอตรวจสอบตัวตน' : 'Pending identity'}</span>
+            </Card>
+            <Card className="event-detail-card" variant="soft">
+              <strong>{summary.approved}</strong>
+              <span>{language === 'th' ? 'ผ่านการคัดเลือก' : 'Approved'}</span>
+            </Card>
+            <Card className="event-detail-card" variant="soft">
               <strong>{summary.waitlisted}</strong>
               <span>{language === 'th' ? 'สำรอง' : 'Waitlisted'}</span>
             </Card>
@@ -430,8 +473,12 @@ export function AdminEventApplicationsPage() {
               <span>{language === 'th' ? 'ไม่ผ่าน' : 'Rejected'}</span>
             </Card>
             <Card className="event-detail-card" variant="soft">
-              <strong>{summary.missingFinalDuty}</strong>
-              <span>{language === 'th' ? 'อนุมัติแล้วยังไม่ระบุหน้าที่' : 'Approved missing final duty'}</span>
+              <strong>{summary.missingAssignedDuty}</strong>
+              <span>{language === 'th' ? 'ยังไม่ได้จัดฝ่าย' : 'Missing assigned duty'}</span>
+            </Card>
+            <Card className="event-detail-card" variant="soft">
+              <strong>{summary.totalRemainingQuota}</strong>
+              <span>{language === 'th' ? 'โควต้าคงเหลือรวม' : 'Total remaining quota'}</span>
             </Card>
           </div>
 
@@ -464,6 +511,12 @@ export function AdminEventApplicationsPage() {
               <h2>{language === 'th' ? 'คัดกรองใบสมัคร' : 'Filter applications'}</h2>
             </div>
             <div className="filter-panel-grid">
+              <Input
+                label={language === 'th' ? 'ค้นหา' : 'Search'}
+                placeholder={language === 'th' ? 'ค้นหาชื่อ รหัสนักศึกษา อีเมล เบอร์ หรือสาขา' : 'Search name, student ID, email, phone, or major'}
+                value={filters.search}
+                onChange={(eventInput) => setFilters({ ...filters, search: eventInput.target.value })}
+              />
               <Select
                 label={language === 'th' ? 'สถานะ' : 'Status'}
                 value={filters.status}
@@ -484,6 +537,9 @@ export function AdminEventApplicationsPage() {
               <Select label={language === 'th' ? 'สาขา' : 'Major'} value={filters.major} onChange={(eventInput) => setFilters({ ...filters, major: eventInput.target.value })} options={filterOptions.majors} />
               <Select label={language === 'th' ? 'วันซ้อม' : 'Rehearsal'} value={filters.rehearsal} onChange={(eventInput) => setFilters({ ...filters, rehearsal: eventInput.target.value })} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} />
               <Select label={language === 'th' ? 'วันจริง' : 'Event day'} value={filters.eventDay} onChange={(eventInput) => setFilters({ ...filters, eventDay: eventInput.target.value })} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} />
+            </div>
+            <div>
+              <p className="eyebrow">{language === 'th' ? 'ดาวน์โหลดข้อมูลผู้สมัคร' : 'Download applications'}</p>
             </div>
             <div className="event-card-actions">
               <Button variant="secondary" icon={<Download size={17} />} onClick={() => requestExcelExport('all')}>{language === 'th' ? 'ดาวน์โหลด Excel ทั้งหมด' : 'Download all Excel'}</Button>
@@ -631,17 +687,17 @@ export function AdminEventApplicationsPage() {
             ) : null}
           </Modal>
 
-          <Modal open={Boolean(excelExport)} title={language === 'th' ? 'ยืนยันการดาวน์โหลด Excel' : 'Confirm Excel export'} onClose={() => setExcelExport(null)}>
+          <Modal open={Boolean(excelExport)} title={language === 'th' ? 'ยืนยันการดาวน์โหลดข้อมูล' : 'Confirm data download'} onClose={() => setExcelExport(null)}>
             {excelExport ? (
               <div className="modal-body page-stack">
                 <Card variant="warning">
-                  <strong>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคลและข้อมูลด้านสุขภาพบางส่วน' : 'This file contains personal and some health-related information.'}</strong>
-                  <p>{language === 'th' ? 'ใช้เพื่อการจัดงานเท่านั้น ห้ามเผยแพร่ต่อสาธารณะ' : 'Use it only for event operations. Do not publish publicly.'}</p>
+                  <strong>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคล' : 'This file contains personal data.'}</strong>
+                  <p>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคล และอาจมีข้อมูลด้านสุขภาพที่ผู้สมัครกรอกเพื่อใช้ในการจัดงานเท่านั้น กรุณาใช้ข้อมูลอย่างระมัดระวัง และห้ามเผยแพร่ต่อสาธารณะ' : 'This file may include personal data and health information submitted for event operations only. Use it carefully and do not publish publicly.'}</p>
                 </Card>
                 <p className="muted">{language === 'th' ? `จำนวน ${excelExport.rows.length} รายการ` : `${excelExport.rows.length} rows`}</p>
                 <div className="form-actions">
-                  <Button icon={<FileSpreadsheet size={18} />} onClick={() => { void downloadExcel(excelExport.rows, excelExport.filename); setExcelExport(null); }}>
-                    {language === 'th' ? 'ดาวน์โหลด Excel' : 'Download Excel'}
+                  <Button icon={<FileSpreadsheet size={18} />} onClick={() => void confirmExcelExport()}>
+                    {language === 'th' ? 'ยืนยันดาวน์โหลด' : 'Confirm download'}
                   </Button>
                   <Button variant="secondary" onClick={() => setExcelExport(null)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
                 </div>

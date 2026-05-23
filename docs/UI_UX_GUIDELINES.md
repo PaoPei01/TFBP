@@ -51,6 +51,8 @@ Destructive actions must live in `DangerZone` or use `ConfirmDialog`. Do not pla
 - Public copy for identity mismatch should say: "หาก CMU Mail ในฐานข้อมูลเดิมไม่ถูกต้อง สามารถส่งใบสมัครได้ตามปกติ ระบบจะให้ผู้ดูแลตรวจสอบตัวตนเพิ่มเติมภายหลัง"
 - Applicant-facing duty assignment must use the wording "ฝ่ายที่ระบบจัดให้เบื้องต้น" and must say admins may adjust it later.
 - Full-duty choices should be disabled, visually subdued, and labelled "รับเต็มจำนวนแล้ว" with a clear next step to choose another duty.
+- Long applicant forms should use step-based layouts so each screen has one main task and preserves entered data when going back.
+- Duty checkbox cards should include text for selected/unavailable states such as "เลือกแล้ว" and "รับเต็มจำนวนแล้ว"; do not rely on color alone.
 - Admin exports that include health/limitation text must show a privacy warning before download.
 - Medical data is visible only to admin and emergency_staff.
 - If medical data is visible, show a confidentiality notice.

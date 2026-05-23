@@ -556,3 +556,24 @@ Privacy/security notes:
 - Status lookup still requires both submitted email and phone.
 - The RPC returns only the matching applicant's safe status and does not expose health data.
 - No email sending or automatic notification was added.
+
+## Staff Application UX Polish Pass
+
+Status: implemented as a UI/UX and Thai wording polish pass.
+
+Completed:
+
+- Converted Parent Orientation staff application into a four-step flow: identity verification, safe data review, duties/questions, and final confirmation.
+- Added clearer Thai-first helper text, placeholders, and non-blocking identity mismatch copy.
+- Improved safe person preview wording and update-request modal copy so applicants know they can continue applying.
+- Updated duty cards with selected state, full state, remaining-slot wording, and keyboard-accessible checkbox cards.
+- Standardized Parent Orientation duty labels to shorter Thai labels such as `ฝ่ายจราจร`, `ฝ่ายพยาบาล`, and `ฝ่ายประสานงานเวที`.
+- Improved admin application review with search, richer top summary cards, clearer assignment-method labels, and refined Excel export wording.
+
+QA focus:
+
+- Mobile step flow shows one main task at a time.
+- Applicants can go back without losing entered data.
+- Duty cards show `เลือกแล้ว` and `รับเต็มจำนวนแล้ว` as text, not color only.
+- Final confirmation clearly shows identity status and "ฝ่ายที่ระบบจัดให้เบื้องต้น".
+- Admin filters/search remain readable on mobile cards and desktop table.

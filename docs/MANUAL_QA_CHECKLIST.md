@@ -58,6 +58,10 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Registration submit fails safely if no matching `people` row exists.
 - [ ] Open `/events/parent-orientation-staff-2569/staff/apply`.
 - [ ] Staff application page asks for student ID, email, phone, duties, availability, rehearsal availability, event-day availability, optional experience, health limitations, note, and consent.
+- [ ] Staff application uses a 4-step layout: identity verification, data review, duties/questions, confirmation.
+- [ ] Stepper shows current step clearly on mobile and desktop.
+- [ ] Applicant can go back to earlier steps without losing entered data.
+- [ ] Identity fields show placeholders and helpers for student ID, CMU Mail, and phone.
 - [ ] Staff application requires CMU Mail ending with `@cmu.ac.th`.
 - [ ] Staff application rejects Gmail/Hotmail/personal email.
 - [ ] Staff application rejects malformed CMU Mail and CMU Mail with spaces.
@@ -652,6 +656,7 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Parent Orientation duty quotas total 130.
 - [ ] Applicant can select multiple preferred duties.
 - [ ] Duty cards show quota, remaining slots, and descriptions.
+- [ ] Selected duty cards show text `เลือกแล้ว`.
 - [ ] A full duty is disabled/dimmed and shows `รับเต็มจำนวนแล้ว`.
 - [ ] Full duty helper says `ฝ่ายนี้รับครบตามจำนวนแล้ว กรุณาเลือกฝ่ายอื่น`.
 - [ ] Backend does not assign into a full duty when another selected duty or general fallback is available.
@@ -659,6 +664,7 @@ Use this checklist before real event operations and after every production-readi
 - [ ] General fallback works when selected duties are full.
 - [ ] All-full state returns pending assignment and does not fail the application.
 - [ ] Confirmation summary shows `ฝ่ายที่ระบบจัดให้เบื้องต้น`.
+- [ ] Confirmation summary shows name, student ID, major, year, CMU Mail, phone, selected duties, rehearsal answer, event-day answer, availability, note, identity status, and preliminary assigned duty.
 - [ ] Confirmation and success screens say the duty is preliminary and admins may adjust it later.
 - [ ] Success screen asks the applicant to screenshot the page.
 - [ ] Admin application review shows assigned duty, assignment method, and assignment note.

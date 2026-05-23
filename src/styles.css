@@ -1569,6 +1569,16 @@ a {
   filter: grayscale(0.35);
 }
 
+.duty-option-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.12);
+}
+
+.duty-option-card .selected-badge {
+  background: rgba(0, 121, 107, 0.12);
+  color: var(--accent-strong);
+}
+
 .field small {
   color: var(--text-soft);
   font-weight: 700;
