@@ -50,6 +50,7 @@ const StaffProfileEditPage = lazy(() => import('./pages/StaffProfileEditPage').t
 const StaffProfilePage = lazy(() => import('./pages/StaffProfilePage').then((module) => ({ default: module.StaffProfilePage })));
 const StaffProfileVerifyPage = lazy(() => import('./pages/StaffProfileVerifyPage').then((module) => ({ default: module.StaffProfileVerifyPage })));
 const StaffPersonalQrPage = lazy(() => import('./pages/StaffPersonalQrPage').then((module) => ({ default: module.StaffPersonalQrPage })));
+const Year2PeopleImportPage = lazy(() => import('./pages/Year2PeopleImportPage').then((module) => ({ default: module.Year2PeopleImportPage })));
 
 export function App() {
   return (
@@ -102,6 +103,7 @@ export function App() {
           <Route path="admin/staff/import" element={<Suspense fallback={<LoadingSkeleton />}><StaffImportPage /></Suspense>} />
           <Route path="admin/staff/operations" element={<Suspense fallback={<LoadingSkeleton />}><StaffOperationsPage /></Suspense>} />
           <Route path="admin/staff/requests" element={<Suspense fallback={<LoadingSkeleton />}><StaffEditRequestsPage /></Suspense>} />
+          <Route path="admin/people/import-year2" element={<Suspense fallback={<LoadingSkeleton />}><Year2PeopleImportPage /></Suspense>} />
           <Route path="admin/documents" element={<Suspense fallback={<LoadingSkeleton />}><DocumentCenterPage /></Suspense>} />
           <Route path="admin/documents/settings" element={<Suspense fallback={<LoadingSkeleton />}><DocumentSettingsPage /></Suspense>} />
           <Route path="admin/documents/templates" element={<Suspense fallback={<LoadingSkeleton />}><DocumentTemplatesPage /></Suspense>} />

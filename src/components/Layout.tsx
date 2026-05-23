@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, CalendarDays, FileText, HeartPulse, Home, Languages, LogOut, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
+import { Bell, CalendarDays, Database, FileText, HeartPulse, Home, Languages, LogOut, Menu, Pencil, Search, Shield, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MobileMoreMenu } from './mobile/MobileMoreMenu';
 import { RoleAwareBottomNav } from './mobile/RoleAwareBottomNav';
@@ -111,6 +111,7 @@ export function Layout() {
                   <NavLink to="/admin/staff/operations">{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
                   <NavLink to="/admin/staff/requests">{language === 'th' ? 'คำขอแก้ไขทีมงาน' : 'Staff Requests'}</NavLink>
+                  <NavLink to="/admin/people/import-year2">{language === 'th' ? 'นำเข้า people ปี 2' : 'Import Year 2 People'}</NavLink>
                   <span className="nav-menu-label">{language === 'th' ? 'ระบบเสริม' : 'More tools'}</span>
                   <NavLink to="/admin/documents">{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>
                   <NavLink to="/admin/data-health">{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
@@ -261,6 +262,7 @@ export function Layout() {
             <NavLink to="/admin/staff/attendance"><UserCheck size={18} />{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</NavLink>
             <NavLink to="/admin/staff/operations"><UsersRound size={18} />{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
             <NavLink to="/admin/staff/requests"><Pencil size={18} />{language === 'th' ? 'คำขอทีมงาน' : 'Staff Requests'}</NavLink>
+            <NavLink to="/admin/people/import-year2"><Database size={18} />{language === 'th' ? 'นำเข้า people ปี 2' : 'Import Year 2 People'}</NavLink>
             <NavLink to="/admin/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
             <NavLink to="/admin/emergency"><HeartPulse size={18} />{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</NavLink>
             <NavLink to="/admin/documents"><FileText size={18} />{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>

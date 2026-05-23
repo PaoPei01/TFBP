@@ -201,6 +201,30 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Do not run `link_legacy_profiles_to_people()` on production until preview counts and duplicate data are reviewed.
 - [ ] Existing `/`, `/edit`, `/staff/attendance`, and `/admin/dashboard` behavior is unchanged.
 
+## Year 2 People Import
+
+- [ ] Migration `202605230008_year2_people_import_staging.sql` applies successfully.
+- [ ] `public.people_import_year2_2569` exists.
+- [ ] Admin-only RLS exists for staging select/insert/update/delete.
+- [ ] Public/anon users cannot read staging rows.
+- [ ] Open `/admin/people/import-year2`.
+- [ ] Column mapping is visible.
+- [ ] Convert the Engineering year 2 Excel file to CSV manually.
+- [ ] Upload CSV into `people_import_year2_2569` using Supabase Table Editor.
+- [ ] Run `preview_year2_people_import()`.
+- [ ] Confirm row count is about 1111.
+- [ ] Confirm duplicate student IDs, invalid phones, and invalid emails are surfaced when present.
+- [ ] Confirm phone numbers preserve leading zero or restore it when the source has 9 digits.
+- [ ] Confirm hidden characters in emails are cleaned.
+- [ ] Confirm health data count is detected.
+- [ ] Run `import_year2_people_from_staging()`.
+- [ ] Confirm inserted/updated/skipped/errors result counts are useful.
+- [ ] Confirm `people` rows are inserted or updated.
+- [ ] Confirm no health data appears in `people.metadata`.
+- [ ] Confirm imported rows do not alter legacy `profiles` directly.
+- [ ] Confirm imported rows do not alter `staff_profiles` directly.
+- [ ] Confirm public pages do not expose imported `people` rows.
+
 ## Pending Participant Requests
 
 - [ ] Open `/admin/requests`.

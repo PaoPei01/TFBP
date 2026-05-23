@@ -90,6 +90,31 @@ Completed in foundation pass:
   - `link_legacy_profiles_to_people()`
 - Added matching service helpers for the preview/link RPCs.
 
+Completed in year 2 import staging pass:
+
+- Added additive migration `202605230008_year2_people_import_staging.sql`.
+- Added `people.nickname_en`, `people.nickname_th`, and `people.metadata`.
+- Added admin-only staging table `public.people_import_year2_2569`.
+- Added import cleanup helpers:
+  - `clean_import_text(input)`
+  - `normalize_import_email(input)`
+  - `normalize_import_phone(input)`
+- Added admin-only RPCs:
+  - `preview_year2_people_import()`
+  - `import_year2_people_from_staging()`
+- Added admin page `/admin/people/import-year2`.
+- Added import guide `docs/YEAR2_PEOPLE_IMPORT_GUIDE.md`.
+
+Year 2 import safety checklist:
+
+- [ ] staging table exists
+- [ ] preview RPC works
+- [ ] import RPC works
+- [ ] phone numbers preserve leading zero
+- [ ] email hidden characters are cleaned
+- [ ] health fields are not imported to `people`
+- [ ] public pages do not expose imported `people`
+
 Deferred from P2 until staging/dedupe review:
 
 - Running legacy-to-people linking in production without reviewing preview counts.
