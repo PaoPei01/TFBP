@@ -37,23 +37,34 @@ export function EventStaffApplyPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const [result, setResult] = useState<EventSubmissionResult | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const event = state.data;
   const eventName = event ? (language === 'th' ? event.name_th : event.name_en || event.name_th) : '';
-  const canSubmit = Boolean(
-    eventSlug === 'parent-orientation-staff-2569'
-    && selectedDuties.length
-    && availability.trim()
-    && canAttendRehearsal
-    && canWorkEventDay
-    && recruitment?.consentItemsTh.every((item) => consents[item])
-  );
 
   function toggleDuty(duty: string) {
     setSelectedDuties((current) => current.includes(duty) ? current.filter((item) => item !== duty) : [...current, duty]);
   }
 
+  function validate() {
+    const nextErrors: Record<string, string> = {};
+    if (!email.trim()) nextErrors.email = language === 'th' ? 'กรุณากรอกอีเมล' : 'Email is required';
+    if (!phone.trim()) nextErrors.phone = language === 'th' ? 'กรุณากรอกเบอร์โทร' : 'Phone is required';
+    if (!selectedDuties.length) nextErrors.preferred_duties = language === 'th' ? 'กรุณาเลือกอย่างน้อย 1 ฝ่าย' : 'Choose at least one duty';
+    if (!availability.trim()) nextErrors.availability = language === 'th' ? 'กรุณาระบุช่วงเวลาที่สะดวก' : 'Availability is required';
+    if (!canAttendRehearsal) nextErrors.can_attend_rehearsal = language === 'th' ? 'กรุณาตอบคำถามวันซ้อม' : 'Please answer the rehearsal question';
+    if (!canWorkEventDay) nextErrors.can_work_event_day = language === 'th' ? 'กรุณาตอบคำถามวันปฏิบัติงาน' : 'Please answer the event day question';
+    const missingConsent = recruitment?.consentItemsTh.some((item) => !consents[item]);
+    if (missingConsent) nextErrors.consent = language === 'th' ? 'กรุณายืนยันทุกข้อก่อนส่งใบสมัคร' : 'Please confirm every consent item';
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
+
   async function submit(eventObject: FormEvent) {
     eventObject.preventDefault();
+    if (!validate()) {
+      setToast({ type: 'error', message: language === 'th' ? 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ' : 'Please complete the required fields' });
+      return;
+    }
     try {
       setSaving(true);
       const submitted = await submitEventStaffApplication({
@@ -65,14 +76,17 @@ export function EventStaffApplyPage() {
           preferred_role: selectedDuties[0] ?? null,
           preferred_team: selectedDuties.join(', '),
           preferred_duties: selectedDuties,
-          availability: { text: availability },
+          availability: { text: availability, can_attend_rehearsal: canAttendRehearsal, can_work_event_day: canWorkEventDay },
           can_attend_rehearsal: canAttendRehearsal,
           can_work_event_day: canWorkEventDay,
+          staff_experience: staffExperience,
           experience: staffExperience,
           health_or_limitations: healthOrLimitations,
           note,
+          consent_confirmed: true,
           consent_items: consents,
-          motivation: note || 'Parent orientation staff application',
+          event_specific_form: 'parent_orientation_staff_2569',
+          motivation: staffExperience || note || 'Parent orientation staff application',
         },
       });
       setResult(submitted);
@@ -132,18 +146,18 @@ export function EventStaffApplyPage() {
             <div className="edit-success-card" role="status">
               <CheckCircle2 size={28} />
               <strong>{language === 'th' ? 'ส่งใบสมัครแล้ว' : 'Application submitted'}</strong>
-              <span>{language === 'th' ? 'สถานะเริ่มต้น: submitted' : 'Initial status: submitted'}</span>
+              <span>{language === 'th' ? 'สถานะ: submitted ผู้ดูแลจะตรวจสอบและจัดสรรหน้าที่ภายหลัง' : 'Status: submitted. Admins will review and assign duties later.'}</span>
               <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'กลับไปหน้ากิจกรรม' : 'Back to event'}</Link>
             </div>
           ) : (
-            <form className="form-grid" onSubmit={submit}>
+            <form className="form-grid" onSubmit={submit} noValidate>
               <div className="event-form-section full-span">
                 <h3>{language === 'th' ? '1. ยืนยันตัวตน' : '1. Verify identity'}</h3>
                 <p className="muted">{language === 'th' ? 'ใช้ข้อมูลที่ตรงกับฐานข้อมูลบุคคลของคณะ หากไม่พบข้อมูล ระบบจะยังไม่บันทึกใบสมัคร' : 'Use information matching the faculty person record. If no match is found, the application is not saved.'}</p>
               </div>
               <Input label={language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'} value={studentId} onChange={(eventInput) => setStudentId(eventInput.target.value)} />
-              <Input label={language === 'th' ? 'อีเมล' : 'Email'} type="email" value={email} onChange={(eventInput) => setEmail(eventInput.target.value)} required />
-              <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} required />
+              <Input label={language === 'th' ? 'อีเมล CMU / อีเมลที่ใช้ติดต่อ' : 'CMU email / contact email'} type="email" value={email} onChange={(eventInput) => setEmail(eventInput.target.value)} error={errors.email} required />
+              <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} error={errors.phone} required />
 
               <div className="event-form-section full-span">
                 <h3>{language === 'th' ? '2. เลือกหน้าที่และเวลาที่สะดวก' : '2. Duties and availability'}</h3>
@@ -157,14 +171,18 @@ export function EventStaffApplyPage() {
                     <span>{duty}</span>
                   </label>
                 ))}
+                {errors.preferred_duties ? <small className="field-error" role="alert">{errors.preferred_duties}</small> : null}
               </fieldset>
               <label className="field full-span">
                 <span>{language === 'th' ? 'เวลาที่สะดวก' : 'Availability'}</span>
-                <textarea value={availability} onChange={(eventInput) => setAvailability(eventInput.target.value)} rows={3} />
+                <textarea value={availability} onChange={(eventInput) => setAvailability(eventInput.target.value)} rows={3} aria-invalid={Boolean(errors.availability) || undefined} />
                 <small>{language === 'th' ? 'หากสามารถอยู่ได้ทั้งวันให้ระบุว่า “ทั้งวัน”' : 'If you are available all day, write “all day”.'}</small>
+                {errors.availability ? <small className="field-error" role="alert">{errors.availability}</small> : null}
               </label>
               <Select label={language === 'th' ? 'เข้าซ้อมวันที่ 10 มิ.ย. 2569 เวลา 16:00 น. ได้หรือไม่' : 'Can attend rehearsal?'} value={canAttendRehearsal} onChange={(eventInput) => setCanAttendRehearsal(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
+              {errors.can_attend_rehearsal ? <small className="field-error full-span" role="alert">{errors.can_attend_rehearsal}</small> : null}
               <Select label={language === 'th' ? 'ปฏิบัติงานวันที่ 12 มิ.ย. 2569 ได้หรือไม่' : 'Can work on event day?'} value={canWorkEventDay} onChange={(eventInput) => setCanWorkEventDay(eventInput.target.value)} options={['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ']} required />
+              {errors.can_work_event_day ? <small className="field-error full-span" role="alert">{errors.can_work_event_day}</small> : null}
 
               <div className="event-form-section full-span">
                 <h3>{language === 'th' ? '3. ข้อมูลเพิ่มเติม' : '3. Additional information'}</h3>
@@ -191,10 +209,11 @@ export function EventStaffApplyPage() {
                     <span>{item}</span>
                   </label>
                 ))}
+                {errors.consent ? <small className="field-error" role="alert">{errors.consent}</small> : null}
               </fieldset>
               <div className="form-actions full-span">
                 <Link className="btn btn-secondary" to={eventPath(event.slug)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Link>
-                <Button type="submit" loading={saving} disabled={!canSubmit || saving}>{language === 'th' ? 'ส่งใบสมัคร' : 'Submit application'}</Button>
+                <Button type="submit" loading={saving} disabled={saving}>{language === 'th' ? 'ส่งใบสมัคร' : 'Submit application'}</Button>
               </div>
             </form>
           )}

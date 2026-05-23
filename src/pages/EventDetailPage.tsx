@@ -229,6 +229,8 @@ export function EventDetailPage() {
             </Card>
           ) : null}
 
+          {/* Budget and staffDetailTh are intentionally not rendered on this public page. They are reserved for admin/document workflows. */}
+
           <Card className="event-actions-card" variant="soft">
             <div>
               <p className="eyebrow">{language === 'th' ? 'การดำเนินการ' : 'Actions'}</p>

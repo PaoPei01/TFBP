@@ -169,8 +169,7 @@ Use this checklist before real event operations and after every production-readi
 - [ ] `/admin/events` shows parent orientation staff recruitment after applying migrations.
 - [ ] Admin can open `/admin/events/:eventId`.
 - [ ] Admin can edit event name, status, visibility, dates, and location.
-- [ ] Admin can open `/admin/events/:eventId/applications` for the staff recruitment event.
-- [ ] Application review page is read-only and does not expose approve/reject actions yet.
+- [ ] Staff application review page is not exposed yet in this pass.
 - [ ] Event edit does not change legacy public search or attendance behavior.
 - [ ] Public/non-admin users cannot access `/admin/events`.
 - [ ] Existing `/admin/dashboard` still loads normally.

@@ -128,38 +128,3 @@ export async function submitEventStaffApplication(input: {
   if (error) throw error;
   return data as EventSubmissionResult;
 }
-
-export type AdminStaffApplicationRow = {
-  id: string;
-  event_id: string;
-  person_id: string;
-  preferred_role: string | null;
-  preferred_team: string | null;
-  availability: Record<string, unknown>;
-  experience: string | null;
-  motivation: string | null;
-  status: string;
-  submitted_at: string | null;
-  review_note: string | null;
-  answers: Record<string, unknown>;
-  people?: {
-    student_id: string | null;
-    name_th: string | null;
-    name_en: string | null;
-    nickname: string | null;
-    email: string | null;
-    phone: string | null;
-    major: string | null;
-    year_level: number | null;
-  } | null;
-};
-
-export async function fetchAdminEventStaffApplications(eventId: string): Promise<AdminStaffApplicationRow[]> {
-  const { data, error } = await supabase
-    .from('staff_applications')
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,review_note,answers,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
-    .eq('event_id', eventId)
-    .order('submitted_at', { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as unknown as AdminStaffApplicationRow[];
-}

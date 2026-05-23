@@ -10,8 +10,9 @@ export type EventContent = {
     eventTimeTh?: string;
     rehearsalDateTh?: string;
     locationTh: string;
+    capacityTh?: string;
     dressCodeTh?: string[];
-    publicSections: Array<{ titleTh: string; bodyTh: string }>;
+    publicNoteTh?: string;
   };
   participantSummary?: {
     expectedFreshmen: number;
@@ -29,7 +30,8 @@ export type EventContent = {
   stations?: Array<{ number: number; locationTh: string; departments: string[]; staffQuota?: number }>;
   staffRoleQuotas?: Array<{ role: string; labelTh: string; quota: number }>;
   registrationPoints?: Array<{ locationTh: string; noteTh: string }>;
-  budgetItems?: Array<{ labelTh: string; quantity?: string; unitPrice?: number; amount: number }>;
+  budgetItems?: Array<{ labelTh: string; quantityTh?: string; amount: number }>;
+  budgetTotal?: number;
   contingencyPlans?: Array<{ conditionTh: string; publicSummaryTh: string; staffDetailTh: string }>;
   staffRecruitment?: {
     capacity: number;
@@ -40,7 +42,7 @@ export type EventContent = {
     dressCodeTh: string;
     dutiesTh: string[];
     importantDatesTh: Array<{ dateTh: string; titleTh: string; noteTh?: string }>;
-    formFields: Array<{
+    applicationFields: Array<{
       key: string;
       labelTh: string;
       type: 'text' | 'textarea' | 'select' | 'checkbox' | 'multiselect' | 'radio';
@@ -69,16 +71,7 @@ export const eventContentBySlug: Record<string, EventContent> = {
         'รุ่นน้อง: เสื้อยืดสีดำ กางเกงยีนส์ขายาว รองเท้าผ้าใบ',
         'สตาฟ: เสื้อโปโลธีมวิศวฯ มช. กางเกงยีนส์ขายาว รองเท้าผ้าใบ',
       ],
-      publicSections: [
-        {
-          titleTh: 'ภาพรวมกิจกรรม',
-          bodyTh: 'กิจกรรมแบ่งนักศึกษาใหม่เป็น 7 สี และแบ่งย่อยเป็นกลุ่ม A/B เพื่อเดินฐานอย่างคล่องตัว โดยมีรุ่นพี่และทีมงานดูแลตลอดกิจกรรม',
-        },
-        {
-          titleTh: 'ความเป็นส่วนตัว',
-          bodyTh: 'ข้อมูลสาธารณะของผู้เข้าร่วมจะแสดงเท่าที่จำเป็น เช่น ชื่อ สาขา และกลุ่ม ข้อมูลติดต่อและสุขภาพจะถูกซ่อนไว้',
-        },
-      ],
+      publicNoteTh: 'ข้อมูลสาธารณะของผู้เข้าร่วมจะแสดงเท่าที่จำเป็น ข้อมูลติดต่อและสุขภาพจะถูกซ่อนไว้',
     },
     participantSummary: {
       expectedFreshmen: 1050,
@@ -145,13 +138,14 @@ export const eventContentBySlug: Record<string, EventContent> = {
       { conditionTh: 'ฝนตกหลังเสร็จสิ้นกิจกรรม', publicSummaryTh: 'สตาฟจะดูแลให้อยู่ในอาคารจนกว่าสภาพอากาศปลอดภัย', staffDetailTh: 'ฝ่ายสันทนาการและความบันเทิงจัดกิจกรรมในร่มและดูแลน้องจนกว่าฝนจะหยุดหรือซาลง' },
     ],
     budgetItems: [
-      { labelTh: 'ค่าอาหารกลางวัน', quantity: '1,276 กล่อง x 40 บาท', amount: 51040 },
-      { labelTh: 'ค่าอาหารว่าง', quantity: '1,276 ชุด x 10 บาท', amount: 12760 },
-      { labelTh: 'น้ำดื่มถ้วย', quantity: '30 ลัง x 112 บาท', amount: 3360 },
-      { labelTh: 'ค่ากิจกรรมและอุปกรณ์ประจำฐาน', quantity: '7 ฐาน x 500 บาท', amount: 3500 },
-      { labelTh: 'กระดาษทำป้ายชื่อขนาด A3', quantity: '180 แผ่น', amount: 3600 },
-      { labelTh: 'อุปกรณ์จิปาถะอื่น ๆ', quantity: 'เชือกเกลียวขาว, ถุงขยะ', amount: 650 },
+      { labelTh: 'ค่าอาหารกลางวัน', quantityTh: '1,276 กล่อง x 40 บาท', amount: 51040 },
+      { labelTh: 'ค่าอาหารว่าง', quantityTh: '1,276 ชุด x 10 บาท', amount: 12760 },
+      { labelTh: 'น้ำดื่มถ้วย', quantityTh: '30 ลัง x 112 บาท', amount: 3360 },
+      { labelTh: 'ค่ากิจกรรมและอุปกรณ์ประจำฐาน', quantityTh: '7 ฐาน x 500 บาท', amount: 3500 },
+      { labelTh: 'กระดาษทำป้ายชื่อขนาด A3', quantityTh: '180 แผ่น', amount: 3600 },
+      { labelTh: 'อุปกรณ์จิปาถะอื่น ๆ', quantityTh: 'เชือกเกลียวขาว, ถุงขยะ', amount: 650 },
     ],
+    budgetTotal: 74910,
   },
   'parent-orientation-staff-2569': {
     slug: 'parent-orientation-staff-2569',
@@ -163,10 +157,9 @@ export const eventContentBySlug: Record<string, EventContent> = {
       targetAudienceTh: 'นักศึกษาชั้นปีที่ 2 และ 3',
       eventDateTh: 'วันที่ 12 มิถุนายน 2569',
       locationTh: 'คณะวิศวกรรมศาสตร์ มหาวิทยาลัยเชียงใหม่',
+      capacityTh: 'รับจำนวนประมาณ 300 คน',
       dressCodeTh: ['ชุดช็อปถูกระเบียบ'],
-      publicSections: [
-        { titleTh: 'หมายเหตุ', bodyTh: 'มีการแบ่งหน้าที่อีกครั้งหลังปิดรับสมัคร' },
-      ],
+      publicNoteTh: 'มีการแบ่งหน้าที่อีกครั้งหลังปิดรับสมัคร',
     },
     staffRecruitment: {
       capacity: 300,
@@ -188,7 +181,10 @@ export const eventContentBySlug: Record<string, EventContent> = {
         { dateTh: '10 มิถุนายน 2569 เวลา 16:00 น.', titleTh: 'ซ้อมบูม ร้องเพลงมาร์ชวิศวะ และชี้แจงรายละเอียดงาน', noteTh: 'ณ คณะวิศวกรรมศาสตร์ สถานที่จะแจ้งให้ทราบอีกครั้ง และเวลาอาจมีการเปลี่ยนแปลง' },
         { dateTh: '12 มิถุนายน 2569', titleTh: 'วันปฏิบัติงานจริง' },
       ],
-      formFields: [
+      applicationFields: [
+        { key: 'student_id', labelTh: 'รหัสนักศึกษา', type: 'text' },
+        { key: 'email', labelTh: 'อีเมล CMU / อีเมลที่ใช้ติดต่อ', type: 'text', required: true },
+        { key: 'phone', labelTh: 'เบอร์โทร', type: 'text', required: true },
         { key: 'preferred_duties', labelTh: 'ฝ่ายที่สนใจ', type: 'multiselect', required: true, optionsTh: ['ร้องเพลงมาร์ชวิศวะและบูมคณะ', 'ฝ่ายลงทะเบียน', 'ฝ่ายประชาสัมพันธ์/บอกทาง', 'ฝ่ายดูแลสถานที่', 'ฝ่ายอำนวยความสะดวก', 'ฝ่ายอื่น ๆ'] },
         { key: 'availability', labelTh: 'ช่วงเวลาที่สะดวก', type: 'textarea', required: true, helpTh: 'ระบุช่วงเวลาที่สามารถช่วยงานได้ หากสามารถอยู่ได้ทั้งวันให้ระบุว่า “ทั้งวัน”' },
         { key: 'can_attend_rehearsal', labelTh: 'สามารถเข้าซ้อมวันที่ 10 มิถุนายน 2569 เวลา 16:00 น. ได้หรือไม่', type: 'radio', required: true, optionsTh: ['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ'] },

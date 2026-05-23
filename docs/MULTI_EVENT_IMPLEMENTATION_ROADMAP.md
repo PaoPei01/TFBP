@@ -167,18 +167,17 @@ Risk: medium.
 Completed in lightweight pass:
 
 - Added `/admin/events/:eventId`.
-- Added `/admin/events/:eventId/applications` as a read-only staff application review page.
 - Added admin event detail/edit page for event metadata, status, visibility, dates, and location.
 - Added admin event service helpers:
   - `fetchAdminEventById(id)`
   - `updateAdminEvent(id, input)`
-  - `fetchAdminEventStaffApplications(eventId)`
 - Kept legacy dashboards and event-scoped operations unchanged.
 
 Deferred:
 
 - Event CRUD create/delete.
 - Registration open/close controls beyond event status field.
+- Staff application review page.
 - Staff application approve/reject/waitlist actions.
 - Event switcher backed by accessible events.
 - Event-scoped attendance/documents/announcements.

@@ -139,8 +139,8 @@ Pilot event:
 
 - `parent-orientation-staff-2569`
 - The first pilot form asks for student ID, email, phone, preferred duties, availability, rehearsal availability, event-day availability, experience, necessary health/food limitations, optional note, and consent.
-- Admin review starts as read-only at `/admin/events/:eventId/applications`.
-- Approve/reject/waitlist actions wait for a later phase after the pilot data shape is reviewed.
+- Admin review is deferred to a later phase. Do not add `/admin/events/:eventId/applications` until the pilot data shape is reviewed.
+- Approve/reject/waitlist actions wait for a later phase.
 
 ## 5. Admin Event Dashboard
 
