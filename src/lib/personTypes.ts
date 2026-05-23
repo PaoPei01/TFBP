@@ -23,6 +23,8 @@ export type AdminPersonRecord = PersonRecord & {
   staff_profile_count: number;
   participant_profile_count: number;
   staff_application_count: number;
+  merged_into?: string | null;
+  merged_at?: string | null;
 };
 
 export type AdminPeopleFilters = {
@@ -34,6 +36,7 @@ export type AdminPeopleFilters = {
   has_staff_profile?: boolean | '';
   has_participant_profile?: boolean | '';
   has_staff_application?: boolean | '';
+  include_merged?: boolean;
   limit?: number;
   offset?: number;
 };
@@ -68,6 +71,7 @@ export type PeopleSummary = {
   profiles_without_person_id: number;
   staff_applications_without_person_id: number;
   year2_import_skipped_count: number;
+  merged_records?: number;
 };
 
 export type PeopleDataHealthIssue = {
@@ -82,6 +86,63 @@ export type PeopleDataHealthIssue = {
 
 export type PeopleDataHealth = {
   issues: PeopleDataHealthIssue[];
+};
+
+export type PeopleLinkedCounts = {
+  staff_profiles: number;
+  profiles: number;
+  staff_applications: number;
+  event_participants: number;
+  event_staff: number;
+  event_roles: number;
+};
+
+export type PeopleDuplicateRecord = {
+  id: string;
+  student_id: string | null;
+  name_th: string | null;
+  name_en: string | null;
+  nickname: string | null;
+  nickname_th?: string | null;
+  nickname_en?: string | null;
+  email: string | null;
+  phone: string | null;
+  major: string | null;
+  year_level: number | null;
+  source: string | null;
+  created_at: string | null;
+  linked_counts: PeopleLinkedCounts;
+};
+
+export type PeopleDuplicateGroup = {
+  group_type: 'student_id' | 'email' | 'phone' | 'name' | string;
+  match_value: string;
+  people: PeopleDuplicateRecord[];
+};
+
+export type PeopleDuplicateSummary = {
+  duplicate_student_id_groups: number;
+  duplicate_email_groups: number;
+  duplicate_phone_groups: number;
+  similar_name_groups: number;
+  merged_records: number;
+};
+
+export type PeopleDuplicateResult = {
+  duplicate_student_ids: PeopleDuplicateGroup[];
+  duplicate_emails: PeopleDuplicateGroup[];
+  duplicate_phones: PeopleDuplicateGroup[];
+  duplicate_names?: PeopleDuplicateGroup[];
+  summary: PeopleDuplicateSummary;
+};
+
+export type PeopleMergeResult = {
+  success: boolean;
+  keep_person_id: string;
+  merged_person_id: string;
+  repointed: PeopleLinkedCounts & {
+    event_form_responses: number;
+  };
 };
 
 export type VerifiedPersonPrefill = {

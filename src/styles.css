@@ -989,6 +989,47 @@ a {
   min-width: 0;
 }
 
+.split-panel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dedupe-group-list,
+.dedupe-person-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.dedupe-person-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.dedupe-person-card,
+.dedupe-group-card {
+  min-width: 0;
+}
+
+.dedupe-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
+  gap: 0.4rem 0.75rem;
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+}
+
+.dedupe-detail-grid span {
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.dedupe-detail-grid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .sticky-action-bar {
   position: sticky;
   bottom: calc(var(--mobile-bottom-nav-height) + 0.65rem + var(--safe-bottom));

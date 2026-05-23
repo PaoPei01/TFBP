@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase';
 import type {
   AdminPeopleFilters,
   AdminPeopleSearchResult,
+  PeopleDuplicateResult,
+  PeopleMergeResult,
   PeopleDataHealth,
   PeopleSummary,
   PersonPrefillResult,
@@ -39,6 +41,22 @@ export async function fetchPeopleDataHealth(): Promise<PeopleDataHealth> {
   const { data, error } = await supabase.rpc('get_people_data_health');
   if (error) throw error;
   return data as PeopleDataHealth;
+}
+
+export async function findPeopleDuplicates(): Promise<PeopleDuplicateResult> {
+  const { data, error } = await supabase.rpc('find_people_duplicates');
+  if (error) throw error;
+  return data as PeopleDuplicateResult;
+}
+
+export async function mergePeopleRecords(keepPersonId: string, mergePersonId: string, mergeNote?: string): Promise<PeopleMergeResult> {
+  const { data, error } = await supabase.rpc('merge_people_records', {
+    input_keep_person_id: keepPersonId,
+    input_merge_person_id: mergePersonId,
+    input_merge_note: mergeNote?.trim() || null,
+  });
+  if (error) throw error;
+  return data as PeopleMergeResult;
 }
 
 export async function verifyPersonIdentityForPrefill(email: string, phone: string): Promise<PersonPrefillResult> {

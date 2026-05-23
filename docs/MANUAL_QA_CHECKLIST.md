@@ -249,6 +249,36 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Detail sections expand on mobile and are not covered by bottom nav.
 - [ ] Existing public routes still do not expose `people`.
 
+## People Dedupe / Merge
+
+- [ ] Migration `202605230010_people_dedupe_merge_tools.sql` applies successfully.
+- [ ] Open `/admin/people/dedupe` as admin.
+- [ ] Public/non-admin users cannot access `/admin/people/dedupe`.
+- [ ] Admin tools menu includes People Dedupe.
+- [ ] `/admin/people` links to `/admin/people/dedupe`.
+- [ ] Duplicate groups load for same student ID.
+- [ ] Duplicate groups load for same normalized email.
+- [ ] Duplicate groups load for same normalized phone.
+- [ ] Similar-name groups appear only as review candidates.
+- [ ] Merge review modal opens from a duplicate group.
+- [ ] Admin can choose keep record and merge record.
+- [ ] Merge is blocked when keep and merge are the same record.
+- [ ] Modal warns when both student IDs exist and differ.
+- [ ] Modal warns when names differ strongly.
+- [ ] Confirmation checkbox is required before merge.
+- [ ] Optional merge note is saved.
+- [ ] Merge repoints `staff_profiles.person_id`.
+- [ ] Merge repoints `profiles.person_id`.
+- [ ] Merge repoints `staff_applications.person_id`.
+- [ ] Merge repoints `event_participants.person_id` when no same-event collision exists.
+- [ ] Merge blocks safely if both people already have participant rows for the same event.
+- [ ] Merged record is archived with `merged_into`, `merged_at`, `merged_by`, and `merge_note`.
+- [ ] Merged record is hidden from normal `/admin/people`.
+- [ ] `change_logs` records the merge.
+- [ ] No medical condition, drug allergy, or food allergy is shown or merged.
+- [ ] Mobile duplicate cards stack cleanly without horizontal scroll.
+- [ ] Existing public routes are unchanged after merge.
+
 ## Pending Participant Requests
 
 - [ ] Open `/admin/requests`.

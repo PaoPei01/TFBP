@@ -138,6 +138,38 @@ People Directory QA checklist:
 - [ ] health data is not shown
 - [ ] mobile cards do not overflow
 
+Completed in People Dedupe/Merge pass:
+
+- Added additive migration `202605230010_people_dedupe_merge_tools.sql`.
+- Added nullable merge archive fields on `people`:
+  - `merged_into`
+  - `merged_at`
+  - `merged_by`
+  - `merge_note`
+- Added admin-only RPCs:
+  - `find_people_duplicates()`
+  - `merge_people_records(keep_person_id, merge_person_id, note)`
+- Added `/admin/people/dedupe`.
+- Added safe manual merge UI with keep/merge selection, mismatch warnings, required confirmation checkbox, and optional note.
+- Merge repoints linked records and archives the merged person instead of hard deleting it.
+- Normal `/admin/people` hides archived merged records by default.
+- Kept public routes and legacy behavior unchanged.
+
+People Dedupe QA checklist:
+
+- [ ] `/admin/people/dedupe` loads for admins
+- [ ] public/non-admin users cannot access `/admin/people/dedupe`
+- [ ] duplicate groups load by student ID/email/phone/name
+- [ ] merge modal requires explicit confirmation
+- [ ] modal warns when student IDs or names differ
+- [ ] merge repoints `staff_profiles.person_id`
+- [ ] merge repoints `profiles.person_id`
+- [ ] merge repoints `staff_applications.person_id`
+- [ ] merge archives the merged person with `merged_into`
+- [ ] merged record is hidden from normal `/admin/people`
+- [ ] no health data is merged or shown
+- [ ] mobile merge cards do not overflow
+
 Deferred from P2 until staging/dedupe review:
 
 - Running legacy-to-people linking in production without reviewing preview counts.

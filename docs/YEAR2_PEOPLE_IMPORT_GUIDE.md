@@ -144,3 +144,15 @@ Use the People Directory to:
 - confirm no health fields appear in the admin directory.
 
 This page is read-only in this phase. It does not merge, delete, or write back to legacy `profiles` or `staff_profiles`.
+
+## Review Duplicates
+
+After inspecting `/admin/people`, admins can open `/admin/people/dedupe`.
+
+Use the dedupe tool only after reviewing source data:
+
+- duplicate groups are candidates, not automatic decisions.
+- choose one kept record and one merged record manually.
+- confirm the checkbox only when both records are the same person.
+- merged records are archived with `merged_into`; they are not hard deleted.
+- health fields are not shown or merged by this tool.

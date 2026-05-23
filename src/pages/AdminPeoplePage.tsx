@@ -1,5 +1,6 @@
-import { AlertTriangle, Database, Link2, RefreshCw, Search, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
+import { AlertTriangle, Database, GitMerge, Link2, RefreshCw, Search, ShieldCheck, UserCheck, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -117,7 +118,7 @@ export function AdminPeoplePage() {
         eyebrow="People"
         title={language === 'th' ? 'ฐานข้อมูลกลาง' : 'People Directory'}
         description={language === 'th' ? 'ข้อมูลบุคคลกลางที่ใช้เชื่อมหลายกิจกรรม เช่น นักศึกษาปี 2 ทีมงาน ผู้เข้าร่วม และผู้สมัครสตาฟ' : 'Central people records used across events, year 2 imports, staff, participants, and staff applications.'}
-        meta={<Button variant="secondary" icon={<RefreshCw size={18} />} loading={loading} onClick={() => void loadData()}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>}
+        meta={<div className="form-actions"><Link className="btn btn-secondary" to="/admin/people/dedupe"><GitMerge size={18} />{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Dedupe'}</Link><Button variant="secondary" icon={<RefreshCw size={18} />} loading={loading} onClick={() => void loadData()}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button></div>}
       />
 
       <div className="stats-grid">
@@ -199,6 +200,7 @@ export function AdminPeoplePage() {
             <h2>{language === 'th' ? 'Data Health' : 'Data Health'}</h2>
             <p>{language === 'th' ? 'รายงาน read-only สำหรับตรวจความพร้อมก่อนใช้ people กับ multi-event' : 'Read-only readiness checks before using people heavily for multi-event workflows.'}</p>
           </div>
+          <Link className="btn btn-secondary" to="/admin/people/dedupe"><GitMerge size={18} />{language === 'th' ? 'เปิดเครื่องมือตรวจซ้ำ' : 'Open dedupe tool'}</Link>
         </div>
         <div className="health-issue-grid">
           {(health?.issues ?? []).map((issue) => (
