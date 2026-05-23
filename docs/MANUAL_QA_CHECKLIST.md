@@ -6,8 +6,13 @@ Use this checklist before real event operations and after every production-readi
 
 - [ ] Supabase project points to the intended environment.
 - [ ] Latest migrations are applied.
+- [ ] `docs/MULTI_EVENT_RELEASE_GATE.md` is reviewed for this release.
+- [ ] `docs/STAGING_MIGRATION_RUNBOOK.md` has been followed on staging.
+- [ ] Staging backup identifier is recorded before migration checks.
 - [ ] Multi-event staging runbook has been followed if testing multi-event foundation.
 - [ ] `npm run check:multi-event-staging` passes after applying foundation migrations.
+- [ ] Any skipped staging checks are reviewed and either completed with staging credentials or accepted by the release owner.
+- [ ] `docs/MULTI_EVENT_STAGING_CHECK_RESULTS.md` is updated with latest result notes.
 - [ ] Admin account exists.
 - [ ] Staff Auth account exists.
 - [ ] Non-Auth staff profile exists with email + phone.
@@ -63,6 +68,30 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Staff application health/limitations text is shown only inside the application form and admin review/export tools.
 - [ ] Old `/`, `/edit`, `/staff/attendance`, `/admin/dashboard`, and `/admin/documents` routes still work after applying multi-event foundation migrations.
 - [ ] Do not enable platform homepage redirects until event-scoped participant data is validated.
+
+## Multi-Event Release Gate
+
+- [ ] `events`, `people`, `people_import_year2_2569`, `staff_applications`, `event_participants`, and `event_forms` exist on staging.
+- [ ] `event_staff` exists if event staff promotion is deployed.
+- [ ] `staff_attendance_sessions.event_id`, `announcements.event_id`, and document table `event_id` columns exist.
+- [ ] `entaneer-bonding-69` and `parent-orientation-staff-2569` are present and public.
+- [ ] Public users can read public events only.
+- [ ] Public users cannot read `people`.
+- [ ] Public users cannot read `people_import_year2_2569`.
+- [ ] Public users cannot read all `staff_applications`.
+- [ ] Public users cannot read `event_staff`.
+- [ ] `preview_year2_people_import()` has been reviewed before importing year 2 rows.
+- [ ] `import_year2_people_from_staging()` result counts are recorded if import was run.
+- [ ] People duplicate review is completed before linking legacy rows.
+- [ ] `preview_people_legacy_link()` has been reviewed before linking legacy profiles/staff profiles.
+- [ ] `link_legacy_profiles_to_people()` result counts are recorded if linking was run on staging.
+- [ ] `staff_profiles.person_id` missing count is recorded.
+- [ ] `profiles.person_id` missing count is recorded.
+- [ ] Staff application submission, status lookup, admin review, export, and promotion are tested.
+- [ ] Admin attendance event filter is tested and legacy/null-event sessions remain visible.
+- [ ] Admin announcements and Document Center event filters are tested.
+- [ ] Old routes `/`, `/edit`, `/announcements`, `/staff/attendance`, `/admin/dashboard`, `/admin/staff/attendance`, and `/admin/documents` still work.
+- [ ] Rollback owner and communication channel are recorded.
 
 ## Announcements
 

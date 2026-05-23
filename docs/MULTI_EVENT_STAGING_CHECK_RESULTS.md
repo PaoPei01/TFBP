@@ -1,62 +1,103 @@
 # Multi-Event Staging Check Results
 
-Last checked: 2026-05-23 before `202605230007_seed_core_platform_events.sql`
+Last updated: 2026-05-23
 
-Command:
+This file records staging verification results for the multi-event foundation. Use placeholders until the check is run against the intended staging Supabase project.
+
+## Command
 
 ```bash
 npm run check:multi-event-staging
 ```
 
-## Result Summary
-
-The read-only schema verification passed against the Supabase project configured in local `.env`.
-
-This result was captured before adding the Parent Orientation seed migration. Re-run the check after applying `202605230007_seed_core_platform_events.sql`.
-
-Passed checks:
-
-- default event exists: `สานสัมพันธ์ 69 / Entaneer Bonding 69`
-- default event status/visibility: `active`, `public`
-- `people` table is readable by service role
-- current `people` row count: `0`
-- `profiles.person_id` and `staff_profiles.person_id` are selectable
-- event registration/application tables exist
-- `staff_attendance_sessions.event_id` is selectable
-- `announcements.event_id` is selectable
-- `document_project_profiles.event_id` is selectable
-- `document_templates.event_id` is selectable
-- `generated_documents.event_id` is selectable
-
-Skipped checks:
-
-- `preview_people_legacy_link()` was skipped because no `SUPABASE_ADMIN_ACCESS_TOKEN` was provided.
-
-## Interpretation
-
-The additive multi-event foundation migrations appear to be applied in the checked environment. The project is not ready for legacy people linking yet because the admin-only preview RPC has not been run with an authenticated admin session.
-
-Do not run:
-
-```sql
-select public.link_legacy_profiles_to_people();
-```
-
-until `preview_people_legacy_link()` has been reviewed by an admin and duplicate risks are accepted.
-
-## Next Gate
-
-1. Open the app as an admin.
-2. Obtain a temporary admin access token for the staging check shell only.
-3. Run:
+Optional complete check:
 
 ```bash
-SUPABASE_ADMIN_ACCESS_TOKEN="..." npm run check:multi-event-staging
+SUPABASE_SERVICE_ROLE_KEY="staging-only" \
+SUPABASE_ADMIN_ACCESS_TOKEN="temporary-admin-session-token" \
+npm run check:multi-event-staging
 ```
 
-4. Review the preview output.
-5. Run the Events, Admin Events, and People Foundation sections in `docs/MANUAL_QA_CHECKLIST.md`.
-6. Only then decide whether to run the legacy linking RPC on staging.
+Do not commit service role keys or admin access tokens.
+
+## Latest Result
+
+- Environment checked: local `.env` Supabase target
+- Checked by: Codex
+- Checked at: 2026-05-23
+- App commit: working tree before release-doc commit
+- Supabase migration version: includes multi-event foundation through `202605230013_public_event_announcements_application_status.sql`
+- Result: pass with 5 skips requiring `SUPABASE_ADMIN_ACCESS_TOKEN`
+
+## Required Pass/Skip Review
+
+The script should pass or explicitly skip these checks:
+
+- [x] `events` table exists and public events are readable.
+- [x] `entaneer-bonding-69` exists.
+- [x] `parent-orientation-staff-2569` exists.
+- [x] `people` table exists.
+- [x] `people_import_year2_2569` table exists.
+- [x] `staff_applications` table exists.
+- [x] `event_participants` table exists.
+- [x] `event_forms` table exists.
+- [x] `event_form_responses` table exists.
+- [x] `event_staff` table exists if promotion migration is deployed.
+- [x] `staff_attendance_sessions.event_id` exists.
+- [x] `announcements.event_id` exists.
+- [x] document table `event_id` columns exist.
+- [x] `default_event_id()` exists.
+- [x] `verify_person_identity_for_prefill()` exists.
+- [x] event form/submission/status RPCs exist.
+- [ ] `preview_people_legacy_link()` runs with admin token or is explicitly skipped. Latest run skipped because no admin token was provided.
+- [ ] `preview_year2_people_import()` runs with admin token or is explicitly skipped. Latest run skipped because no admin token was provided.
+- [ ] `review_staff_application()` is deployed. Latest run skipped because no admin token was provided.
+- [ ] `promote_staff_application_to_event_staff()` is deployed if event staff promotion is deployed. Latest run skipped because no admin token was provided.
+- [x] `staff_profiles.person_id` missing count is recorded or explicitly skipped.
+- [x] `profiles.person_id` missing count is recorded or explicitly skipped.
+- [ ] duplicate people/data-health summary is recorded or explicitly skipped. Latest run skipped because no admin token was provided.
+- [x] anon cannot read `people`.
+- [x] anon cannot read `staff_applications`.
+
+## Result Notes
+
+Use this table after each staging run:
+
+| Check area | Result | Notes |
+| --- | --- | --- |
+| Public events | Pass | 2 public events readable; both required slugs present. |
+| Protected schema | Pass | Service role checks found protected tables and event columns. |
+| Admin-only RPCs | Skipped | Requires temporary admin access token. |
+| People import preview | Skipped | Run before importing year 2 data. |
+| People legacy link preview | Skipped | Run before linking profiles/staff_profiles. |
+| Public RLS sanity | Pass | Anon returned no `people` or `staff_applications` rows. |
+
+## Manual Counts To Record
+
+- `people` total: `1460`
+- `people_import_year2_2569` total: `1111`
+- `staff_profiles.person_id` missing: `0`
+- `profiles.person_id` missing: `0`
+- duplicate student ID groups: `TODO`
+- duplicate email groups: `TODO`
+- duplicate phone groups: `TODO`
+- staff applications total: `7`
+- approved staff applications: `TODO`
+- event_staff total: `0`
+
+## Latest Script Output Summary
+
+- Pass: public event reads, event seeds, protected schema, event columns, required public RPCs, missing person-id counts, anon RLS sanity.
+- Skip: admin-only preview/review/promotion/data-health checks because `SUPABASE_ADMIN_ACCESS_TOKEN` was not supplied.
+- Fail: none in the escalated network run.
+
+## Interpretation Rules
+
+- A failed public event check blocks release.
+- A failed protected schema check blocks release when service role credentials were provided.
+- A skipped protected schema check does not prove readiness; complete it before production.
+- A skipped admin preview check does not prove people import/link safety; complete it before importing or linking.
+- Any anon-readable `people`, `staff_applications`, `people_import_year2_2569`, or `event_staff` rows block release.
 
 ## Attendance Constraint Repair Note
 
