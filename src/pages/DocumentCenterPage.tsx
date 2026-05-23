@@ -1,15 +1,18 @@
 import { FileText, History, Settings, Upload, Wand2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Card } from '../components/ui/Card';
 import { DashboardStatCard } from '../components/ui/DashboardStatCard';
 import { PageHeader } from '../components/ui/PageHeader';
+import { useEventContext } from '../context/EventContext';
 import { useAsync } from '../hooks/useAsync';
 import { fetchDocumentCenterData } from '../services/documents';
 
 export function DocumentCenterPage() {
-  const state = useAsync(fetchDocumentCenterData, []);
+  const { currentEventId } = useEventContext();
+  const state = useAsync(() => fetchDocumentCenterData(currentEventId), [currentEventId]);
   const data = state.data;
   return (
     <section className="page-stack document-center-page">
@@ -17,6 +20,7 @@ export function DocumentCenterPage() {
         eyebrow="Document Center"
         title="ศูนย์เอกสารกิจกรรม"
         description="จัดการข้อมูลโครงการ เทมเพลต และสร้างเอกสาร DOCX สำหรับงานสานสัมพันธ์"
+        meta={<EventSwitcher compact />}
         actions={<HelpButton topicId="documents.overview" variant="link" />}
       />
       {state.loading ? <LoadingSkeleton /> : null}

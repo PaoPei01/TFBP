@@ -2,6 +2,7 @@ import { Save, UploadCloud } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { StickyActionBar } from '../components/mobile/StickyActionBar';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -9,6 +10,7 @@ import { Input } from '../components/ui/Input';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Select } from '../components/ui/Select';
 import { Toast, ToastState } from '../components/ui/Toast';
+import { useEventContext } from '../context/EventContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
 import { fetchAnnouncement, saveAnnouncement, uploadAnnouncementFile, type AnnouncementInput } from '../services/announcements';
@@ -18,15 +20,17 @@ export function AnnouncementEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { currentEventId, events } = useEventContext();
   const isNew = !id;
   const state = useAsync(() => (id ? fetchAnnouncement(id) : Promise.resolve(null)), [id]);
-  const [form, setForm] = useState<AnnouncementInput>({ title: '', type: 'update', priority: 'normal', audience: 'public', visible: true });
+  const [form, setForm] = useState<AnnouncementInput>({ title: '', type: 'update', priority: 'normal', audience: 'public', visible: true, event_id: currentEventId });
   const [toast, setToast] = useState<ToastState>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (state.data) setForm(state.data);
-  }, [state.data]);
+    else if (isNew) setForm((current) => ({ ...current, event_id: currentEventId }));
+  }, [currentEventId, isNew, state.data]);
 
   function patch(values: AnnouncementInput) {
     setForm((current) => ({ ...current, ...values }));
@@ -66,7 +70,7 @@ export function AnnouncementEditPage() {
   return (
     <section className="page-stack has-sticky-actions">
       <Toast toast={toast} />
-      <PageHeader eyebrow="Announcement" title={isNew ? (language === 'th' ? 'สร้างประกาศ' : 'New Announcement') : (language === 'th' ? 'แก้ไขประกาศ' : 'Edit Announcement')} meta={<Link className="btn btn-secondary" to="/admin/announcements">{language === 'th' ? 'กลับ' : 'Back'}</Link>} />
+      <PageHeader eyebrow="Announcement" title={isNew ? (language === 'th' ? 'สร้างประกาศ' : 'New Announcement') : (language === 'th' ? 'แก้ไขประกาศ' : 'Edit Announcement')} meta={<EventSwitcher compact />} actions={<Link className="btn btn-secondary" to="/admin/announcements">{language === 'th' ? 'กลับ' : 'Back'}</Link>} />
       {state.loading ? <LoadingSkeleton /> : null}
       {state.error ? <div className="error-state">{state.error}</div> : null}
       <Card>
@@ -79,6 +83,7 @@ export function AnnouncementEditPage() {
           <Select label="Type" value={form.type ?? 'update'} onChange={(event) => patch({ type: event.target.value as AnnouncementInput['type'] })} options={['banner', 'schedule', 'map', 'traffic', 'emergency', 'faq', 'update', 'document']} />
           <Select label={language === 'th' ? 'ความสำคัญ' : 'Priority'} value={form.priority ?? 'normal'} onChange={(event) => patch({ priority: event.target.value as AnnouncementInput['priority'] })} options={['critical', 'important', 'normal']} />
           <Select label={language === 'th' ? 'ผู้เห็น' : 'Audience'} value={form.audience ?? 'public'} onChange={(event) => patch({ audience: event.target.value as AnnouncementInput['audience'] })} options={['public', 'staff', 'admin']} />
+          <Select label={language === 'th' ? 'กิจกรรม' : 'Event'} value={form.event_id ?? ''} onChange={(event) => patch({ event_id: event.target.value || null })} options={events.map((event) => ({ value: event.id, label: language === 'th' ? event.name_th : event.name_en || event.name_th }))} placeholder={language === 'th' ? 'ทุกกิจกรรม' : 'Global'} />
           <label className="field full-span">
             <span>{language === 'th' ? 'อัปโหลดรูป/PDF' : 'Upload image/PDF'}</span>
             <span className="btn btn-secondary">

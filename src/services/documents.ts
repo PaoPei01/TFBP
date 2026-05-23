@@ -9,16 +9,22 @@ async function currentUserId() {
   return data.user?.id ?? null;
 }
 
-export async function fetchDocumentCenterData(): Promise<DocumentCenterData> {
+function filterByEvent<T extends { event_id: string | null }>(rows: T[], eventId?: string | null) {
+  if (!eventId) return rows;
+  return rows.filter((row) => row.event_id === eventId || row.event_id === null);
+}
+
+export async function fetchDocumentCenterData(eventId?: string | null): Promise<DocumentCenterData> {
   const [profileRes, templatesRes, historyRes] = await Promise.all([
-    supabase.from('document_project_profiles').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('document_project_profiles').select('*').order('updated_at', { ascending: false }),
     supabase.from('document_templates').select('*').order('created_at', { ascending: false }),
     supabase.from('generated_documents').select('*').order('generated_at', { ascending: false }).order('created_at', { ascending: false }).limit(80),
   ]);
   if (profileRes.error) throw profileRes.error;
   if (templatesRes.error) throw templatesRes.error;
   if (historyRes.error) throw historyRes.error;
-  const profile = profileRes.data as DocumentProjectProfile | null;
+  const profiles = filterByEvent((profileRes.data ?? []) as DocumentProjectProfile[], eventId);
+  const profile = profiles[0] ?? null;
   const profileId = profile?.id;
   const [budgetRes, scheduleRes, venuesRes, equipmentRes] = profileId ? await Promise.all([
     supabase.from('document_budget_items').select('*').eq('project_profile_id', profileId).order('created_at'),
@@ -32,12 +38,12 @@ export async function fetchDocumentCenterData(): Promise<DocumentCenterData> {
   if (equipmentRes.error) throw equipmentRes.error;
   return {
     profile,
-    templates: (templatesRes.data ?? []) as DocumentTemplate[],
+    templates: filterByEvent((templatesRes.data ?? []) as DocumentTemplate[], eventId),
     budgetItems: (budgetRes.data ?? []) as DocumentBudgetItem[],
     scheduleItems: (scheduleRes.data ?? []) as DocumentScheduleItem[],
     venues: (venuesRes.data ?? []) as DocumentVenue[],
     equipmentItems: (equipmentRes.data ?? []) as DocumentEquipmentItem[],
-    history: (historyRes.data ?? []) as GeneratedDocument[],
+    history: filterByEvent((historyRes.data ?? []) as GeneratedDocument[], eventId),
   };
 }
 
@@ -50,7 +56,18 @@ export async function saveProjectProfile(input: {
 }) {
   const { data: profile, error } = await supabase.rpc('save_document_project_profile', { input_data: input });
   if (error) throw error;
-  return profile as DocumentProjectProfile;
+  const saved = profile as DocumentProjectProfile;
+  if ('event_id' in input.profile && saved.id) {
+    const { data: updated, error: updateError } = await supabase
+      .from('document_project_profiles')
+      .update({ event_id: input.profile.event_id ?? null })
+      .eq('id', saved.id)
+      .select('*')
+      .single();
+    if (updateError) throw updateError;
+    return updated as DocumentProjectProfile;
+  }
+  return saved;
 }
 
 export async function uploadDocumentTemplate(input: {
@@ -60,6 +77,7 @@ export async function uploadDocumentTemplate(input: {
   file: File;
   placeholders: string[];
   is_active: boolean;
+  event_id?: string | null;
 }) {
   const userId = await currentUserId();
   const safeName = input.file.name.replace(/[^\wก-๙.-]+/g, '-');
@@ -78,6 +96,7 @@ export async function uploadDocumentTemplate(input: {
     storage_path: storagePath,
     placeholders: input.placeholders,
     is_active: input.is_active,
+    event_id: input.event_id ?? null,
     created_by: userId,
   }).select('*').single();
   if (error) {
@@ -134,10 +153,22 @@ export async function recordGeneratedDocument(input: {
   snapshot_data: Record<string, unknown>;
   missing_fields: string[];
   preview_html: string;
+  event_id?: string | null;
 }) {
   const { data, error } = await supabase.rpc('create_generated_document_record', { input_data: input });
   if (error) throw error;
-  return data as GeneratedDocument;
+  const row = data as GeneratedDocument;
+  if (input.event_id !== undefined && row.id) {
+    const { data: updated, error: updateError } = await supabase
+      .from('generated_documents')
+      .update({ event_id: input.event_id })
+      .eq('id', row.id)
+      .select('*')
+      .single();
+    if (updateError) throw updateError;
+    return updated as GeneratedDocument;
+  }
+  return row;
 }
 
 export async function downloadGeneratedDocument(row: GeneratedDocument) {

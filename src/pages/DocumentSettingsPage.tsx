@@ -1,6 +1,7 @@
 import { Plus, Save, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -8,6 +9,7 @@ import { Input } from '../components/ui/Input';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Select } from '../components/ui/Select';
 import { Toast, ToastState } from '../components/ui/Toast';
+import { useEventContext } from '../context/EventContext';
 import { durationMinutes, timeRange } from '../lib/documentGeneration';
 import type { DocumentBudgetItem, DocumentEquipmentItem, DocumentProjectProfile, DocumentScheduleItem, DocumentVenue, EquipmentStatus } from '../lib/documentTypes';
 import { useAsync } from '../hooks/useAsync';
@@ -23,7 +25,8 @@ const blankProfile: Partial<DocumentProjectProfile> = {
 const equipmentStatuses: EquipmentStatus[] = ['draft', 'requested', 'borrowed', 'returned', 'incomplete'];
 
 export function DocumentSettingsPage() {
-  const state = useAsync(fetchDocumentCenterData, []);
+  const { currentEventId } = useEventContext();
+  const state = useAsync(() => fetchDocumentCenterData(currentEventId), [currentEventId]);
   const [profile, setProfile] = useState<Partial<DocumentProjectProfile>>(blankProfile);
   const [budgetItems, setBudgetItems] = useState<Array<Partial<DocumentBudgetItem>>>([]);
   const [scheduleItems, setScheduleItems] = useState<Array<Partial<DocumentScheduleItem>>>([]);
@@ -50,7 +53,7 @@ export function DocumentSettingsPage() {
     if (scheduleErrors.length) return setToast({ type: 'error', message: scheduleErrors[0] });
     try {
       setSaving(true);
-      await saveProjectProfile({ profile, budgetItems, scheduleItems: scheduleItems.map((item) => ({ ...item, time_range: timeRange(item.start_time, item.end_time), duration_minutes: durationMinutes(item.start_time, item.end_time) })), venues, equipmentItems });
+      await saveProjectProfile({ profile: { ...profile, event_id: currentEventId }, budgetItems, scheduleItems: scheduleItems.map((item) => ({ ...item, time_range: timeRange(item.start_time, item.end_time), duration_minutes: durationMinutes(item.start_time, item.end_time) })), venues, equipmentItems });
       setToast({ type: 'success', message: 'บันทึกข้อมูลศูนย์เอกสารแล้ว' });
       await state.reload();
     } catch (err) {
@@ -63,7 +66,7 @@ export function DocumentSettingsPage() {
   return (
     <section className="page-stack">
       <Toast toast={toast} />
-      <PageHeader eyebrow="Document Center" title="ตั้งค่าโครงการ" description="ข้อมูลนี้จะถูกนำไปเติมใน DOCX template ด้วย placeholder มาตรฐานตัวพิมพ์เล็ก" />
+      <PageHeader eyebrow="Document Center" title="ตั้งค่าโครงการ" description="ข้อมูลนี้จะถูกนำไปเติมใน DOCX template ด้วย placeholder มาตรฐานตัวพิมพ์เล็ก" meta={<EventSwitcher compact />} />
       {state.loading ? <LoadingSkeleton /> : null}
       <Card className="form-grid two-col">
         <Input label="ชื่อโครงการ {project_name}" value={profile.project_name ?? ''} onChange={(event) => setProfile({ ...profile, project_name: event.target.value })} />

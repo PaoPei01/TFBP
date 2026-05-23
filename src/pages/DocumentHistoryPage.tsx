@@ -1,10 +1,12 @@
 import { Download, History } from 'lucide-react';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Toast, ToastState } from '../components/ui/Toast';
+import { useEventContext } from '../context/EventContext';
 import { documentTypeLabel, downloadBlob } from '../lib/documentGeneration';
 import { useAsync } from '../hooks/useAsync';
 import { downloadGeneratedDocument, fetchDocumentCenterData } from '../services/documents';
@@ -12,7 +14,8 @@ import { errorMessage } from '../utils/error';
 import { useState } from 'react';
 
 export function DocumentHistoryPage() {
-  const state = useAsync(fetchDocumentCenterData, []);
+  const { currentEventId } = useEventContext();
+  const state = useAsync(() => fetchDocumentCenterData(currentEventId), [currentEventId]);
   const [toast, setToast] = useState<ToastState>(null);
   const history = state.data?.history ?? [];
 
@@ -28,7 +31,7 @@ export function DocumentHistoryPage() {
   return (
     <section className="page-stack">
       <Toast toast={toast} />
-      <PageHeader eyebrow="Document Center" title="ประวัติเอกสาร" description="ดาวน์โหลดไฟล์ DOCX ที่เคย generate จาก private Supabase Storage" />
+      <PageHeader eyebrow="Document Center" title="ประวัติเอกสาร" description="ดาวน์โหลดไฟล์ DOCX ที่เคย generate จาก private Supabase Storage" meta={<EventSwitcher compact />} />
       {state.loading ? <LoadingSkeleton /> : null}
       <ResponsiveDataTable
         rows={history}

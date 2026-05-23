@@ -43,16 +43,21 @@ function cleanAnnouncement(input: AnnouncementInput) {
   return 'event_id' in input ? { ...payload, event_id: input.event_id ?? null } : payload;
 }
 
-export async function fetchPublicAnnouncements() {
-  const { data, error } = await supabase.rpc('get_visible_announcements', { input_audience: 'public' });
-  if (error) throw error;
-  return (data ?? []) as Announcement[];
+function filterByEvent<T extends { event_id: string | null }>(rows: T[], eventId?: string | null) {
+  if (!eventId) return rows;
+  return rows.filter((row) => row.event_id === eventId || row.event_id === null);
 }
 
-export async function fetchStaffAnnouncements() {
+export async function fetchPublicAnnouncements(eventId?: string | null) {
+  const { data, error } = await supabase.rpc('get_visible_announcements', { input_audience: 'public' });
+  if (error) throw error;
+  return filterByEvent((data ?? []) as Announcement[], eventId);
+}
+
+export async function fetchStaffAnnouncements(eventId?: string | null) {
   const { data, error } = await supabase.rpc('get_visible_announcements', { input_audience: 'staff' });
   if (error) throw error;
-  return (data ?? []) as Announcement[];
+  return filterByEvent((data ?? []) as Announcement[], eventId);
 }
 
 export async function fetchAnnouncement(id: string) {
@@ -61,10 +66,10 @@ export async function fetchAnnouncement(id: string) {
   return data as Announcement | null;
 }
 
-export async function fetchAdminAnnouncements() {
+export async function fetchAdminAnnouncements(eventId?: string | null) {
   const { data, error } = await supabase.from('announcements').select('*').order('is_pinned', { ascending: false }).order('updated_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Announcement[];
+  return filterByEvent((data ?? []) as Announcement[], eventId);
 }
 
 export async function saveAnnouncement(input: AnnouncementInput) {

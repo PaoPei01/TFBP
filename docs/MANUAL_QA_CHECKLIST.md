@@ -68,6 +68,8 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Open announcement detail.
 - [ ] Image/file links, if present, open correctly.
 - [ ] Staff-only/admin-only announcements are not visible publicly.
+- [ ] Admin announcements can be filtered by selected event plus global rows.
+- [ ] Public announcements still load with the existing default behavior.
 
 ## Guide
 
@@ -172,7 +174,7 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Admin can edit event name, status, visibility, dates, and location.
 - [ ] EventSwitcher appears on admin dashboard and admin event pages.
 - [ ] Changing EventSwitcher selection persists after reload on the same device.
-- [ ] Switching events does not redirect or change legacy public search, attendance, documents, or announcements yet.
+- [ ] Switching events does not redirect or change legacy public search; admin attendance, announcements, and documents use the selected event where implemented.
 - [ ] Admin can open `/admin/events/:eventId/applications` from the parent orientation event.
 - [ ] Application review shows duty summary, waitlisted count, rejected count, and approved applicants missing final duty.
 - [ ] Filters work for status, final duty, preferred duty, year level, major, rehearsal availability, and event day availability.
@@ -348,7 +350,10 @@ Use this checklist before real event operations and after every production-readi
 ## Announcements Admin
 
 - [ ] Open `/admin/announcements`.
+- [ ] EventSwitcher appears on `/admin/announcements`.
 - [ ] Create announcement.
+- [ ] Assign announcement to the current event.
+- [ ] Assign announcement to global/ทุกกิจกรรม.
 - [ ] Upload image/PDF if supported.
 - [ ] Public announcement appears on public page.
 - [ ] Staff-only announcement does not appear publicly.
@@ -378,14 +383,19 @@ Use this checklist before real event operations and after every production-readi
 
 - [ ] Open `/admin/documents`.
 - [ ] Existing Document Center data still loads after nullable `event_id` is added.
+- [ ] EventSwitcher appears on Document Center pages.
+- [ ] Switching event reloads project profile, templates, and generated history without breaking legacy data.
 - [ ] Open settings.
 - [ ] Save project settings.
+- [ ] Saved project settings are associated with the selected event.
 - [ ] Add budget item.
 - [ ] Add schedule item.
 - [ ] Add venue.
 - [ ] Add equipment.
 - [ ] Open templates.
 - [ ] Upload valid `.docx`.
+- [ ] Uploaded template is associated with the selected event.
+- [ ] Global templates remain visible across event selections when present.
 - [ ] Invalid file type is rejected.
 - [ ] Placeholder detection is visible.
 - [ ] Missing placeholder warnings are clear.
@@ -393,6 +403,7 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Select template.
 - [ ] Preview escapes HTML/script-like content.
 - [ ] Generate document.
+- [ ] Generated document history row is associated with the selected event.
 - [ ] Generated version is server-assigned.
 - [ ] Download generated DOCX.
 - [ ] Open history.

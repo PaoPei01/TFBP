@@ -243,13 +243,17 @@ Completed in compatibility pass:
   - `generated_documents`
 - Backfilled existing null rows to the default event when available.
 - Added TypeScript type support for `event_id` in announcements/documents.
+- Updated announcement services and admin announcement pages to filter by current event plus global rows, while leaving public announcements on the existing default behavior.
+- Added event selection to announcement edit/create so admins can choose a specific event or global visibility.
+- Updated Document Center data loading to use the current event plus global rows for project profiles, templates, and generated document history.
+- New document templates and generated document records are associated with the selected event through admin-safe writes without changing Storage paths or the DOCX generation RPC contract.
+- Added EventSwitcher to Document Center overview, settings, templates, generate, and history pages.
 
 Deferred:
 
-- Filtering public/admin announcements by current event.
-- Event-aware Document Center selection.
 - Event namespaced Storage paths.
-- Deciding global vs event-scoped templates in UI.
+- Dedicated public event announcement routes.
+- A richer global vs event-specific template management UI.
 
 ## P7: Full Legacy Route Migration
 

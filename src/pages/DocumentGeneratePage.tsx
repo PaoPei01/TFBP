@@ -1,5 +1,6 @@
 import { Download, Eye } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Badge } from '../components/ui/Badge';
@@ -9,6 +10,7 @@ import { Input } from '../components/ui/Input';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Select } from '../components/ui/Select';
 import { Toast, ToastState } from '../components/ui/Toast';
+import { useEventContext } from '../context/EventContext';
 import { buildDocumentData, documentTypeLabel, downloadBlob, findMissingFields, renderDocxBlob, renderPreviewHtml } from '../lib/documentGeneration';
 import type { DocumentType } from '../lib/documentTypes';
 import { useAsync } from '../hooks/useAsync';
@@ -16,7 +18,8 @@ import { downloadTemplateBuffer, fetchDocumentCenterData, recordGeneratedDocumen
 import { errorMessage } from '../utils/error';
 
 export function DocumentGeneratePage() {
-  const state = useAsync(fetchDocumentCenterData, []);
+  const { currentEventId } = useEventContext();
+  const state = useAsync(() => fetchDocumentCenterData(currentEventId), [currentEventId]);
   const [templateId, setTemplateId] = useState('');
   const [documentType, setDocumentType] = useState<DocumentType>('project_approval');
   const [title, setTitle] = useState('');
@@ -52,6 +55,7 @@ export function DocumentGeneratePage() {
         snapshot_data: payload,
         missing_fields: missing.map((item) => item.field),
         preview_html: html,
+        event_id: currentEventId,
       });
       const fileName = `${fileTitle.replace(/[^\wก-๙.-]+/g, '-')}_v${reserved.version}.docx`;
       const buffer = await downloadTemplateBuffer(template);
@@ -72,6 +76,7 @@ export function DocumentGeneratePage() {
         snapshot_data: payload,
         missing_fields: missing.map((item) => item.field),
         preview_html: html,
+        event_id: currentEventId,
       });
       setToast({ type: 'success', message: `สร้าง DOCX v${reserved.version} และบันทึกลง Storage แล้ว` });
       await state.reload();
@@ -89,6 +94,7 @@ export function DocumentGeneratePage() {
         eyebrow="Document Center"
         title="Generate DOCX"
         description="เลือกประเภทเอกสาร ตรวจข้อมูลที่ขาด ดูตัวอย่าง และดาวน์โหลดไฟล์"
+        meta={<EventSwitcher compact />}
         actions={<HelpButton topicId="documents.generate" variant="link" />}
       />
       {state.loading ? <LoadingSkeleton /> : null}

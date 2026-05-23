@@ -1,5 +1,6 @@
 import { FileUp, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
@@ -9,6 +10,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Select } from '../components/ui/Select';
 import { Toast, ToastState } from '../components/ui/Toast';
+import { useEventContext } from '../context/EventContext';
 import { documentTypeLabel, documentTypeOptions, extractDocxPlaceholders, templateVariableGuide } from '../lib/documentGeneration';
 import type { DocumentTemplate, DocumentType } from '../lib/documentTypes';
 import { useAsync } from '../hooks/useAsync';
@@ -16,7 +18,8 @@ import { deleteDocumentTemplate, fetchDocumentCenterData, uploadDocumentTemplate
 import { errorMessage } from '../utils/error';
 
 export function DocumentTemplatesPage() {
-  const state = useAsync(fetchDocumentCenterData, []);
+  const { currentEventId } = useEventContext();
+  const state = useAsync(() => fetchDocumentCenterData(currentEventId), [currentEventId]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [documentType, setDocumentType] = useState<DocumentType>('project_approval');
@@ -55,6 +58,7 @@ export function DocumentTemplatesPage() {
         file,
         placeholders,
         is_active: active,
+        event_id: currentEventId,
       });
       setToast({ type: 'success', message: `อัปโหลด template แล้ว พบ placeholder ${placeholders.length} ช่อง` });
       setName('');
@@ -84,6 +88,7 @@ export function DocumentTemplatesPage() {
         eyebrow="Document Center"
         title="DOCX Templates"
         description="ใช้ docxtemplater syntax ตัวพิมพ์เล็ก เช่น {project_name}, {event_date_th}, {#schedule_items}{time_range} {title}{/schedule_items}"
+        meta={<EventSwitcher compact />}
         actions={<HelpButton topicId="documents.templates" variant="link" />}
       />
       <Card className="template-upload-card" variant="soft">
@@ -135,6 +140,7 @@ export function DocumentTemplatesPage() {
           { key: 'type', header: 'ประเภท', render: (row) => documentTypeLabel(row.document_type) },
           { key: 'placeholders', header: 'Placeholders', render: (row) => <span>{row.placeholders.slice(0, 8).join(', ') || '-'}</span> },
           { key: 'active', header: 'สถานะ', render: (row) => row.is_active ? 'active' : 'inactive' },
+          { key: 'event', header: 'กิจกรรม', render: (row) => row.event_id ? 'กิจกรรมนี้' : 'ใช้ได้ทุกกิจกรรม' },
           { key: 'created', header: 'สร้างเมื่อ', render: (row) => row.created_at ? new Date(row.created_at).toLocaleString('th-TH') : '-' },
           { key: 'actions', header: 'จัดการ', render: (row) => <Button variant="danger" icon={<Trash2 size={16} />} onClick={() => remove(row)}>ลบ</Button> },
         ]}
