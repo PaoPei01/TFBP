@@ -35,6 +35,7 @@ const PendingRequestsPage = lazy(() => import('./pages/PendingRequestsPage').the
 const AdminEventsPage = lazy(() => import('./pages/AdminEventsPage').then((module) => ({ default: module.AdminEventsPage })));
 const AdminEventDetailPage = lazy(() => import('./pages/AdminEventDetailPage').then((module) => ({ default: module.AdminEventDetailPage })));
 const AdminEventApplicationsPage = lazy(() => import('./pages/AdminEventApplicationsPage').then((module) => ({ default: module.AdminEventApplicationsPage })));
+const AdminPeoplePage = lazy(() => import('./pages/AdminPeoplePage').then((module) => ({ default: module.AdminPeoplePage })));
 const AdminStaffAttendancePage = lazy(() => import('./pages/AdminStaffAttendancePage').then((module) => ({ default: module.AdminStaffAttendancePage })));
 const AdminStaffAttendanceSessionPage = lazy(() => import('./pages/AdminStaffAttendanceSessionPage').then((module) => ({ default: module.AdminStaffAttendanceSessionPage })));
 const StaffAttendancePage = lazy(() => import('./pages/StaffAttendancePage').then((module) => ({ default: module.StaffAttendancePage })));
@@ -103,6 +104,7 @@ export function App() {
           <Route path="admin/staff/import" element={<Suspense fallback={<LoadingSkeleton />}><StaffImportPage /></Suspense>} />
           <Route path="admin/staff/operations" element={<Suspense fallback={<LoadingSkeleton />}><StaffOperationsPage /></Suspense>} />
           <Route path="admin/staff/requests" element={<Suspense fallback={<LoadingSkeleton />}><StaffEditRequestsPage /></Suspense>} />
+          <Route path="admin/people" element={<Suspense fallback={<LoadingSkeleton />}><AdminPeoplePage /></Suspense>} />
           <Route path="admin/people/import-year2" element={<Suspense fallback={<LoadingSkeleton />}><Year2PeopleImportPage /></Suspense>} />
           <Route path="admin/documents" element={<Suspense fallback={<LoadingSkeleton />}><DocumentCenterPage /></Suspense>} />
           <Route path="admin/documents/settings" element={<Suspense fallback={<LoadingSkeleton />}><DocumentSettingsPage /></Suspense>} />

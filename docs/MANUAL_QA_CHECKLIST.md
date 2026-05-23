@@ -225,6 +225,30 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Confirm imported rows do not alter `staff_profiles` directly.
 - [ ] Confirm public pages do not expose imported `people` rows.
 
+## Admin People Directory
+
+- [ ] Migration `202605230009_people_admin_directory_health.sql` applies successfully.
+- [ ] Open `/admin/people` as admin.
+- [ ] Public/non-admin users cannot access `/admin/people`.
+- [ ] Summary cards show total people, year 2 Excel rows, legacy source counts, linked profile/staff counts, staff applicants, and incomplete contact counts.
+- [ ] Search by student ID works.
+- [ ] Search by Thai name, English name, nickname, email, and phone works.
+- [ ] Source filter works.
+- [ ] Year level filter works.
+- [ ] Major filter works.
+- [ ] Has staff profile filter works.
+- [ ] Has participant profile filter works.
+- [ ] Has staff application filter works.
+- [ ] Missing email/phone/student ID filter works.
+- [ ] Data Health panel shows duplicate student ID/email/phone counts.
+- [ ] Data Health panel shows missing student ID/email/phone counts.
+- [ ] Data Health panel shows unlinked `staff_profiles`, `profiles`, and `staff_applications` counts.
+- [ ] Data Health panel shows skipped year2 staging row count if available.
+- [ ] No medical condition, drug allergy, or food allergy appears anywhere on `/admin/people`.
+- [ ] Mobile cards show name, student ID, major/year, source, and linked badges without horizontal scroll.
+- [ ] Detail sections expand on mobile and are not covered by bottom nav.
+- [ ] Existing public routes still do not expose `people`.
+
 ## Pending Participant Requests
 
 - [ ] Open `/admin/requests`.

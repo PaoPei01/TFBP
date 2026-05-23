@@ -979,6 +979,16 @@ a {
   flex-wrap: wrap;
 }
 
+.health-issue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.health-issue-card {
+  min-width: 0;
+}
+
 .sticky-action-bar {
   position: sticky;
   bottom: calc(var(--mobile-bottom-nav-height) + 0.65rem + var(--safe-bottom));

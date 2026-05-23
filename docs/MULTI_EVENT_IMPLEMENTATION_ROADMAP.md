@@ -115,6 +115,29 @@ Year 2 import safety checklist:
 - [ ] health fields are not imported to `people`
 - [ ] public pages do not expose imported `people`
 
+Completed in People Directory/Data Health pass:
+
+- Added additive migration `202605230009_people_admin_directory_health.sql`.
+- Added admin-only read RPCs:
+  - `get_people_admin_summary()`
+  - `search_admin_people(input)`
+  - `get_people_data_health()`
+- Added `/admin/people` for the central people base.
+- Added search/filter by identity fields, source, year, major, link status, staff application status, and missing fields.
+- Added read-only people data health panel for duplicate, missing, unlinked, and skipped staging counts.
+- Kept public routes and legacy profile/staff behavior unchanged.
+
+People Directory QA checklist:
+
+- [ ] `/admin/people` loads for admins
+- [ ] public/non-admin users cannot access `/admin/people`
+- [ ] search by student ID works
+- [ ] source/year/major filters work
+- [ ] linked profile/staff/application filters work
+- [ ] duplicate/missing/linking counts appear
+- [ ] health data is not shown
+- [ ] mobile cards do not overflow
+
 Deferred from P2 until staging/dedupe review:
 
 - Running legacy-to-people linking in production without reviewing preview counts.

@@ -130,3 +130,17 @@ Do not delete production rows without first confirming whether they were inserte
 - [ ] `people.metadata` contains source context only, not health fields.
 - [ ] Public routes still work and do not expose imported `people` rows.
 - [ ] No `service_role` key is exposed in frontend code.
+
+## Inspect Imported People
+
+After import, open `/admin/people` as an admin.
+
+Use the People Directory to:
+
+- search by student ID, name, email, or phone.
+- filter `source = eng_year2_2569_excel`.
+- check missing student ID/email/phone counts.
+- confirm duplicate counts before using prefill heavily.
+- confirm no health fields appear in the admin directory.
+
+This page is read-only in this phase. It does not merge, delete, or write back to legacy `profiles` or `staff_profiles`.
