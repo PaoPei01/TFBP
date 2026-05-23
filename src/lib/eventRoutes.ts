@@ -20,6 +20,10 @@ export function adminEventPath(eventId = 'default') {
   return `/admin/events/${eventId}`;
 }
 
+export function adminEventApplicationsPath(eventId = 'default') {
+  return `${adminEventPath(eventId)}/applications`;
+}
+
 export function adminEventsPath() {
   return '/admin/events';
 }

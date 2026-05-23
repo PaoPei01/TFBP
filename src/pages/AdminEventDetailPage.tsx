@@ -12,7 +12,7 @@ import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
 import type { EventRecord, EventStatus, EventVisibility } from '../lib/eventTypes';
-import { eventPath } from '../lib/eventRoutes';
+import { adminEventApplicationsPath, eventPath } from '../lib/eventRoutes';
 import { fetchAdminEventById, updateAdminEvent } from '../services/events';
 import { errorMessage } from '../utils/error';
 
@@ -98,6 +98,7 @@ export function AdminEventDetailPage() {
         actions={(
           <>
             {event ? <Link className="btn btn-secondary" to={eventPath(event.slug)}><Eye size={17} />{language === 'th' ? 'ดูหน้าสาธารณะ' : 'Public page'}</Link> : null}
+            {event?.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationsPath(event.id)}>{language === 'th' ? 'ใบสมัคร' : 'Applications'}</Link> : null}
             <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
           </>
         )}

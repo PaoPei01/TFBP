@@ -168,19 +168,25 @@ Completed in lightweight pass:
 
 - Added `/admin/events/:eventId`.
 - Added admin event detail/edit page for event metadata, status, visibility, dates, and location.
+- Added `/admin/events/:eventId/applications` for staff recruitment review.
+- Added duty summary cards for total applications, waitlisted, rejected, and approved applicants missing a final duty.
+- Added approved-per-duty summary, filters by status/final duty/preferred duty/year/major/rehearsal/event-day availability, and quick final-duty assignment stored in `staff_applications.answers.final_duty`.
+- Added CSV export presets for all applications, approved only, by final duty, rehearsal list, contact list, and a clearly labeled full admin export that includes sensitive health/limitations text.
 - Added admin event service helpers:
   - `fetchAdminEventById(id)`
   - `updateAdminEvent(id, input)`
+  - `fetchAdminEventStaffApplications(eventId)`
+  - `updateAdminStaffApplicationReview(input)`
 - Kept legacy dashboards and event-scoped operations unchanged.
 
 Deferred:
 
 - Event CRUD create/delete.
 - Registration open/close controls beyond event status field.
-- Staff application review page.
 - Staff application approve/reject/waitlist actions.
 - Event switcher backed by accessible events.
 - Event-scoped attendance/documents/announcements.
+- Promoting approved applications into `event_staff`.
 
 ## P5: Event-Scoped Attendance
 

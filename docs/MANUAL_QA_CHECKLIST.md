@@ -54,7 +54,8 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Open `/events/parent-orientation-staff-2569/staff/apply`.
 - [ ] Staff application page asks for student ID, email, phone, duties, availability, rehearsal availability, event-day availability, optional experience, health limitations, note, and consent.
 - [ ] Staff application submit fails safely if staff recruiting is closed or identity is missing.
-- [ ] Neither public event form asks for medical information.
+- [ ] Participant registration does not ask for medical information.
+- [ ] Staff application health/limitations text is shown only inside the application form and admin review/export tools.
 - [ ] Old `/`, `/edit`, `/staff/attendance`, `/admin/dashboard`, and `/admin/documents` routes still work after applying multi-event foundation migrations.
 - [ ] Do not enable platform homepage redirects until event-scoped participant data is validated.
 
@@ -169,7 +170,13 @@ Use this checklist before real event operations and after every production-readi
 - [ ] `/admin/events` shows parent orientation staff recruitment after applying migrations.
 - [ ] Admin can open `/admin/events/:eventId`.
 - [ ] Admin can edit event name, status, visibility, dates, and location.
-- [ ] Staff application review page is not exposed yet in this pass.
+- [ ] Admin can open `/admin/events/:eventId/applications` from the parent orientation event.
+- [ ] Application review shows duty summary, waitlisted count, rejected count, and approved applicants missing final duty.
+- [ ] Filters work for status, final duty, preferred duty, year level, major, rehearsal availability, and event day availability.
+- [ ] Admin can assign a final duty from the dropdown and sees a success toast after saving.
+- [ ] Export presets work for all applications, approved only, by final duty, rehearsal list, contact list, and full admin export.
+- [ ] Contact list export does not include health/limitations fields.
+- [ ] Full admin export is clearly labeled as including sensitive/detail fields before use.
 - [ ] Event edit does not change legacy public search or attendance behavior.
 - [ ] Public/non-admin users cannot access `/admin/events`.
 - [ ] Existing `/admin/dashboard` still loads normally.

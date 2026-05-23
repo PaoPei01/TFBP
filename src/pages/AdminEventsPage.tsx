@@ -11,7 +11,7 @@ import { useAsync } from '../hooks/useAsync';
 import { DEFAULT_EVENT_SLUG } from '../lib/defaultEvent';
 import { formatBangkokDate } from '../lib/dateTime';
 import type { EventRecord } from '../lib/eventTypes';
-import { adminEventPath, eventPath } from '../lib/eventRoutes';
+import { adminEventApplicationsPath, adminEventPath, eventPath } from '../lib/eventRoutes';
 import { fetchAdminEvents } from '../services/events';
 
 function eventName(event: EventRecord, language: 'th' | 'en') {
@@ -87,6 +87,7 @@ export function AdminEventsPage() {
           mobileActions={(row) => (
             <div className="event-card-actions">
               <Link className="btn btn-secondary" to={adminEventPath(row.id)}>{language === 'th' ? 'จัดการ' : 'Manage'}</Link>
+              {row.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationsPath(row.id)}>{language === 'th' ? 'ใบสมัคร' : 'Applications'}</Link> : null}
             </div>
           )}
           columns={[
@@ -98,6 +99,7 @@ export function AdminEventsPage() {
             { key: 'action', header: '', render: (row) => (
               <div className="table-action-row">
                 <Link className="btn btn-secondary" to={adminEventPath(row.id)}>{language === 'th' ? 'จัดการ' : 'Manage'}</Link>
+                {row.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationsPath(row.id)}>{language === 'th' ? 'ใบสมัคร' : 'Applications'}</Link> : null}
               </div>
             ), align: 'right' },
           ]}
