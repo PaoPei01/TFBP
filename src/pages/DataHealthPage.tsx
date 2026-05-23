@@ -11,7 +11,7 @@ import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
-import { runUnifiedDataHealthRepair, validateDataIntegrity, type DataHealthIssue, type DataHealthRepairAction } from '../services/dataHealth';
+import { fetchPeopleNameNicknameConflicts, runUnifiedDataHealthRepair, validateDataIntegrity, type DataHealthIssue, type DataHealthRepairAction } from '../services/dataHealth';
 import { errorMessage } from '../utils/error';
 
 type DetailRow = Record<string, unknown> & {
@@ -52,6 +52,7 @@ const repairActions = [
 export function DataHealthPage() {
   const { language } = useLanguage();
   const state = useAsync(validateDataIntegrity, []);
+  const nameNicknameState = useAsync(fetchPeopleNameNicknameConflicts, []);
   const [toast, setToast] = useState<ToastState>(null);
   const [confirmAction, setConfirmAction] = useState<(typeof repairActions)[number] | null>(null);
   const data = state.data;
@@ -62,6 +63,7 @@ export function DataHealthPage() {
   const detailRows: DetailRow[] = Object.entries(data?.details ?? {}).flatMap(([type, rows]) =>
     rows.map((row, index) => ({ id: `${type}-${index}`, type, ...row })),
   );
+  const nameNicknameRows = nameNicknameState.data ?? [];
 
   async function runAction() {
     if (!confirmAction) return;
@@ -115,6 +117,31 @@ export function DataHealthPage() {
               <DashboardStatCard key={key} label={language === 'th' ? label.th : label.en} value={data.summary[key] ?? 0} icon={<ShieldCheck size={20} />} />
             ))}
           </div>
+
+          <Card className="event-detail-card" variant={nameNicknameRows.length ? 'warning' : 'soft'}>
+            <div className="mobile-row-head">
+              <div>
+                <p className="eyebrow">{language === 'th' ? 'คุณภาพชื่อบุคคล' : 'Person name quality'}</p>
+                <h2>{language === 'th' ? 'ชื่อ-นามสกุลซ้ำกับชื่อเล่น' : 'Full name matches nickname'}</h2>
+                <p className="muted">{language === 'th' ? 'รายการนี้เป็นสัญญาณเตือนจากฐานข้อมูลกลางเท่านั้น ระบบจะไม่แก้ข้อมูลให้อัตโนมัติ' : 'This is a warning from the central people database. The system will not auto-fix these records.'}</p>
+              </div>
+              <Badge status={nameNicknameRows.length ? 'pending' : 'approved'}>{String(nameNicknameRows.length)}</Badge>
+            </div>
+            {nameNicknameState.error ? <p className="field-error">{nameNicknameState.error}</p> : null}
+            <ResponsiveDataTable
+              rows={nameNicknameRows.slice(0, 50)}
+              getKey={(row) => row.id}
+              emptyText={language === 'th' ? 'ไม่พบชื่อ-นามสกุลที่ซ้ำกับชื่อเล่น' : 'No full-name/nickname conflicts found'}
+              mobileTitle={(row) => row.name_th || row.name_en || '-'}
+              mobileSubtitle={(row) => `${language === 'th' ? 'ชื่อเล่น' : 'Nickname'}: ${row.nickname || row.nickname_th || row.nickname_en || '-'} · ${row.student_id ?? '-'}`}
+              columns={[
+                { key: 'student_id', header: language === 'th' ? 'รหัสนักศึกษา' : 'Student ID', render: (row) => row.student_id ?? '-' },
+                { key: 'full_name', header: language === 'th' ? 'ชื่อ-นามสกุล' : 'Full name', render: (row) => row.name_th || row.name_en || '-' },
+                { key: 'nickname', header: language === 'th' ? 'ชื่อเล่น' : 'Nickname', render: (row) => row.nickname || row.nickname_th || row.nickname_en || '-' },
+                { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => row.major ?? '-' },
+              ]}
+            />
+          </Card>
 
           <Card className="repair-action-panel" variant="soft">
             <div className="repair-action-head">

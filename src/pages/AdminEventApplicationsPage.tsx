@@ -78,7 +78,15 @@ function isPromoted(row: AdminStaffApplicationRow) {
 }
 
 function applicantName(row: AdminStaffApplicationRow) {
-  return row.people?.nickname || row.people?.name_th || row.people?.name_en || row.requested_name_th || row.people?.student_id || row.requested_student_id || 'ผู้สมัคร';
+  return row.people?.name_th || row.people?.name_en || row.requested_name_th || (row.people ? 'ไม่พบชื่อ-นามสกุล' : row.requested_student_id) || 'ผู้สมัคร';
+}
+
+function applicantNickname(row: AdminStaffApplicationRow) {
+  return row.people?.nickname || row.people?.nickname_th || row.people?.nickname_en || '';
+}
+
+function hasNicknameWithoutFullName(row: AdminStaffApplicationRow) {
+  return Boolean(row.people && !row.people.name_th && !row.people.name_en && applicantNickname(row));
 }
 
 function identityStatusLabel(status: string, language: 'th' | 'en') {
@@ -624,11 +632,17 @@ export function AdminEventApplicationsPage() {
             getKey={(row) => row.id}
             emptyText={language === 'th' ? 'ไม่พบใบสมัครตามตัวกรอง' : 'No applications match the filters'}
             mobileTitle={(row) => applicantName(row)}
-            mobileSubtitle={(row) => `${getApplicationStatusLabel(row.status, language)} · ${identityStatusLabel(row.identity_status ?? 'unverified', language)} · ${row.people?.major ?? row.requested_major ?? '-'}`}
+            mobileSubtitle={(row) => `${applicantNickname(row) ? `${language === 'th' ? 'ชื่อเล่น' : 'Nickname'}: ${applicantNickname(row)} · ` : ''}${getApplicationStatusLabel(row.status, language)} · ${identityStatusLabel(row.identity_status ?? 'unverified', language)} · ${row.people?.major ?? row.requested_major ?? '-'}`}
             mobileMeta={(row) => formatBangkokDateTime(row.submitted_at, language)}
             mobileActions={(row) => actionButtons(row, true)}
             columns={[
-              { key: 'name', header: language === 'th' ? 'ผู้สมัคร' : 'Applicant', render: (row) => <strong>{applicantName(row)}</strong>, priority: 'primary' },
+              { key: 'name', header: language === 'th' ? 'ผู้สมัคร' : 'Applicant', render: (row) => (
+                <div className="application-duty-stack">
+                  <strong>{applicantName(row)}</strong>
+                  {applicantNickname(row) ? <small>{language === 'th' ? `ชื่อเล่น: ${applicantNickname(row)}` : `Nickname: ${applicantNickname(row)}`}</small> : null}
+                  {hasNicknameWithoutFullName(row) ? <small className="field-error">{language === 'th' ? 'ข้อมูลนี้มีชื่อเล่น แต่ไม่มีชื่อ-นามสกุลในฐานข้อมูลกลาง' : 'Nickname exists, but full name is missing in the central database.'}</small> : null}
+                </div>
+              ), priority: 'primary' },
               { key: 'year', header: language === 'th' ? 'ชั้นปี' : 'Year', render: (row) => row.people?.year_level ?? '-' },
               { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => row.people?.major ?? '-' },
               { key: 'identity', header: language === 'th' ? 'ตัวตน' : 'Identity', render: (row) => <Badge status={identityTone(row.identity_status ?? 'unverified')}>{identityStatusLabel(row.identity_status ?? 'unverified', language)}</Badge> },
@@ -788,11 +802,17 @@ export function AdminEventApplicationsPage() {
                   <div className="mobile-row-head">
                     <div>
                       <strong>{applicantName(detailRow)}</strong>
-                      <span>{detailRow.people?.student_id ?? detailRow.requested_student_id ?? '-'} · {detailRow.people?.major ?? detailRow.requested_major ?? '-'} · {detailRow.people?.year_level ?? '-'}</span>
+                      <span>{applicantNickname(detailRow) ? `${language === 'th' ? 'ชื่อเล่น' : 'Nickname'}: ${applicantNickname(detailRow)} · ` : ''}{detailRow.people?.student_id ?? detailRow.requested_student_id ?? '-'} · {detailRow.people?.major ?? detailRow.requested_major ?? '-'} · {detailRow.people?.year_level ?? '-'}</span>
                     </div>
                     <Badge status={getApplicationStatusTone(detailRow.status)}>{getApplicationStatusLabel(detailRow.status, language)}</Badge>
                   </div>
                 </Card>
+                {hasNicknameWithoutFullName(detailRow) ? (
+                  <Card variant="warning">
+                    <strong>{language === 'th' ? 'ข้อมูลนี้มีชื่อเล่น แต่ไม่มีชื่อ-นามสกุลในฐานข้อมูลกลาง' : 'This record has a nickname but no full name.'}</strong>
+                    <p>{language === 'th' ? 'ควรตรวจข้อมูลนำเข้าหรือคำร้องแก้ไขข้อมูลก่อนใช้งานจริง' : 'Review imported data or update requests before real operations.'}</p>
+                  </Card>
+                ) : null}
                 <div className="application-detail-grid">
                   <span>{language === 'th' ? 'สถานะตัวตน' : 'Identity status'}</span><strong>{identityStatusLabel(detailRow.identity_status ?? 'unverified', language)}</strong>
                   <span>{language === 'th' ? 'CMU Mail ที่ผู้สมัครกรอก' : 'Requested CMU Mail'}</span><strong>{detailRow.requested_email ?? '-'}</strong>

@@ -141,9 +141,18 @@ export type PersonApplicationLookupResult = {
   requires_update_request: boolean;
   message_th?: string;
   safe_person?: {
+    person_id?: string;
     student_id: string | null;
-    display_name: string | null;
+    name_th?: string | null;
+    name_en?: string | null;
+    full_name_th?: string | null;
+    full_name_en?: string | null;
+    display_full_name?: string | null;
+    display_name?: string | null;
     nickname: string | null;
+    nickname_th?: string | null;
+    nickname_en?: string | null;
+    display_nickname?: string | null;
     major: string | null;
     year_level: number | null;
     masked_email: string | null;
@@ -276,6 +285,8 @@ export type AdminStaffApplicationRow = {
     name_th: string | null;
     name_en: string | null;
     nickname: string | null;
+    nickname_th: string | null;
+    nickname_en: string | null;
     email: string | null;
     phone: string | null;
     major: string | null;
@@ -441,7 +452,7 @@ export async function fetchAdminEventOverview(eventId: string): Promise<AdminEve
 export async function fetchAdminEventStaffApplications(eventId: string): Promise<AdminStaffApplicationRow[]> {
   const { data, error } = await supabase
     .from('staff_applications')
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,nickname_th,nickname_en,email,phone,major,year_level)')
     .eq('event_id', eventId)
     .order('submitted_at', { ascending: false });
   if (error) throw error;
@@ -494,7 +505,7 @@ export async function updateAdminStaffApplicationReview(input: {
     const row = reviewed as AdminStaffApplicationRow;
     const { data, error } = await supabase
       .from('staff_applications')
-      .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+      .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,nickname_th,nickname_en,email,phone,major,year_level)')
       .eq('id', row.id)
       .single();
     if (error) throw error;
@@ -508,7 +519,7 @@ export async function updateAdminStaffApplicationReview(input: {
     .from('staff_applications')
     .update(payload)
     .eq('id', input.id)
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,nickname_th,nickname_en,email,phone,major,year_level)')
     .single();
   if (error) throw error;
   return data as unknown as AdminStaffApplicationRow;
@@ -528,7 +539,7 @@ export async function updateAdminStaffApplicationAssignment(input: {
   const row = assigned as AdminStaffApplicationRow;
   const { data, error } = await supabase
     .from('staff_applications')
-    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,email,phone,major,year_level)')
+    .select('id,event_id,person_id,preferred_role,preferred_team,availability,experience,motivation,status,submitted_at,reviewed_by,reviewed_at,review_note,answers,identity_status,identity_review_note,requested_email,requested_phone,requested_student_id,requested_name_th,requested_name_en,requested_major,update_request_id,assigned_duty,assignment_method,assignment_note,people(student_id,name_th,name_en,nickname,nickname_th,nickname_en,email,phone,major,year_level)')
     .eq('id', row.id)
     .single();
   if (error) throw error;

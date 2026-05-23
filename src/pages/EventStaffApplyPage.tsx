@@ -49,6 +49,22 @@ function previewAssignedDuty(duties: EventDutyQuotaRow[], selectedDutyKeys: stri
   return { duty: null, method: 'pending', note: 'โควต้าฝ่ายเต็มแล้ว รอผู้ดูแลจัดสรรเพิ่มเติม' };
 }
 
+function safeFullName(person: PersonApplicationLookupResult['safe_person'] | undefined, fallback?: string) {
+  return person?.display_full_name
+    || person?.name_th
+    || person?.name_en
+    || fallback?.trim()
+    || 'ไม่พบชื่อ-นามสกุลในระบบ';
+}
+
+function safeNickname(person: PersonApplicationLookupResult['safe_person'] | undefined) {
+  return person?.display_nickname
+    || person?.nickname
+    || person?.nickname_th
+    || person?.nickname_en
+    || 'ไม่พบชื่อเล่นในระบบ';
+}
+
 const applicationSteps = [
   { id: 1, th: 'ยืนยันตัวตน', en: 'Identity' },
   { id: 2, th: 'ตรวจสอบข้อมูล', en: 'Review' },
@@ -93,7 +109,9 @@ export function EventStaffApplyPage() {
   const quotaDuties = quotaState.data?.duties ?? [];
   const selectedDutyLabels = selectedDuties.map((key) => quotaDuties.find((duty) => duty.duty_key === key)?.duty_label_th ?? key);
   const assignmentPreview = previewAssignedDuty(quotaDuties, selectedDuties);
-  const applicantDisplayName = identityLookup?.safe_person?.display_name || requestedNameTh || '-';
+  const applicantDisplayName = identityLookup?.safe_person
+    ? safeFullName(identityLookup.safe_person, requestedNameTh)
+    : (requestedNameTh || 'ไม่พบชื่อ-นามสกุลในระบบ');
   const applicantMajor = identityLookup?.safe_person?.major || requestedMajor || '-';
   const applicantYear = identityLookup?.safe_person?.year_level ? String(identityLookup.safe_person.year_level) : '-';
 
@@ -375,7 +393,8 @@ export function EventStaffApplyPage() {
                   </div>
                   {identityLookup.safe_person ? (
                     <div className="event-fact-grid">
-                      <span><strong>{language === 'th' ? 'ชื่อ' : 'Name'}</strong>{identityLookup.safe_person.display_name ?? '-'}</span>
+                      <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Full name'}</strong>{safeFullName(identityLookup.safe_person)}</span>
+                      <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{safeNickname(identityLookup.safe_person)}</span>
                       <span><strong>{language === 'th' ? 'รหัส' : 'ID'}</strong>{identityLookup.safe_person.student_id ?? '-'}</span>
                       <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{identityLookup.safe_person.major ?? '-'}</span>
                       <span><strong>{language === 'th' ? 'CMU Mail เดิม' : 'Old CMU Mail'}</strong>{identityLookup.safe_person.masked_email ?? '-'}</span>
@@ -416,8 +435,8 @@ export function EventStaffApplyPage() {
                     <span className={`status-pill status-${identityLookup.identity_status}`}>{identityStatusLabel(identityLookup.identity_status, language)}</span>
                   </div>
                   <div className="event-fact-grid">
-                    <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Name'}</strong>{identityLookup.safe_person.display_name ?? '-'}</span>
-                    <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{identityLookup.safe_person.nickname ?? '-'}</span>
+                    <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Full name'}</strong>{safeFullName(identityLookup.safe_person)}</span>
+                    <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{safeNickname(identityLookup.safe_person)}</span>
                     <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{identityLookup.safe_person.student_id ?? '-'}</span>
                     <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{identityLookup.safe_person.major ?? '-'}</span>
                     <span><strong>{language === 'th' ? 'ชั้นปี' : 'Year'}</strong>{identityLookup.safe_person.year_level ?? '-'}</span>

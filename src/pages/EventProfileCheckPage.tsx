@@ -21,6 +21,22 @@ function isValidCmuEmail(value: string) {
   return !/\s/.test(value.trim()) && cmuEmailPattern.test(clean);
 }
 
+function safeFullName(person: PersonApplicationLookupResult['safe_person'] | undefined, fallback?: string) {
+  return person?.display_full_name
+    || person?.name_th
+    || person?.name_en
+    || fallback?.trim()
+    || 'ไม่พบชื่อ-นามสกุลในระบบ';
+}
+
+function safeNickname(person: PersonApplicationLookupResult['safe_person'] | undefined) {
+  return person?.display_nickname
+    || person?.nickname
+    || person?.nickname_th
+    || person?.nickname_en
+    || 'ไม่พบชื่อเล่นในระบบ';
+}
+
 export function EventProfileCheckPage() {
   const { language } = useLanguage();
   const { eventSlug = '' } = useParams();
@@ -132,7 +148,8 @@ export function EventProfileCheckPage() {
           </div>
           {lookup.safe_person ? (
             <div className="event-fact-grid">
-              <span><strong>{language === 'th' ? 'ชื่อ' : 'Name'}</strong>{lookup.safe_person.display_name ?? '-'}</span>
+              <span><strong>{language === 'th' ? 'ชื่อ-นามสกุล' : 'Full name'}</strong>{safeFullName(lookup.safe_person, nameTh)}</span>
+              <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{safeNickname(lookup.safe_person)}</span>
               <span><strong>{language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'}</strong>{lookup.safe_person.student_id ?? '-'}</span>
               <span><strong>{language === 'th' ? 'สาขา' : 'Major'}</strong>{lookup.safe_person.major ?? '-'}</span>
               <span><strong>{language === 'th' ? 'CMU Mail เดิม' : 'Old CMU Mail'}</strong>{lookup.safe_person.masked_email ?? '-'}</span>

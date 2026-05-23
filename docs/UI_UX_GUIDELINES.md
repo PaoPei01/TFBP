@@ -54,6 +54,9 @@ Destructive actions must live in `DangerZone` or use `ConfirmDialog`. Do not pla
 - Long applicant forms should use step-based layouts so each screen has one main task and preserves entered data when going back.
 - Duty checkbox cards should include text for selected/unavailable states such as "เลือกแล้ว" and "รับเต็มจำนวนแล้ว"; do not rely on color alone.
 - Admin exports that include health/limitation text must show a privacy warning before download.
+- Display full name and nickname as separate fields. Nickname must not be used as fallback for full legal/display name.
+- If full name is missing, show "ไม่พบชื่อ-นามสกุลในระบบ" instead of substituting nickname.
+- If nickname is missing, show "ไม่พบชื่อเล่นในระบบ" instead of repeating full name.
 - Medical data is visible only to admin and emergency_staff.
 - If medical data is visible, show a confidentiality notice.
 - Do not cache private medical data unless it is access-controlled and short-lived.

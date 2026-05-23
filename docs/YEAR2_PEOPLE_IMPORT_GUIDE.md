@@ -128,6 +128,9 @@ Do not delete production rows without first confirming whether they were inserte
 - [ ] `import_year2_people_from_staging()` returns inserted/updated/skipped/error counts.
 - [ ] `people` rows are inserted or updated.
 - [ ] `people.metadata` contains source context only, not health fields.
+- [ ] Full name fields (`name_th`, `name_en`) and nickname fields (`nickname`, `nickname_th`, `nickname_en`) are mapped separately.
+- [ ] Nickname is not copied into `name_th` or `name_en` as a fallback.
+- [ ] Missing full name remains missing for admin review instead of being replaced by nickname.
 - [ ] Public routes still work and do not expose imported `people` rows.
 - [ ] No `service_role` key is exposed in frontend code.
 

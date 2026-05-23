@@ -14,10 +14,38 @@ export type DataHealthResult = {
   details: Record<string, Array<Record<string, unknown>>>;
 };
 
+export type PeopleNameNicknameConflict = {
+  id: string;
+  student_id: string | null;
+  name_th: string | null;
+  name_en: string | null;
+  nickname: string | null;
+  nickname_th: string | null;
+  nickname_en: string | null;
+  major: string | null;
+};
+
 export async function validateDataIntegrity() {
   const { data, error } = await supabase.rpc('validate_data_integrity');
   if (error) throw error;
   return data as DataHealthResult;
+}
+
+export async function fetchPeopleNameNicknameConflicts(): Promise<PeopleNameNicknameConflict[]> {
+  const { data, error } = await supabase
+    .from('people')
+    .select('id,student_id,name_th,name_en,nickname,nickname_th,nickname_en,major')
+    .limit(2000);
+  if (error) throw error;
+  return ((data ?? []) as PeopleNameNicknameConflict[]).filter((row) => {
+    const nicknames = [row.nickname, row.nickname_th, row.nickname_en]
+      .map((value) => String(value ?? '').trim().toLowerCase())
+      .filter(Boolean);
+    const names = [row.name_th, row.name_en]
+      .map((value) => String(value ?? '').trim().toLowerCase())
+      .filter(Boolean);
+    return names.some((name) => nicknames.includes(name));
+  });
 }
 
 export async function runDataHealthRepair(action: 'normalize_majors' | 'clean_placeholders' | 'repair_staff_roles' | 'repair_orphans' | 'sync_staff_roster') {

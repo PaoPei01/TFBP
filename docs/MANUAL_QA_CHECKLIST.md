@@ -654,6 +654,12 @@ Use this checklist before real event operations and after every production-readi
 ## Parent Orientation Duty Quotas and Excel Export
 
 - [ ] Parent Orientation duty quotas total 130.
+- [ ] If `people.name_th = "นายจิรภัทร ตัวอย่าง"` and `people.nickname = "ซาลาเปา"`, staff application/profile check shows `ชื่อ-นามสกุล = นายจิรภัทร ตัวอย่าง` and `ชื่อเล่น = ซาลาเปา`.
+- [ ] If `people.name_th` is missing, `people.name_en = "Jiraphat Example"`, and `people.nickname = "Salapao"`, staff application/profile check shows English full name and nickname separately.
+- [ ] If both full-name fields are missing but nickname exists, staff application/profile check shows `ชื่อ-นามสกุล = ไม่พบชื่อ-นามสกุลในระบบ` and shows the nickname only in `ชื่อเล่น`.
+- [ ] Safe person preview never uses nickname as fallback for full legal/display name.
+- [ ] Admin application review title uses full name first and shows nickname as secondary text.
+- [ ] Data Health shows possible `people` rows where full name equals nickname without auto-fixing them.
 - [ ] Concurrent submissions do not assign two applicants into the same final remaining slot.
 - [ ] `/admin/system-readiness` loads for admins.
 - [ ] `/admin/system-readiness` shows schema/RPC/RLS/Parent Orientation quota status.
