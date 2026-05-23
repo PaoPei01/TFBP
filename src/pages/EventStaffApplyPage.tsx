@@ -163,7 +163,7 @@ export function EventStaffApplyPage() {
               </div>
               <Input label={language === 'th' ? 'รหัสนักศึกษา' : 'Student ID'} value={studentId} onChange={(eventInput) => setStudentId(eventInput.target.value)} />
               <Input label={language === 'th' ? 'อีเมล CMU / อีเมลที่ใช้ติดต่อ' : 'CMU email / contact email'} type="email" value={email} onChange={(eventInput) => setEmail(eventInput.target.value)} error={errors.email} required />
-              <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} error={errors.phone} required />
+              <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} error={errors.phone} required />
 
               <div className="event-form-section full-span">
                 <h3>{language === 'th' ? '2. เลือกหน้าที่และเวลาที่สะดวก' : '2. Duties and availability'}</h3>

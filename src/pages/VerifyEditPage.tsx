@@ -211,7 +211,7 @@ export function VerifyEditPage() {
             <p className="muted">{language === 'th' ? 'ใช้ข้อมูลเดียวกับตอนลงทะเบียน หากจำเบอร์ไม่ได้ให้ติดต่อแอดมิน' : 'Use the same information you registered with. Contact an admin if you cannot remember your phone number.'}</p>
           </div>
           <Input label={language === 'th' ? 'อีเมล' : 'Email'} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} value={phone} onChange={(event) => setPhone(event.target.value)} required />
+          <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} required />
           <Button type="submit" size="lg" fullWidth loading={verifying} icon={<SearchCheck size={18} />}>
             {verifying ? (language === 'th' ? 'กำลังตรวจสอบ...' : 'Checking...') : (language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify')}
           </Button>

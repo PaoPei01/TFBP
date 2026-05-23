@@ -593,22 +593,30 @@ Use this checklist before real event operations and after every production-readi
 ## Mobile QA
 
 - [ ] iPhone SE width: no horizontal scroll.
+- [ ] iPhone SE width: public `/`, `/events`, event detail, staff application, `/edit`, `/announcements`, and `/guide` do not horizontally scroll.
+- [ ] iPhone SE width: admin dashboard, admin applications, people directory, year 2 import, staff list, attendance, documents, announcements, and data health either show mobile cards or clean responsive layouts.
 - [ ] iPhone SE width: public search appears near top.
 - [ ] iPhone SE width: bottom nav does not cover CTAs.
 - [ ] iPhone SE width: modals fit screen and scroll internally.
 - [ ] Common Android width: camera scanner opens and fallback input works.
 - [ ] Common Android width: bottom nav labels do not overflow.
+- [ ] Common Android width: sticky action bars include safe-area padding and do not cover submit buttons.
 - [ ] Tablet: admin tables/forms remain readable.
 - [ ] Desktop: tables use readable spacing.
 - [ ] Large desktop: content max-width prevents overly long lines.
+- [ ] Long names, emails, student IDs, phone numbers, and badges wrap without breaking cards.
+- [ ] Mobile admin application review uses one obvious primary action and keeps secondary actions readable.
+- [ ] Phone fields open a phone keypad on mobile; email fields open an email keyboard.
 
 ## Accessibility
 
 - [ ] Keyboard can reach top nav, More menu, forms, modals.
 - [ ] Focus visible on links/buttons/inputs.
 - [ ] Modal opens with focus inside.
+- [ ] Modal Tab focus stays inside the dialog and returns to the trigger on close.
 - [ ] Escape closes modal/menu/filter sheet.
 - [ ] Backdrop click closes modal/menu/filter sheet.
+- [ ] Mobile More menu and Filter sheet focus the sheet on open and restore focus after close.
 - [ ] Important icon-only buttons have aria-label.
 - [ ] Toast has aria-live.
 - [ ] Errors appear near fields where possible.

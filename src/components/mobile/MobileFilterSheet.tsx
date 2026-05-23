@@ -1,5 +1,5 @@
 import { SlidersHorizontal, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '../ui/Button';
 import { useLanguage } from '../../context/LanguageContext';
@@ -17,19 +17,25 @@ type MobileFilterSheetProps = {
 
 export function MobileFilterSheet({ open, title, description, children, primaryLabel = 'Apply', clearLabel = 'Clear', onClose, onClear }: MobileFilterSheetProps) {
   const { language } = useLanguage();
+  const sheetRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open) return undefined;
+    const previous = document.activeElement as HTMLElement | null;
+    sheetRef.current?.focus();
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose();
     }
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previous?.focus?.();
+    };
   }, [onClose, open]);
 
   if (!open) return null;
   return (
     <div className="mobile-filter-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="mobile-filter-sheet" role="dialog" aria-modal="true" aria-label={title}>
+      <section className="mobile-filter-sheet" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={sheetRef}>
         <div className="mobile-filter-head">
           <div>
             <span><SlidersHorizontal size={17} /> {title}</span>

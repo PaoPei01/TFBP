@@ -21,6 +21,9 @@ TFBP is an event operations platform, not only a registration website. Every new
 - Use `FilterDrawer` for mobile filters and dense admin filters.
 - Use `StickyActionBar` for important mobile actions.
 - Add `MobileSafeAreaSpacer` or equivalent bottom spacing when a page has bottom actions.
+- Use shared layout utilities for new pages: `page-shell`, `page-content`, `page-section`, `section-title-row`, `responsive-grid`, `mobile-card-list`, `form-grid`, `action-row`, `overflow-safe`, and `safe-bottom-space`.
+- On mobile, action rows should wrap or stack. Avoid showing more than two equally prominent buttons in one row.
+- Long names, emails, IDs, badges, and generated filenames must sit inside an `overflow-safe` or equivalent `min-width: 0` container.
 
 ## Action Hierarchy
 
@@ -79,9 +82,11 @@ Preferred wording:
 - Touch targets must be at least 44px.
 - Focus states must be visible.
 - Icon-only buttons need `aria-label`.
-- Modals must trap focus and close on Escape.
+- Modals must keep focus inside the dialog, restore focus on close, and close on Escape/backdrop where safe.
+- Mobile bottom sheets and menus must focus the sheet on open and restore focus on close.
 - Do not rely on color alone.
 - Form inputs need labels.
+- Phone fields should use `type="tel"` and `inputMode="tel"`; email fields should use `type="email"`.
 - Tables need headers.
 - Respect `prefers-reduced-motion`.
 

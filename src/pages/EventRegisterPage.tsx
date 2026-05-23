@@ -88,7 +88,7 @@ export function EventRegisterPage() {
           ) : (
             <form className="form-grid" onSubmit={submit}>
               <Input label={language === 'th' ? 'อีเมล' : 'Email'} type="email" value={email} onChange={(eventInput) => setEmail(eventInput.target.value)} required />
-              <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} required />
+              <Input label={language === 'th' ? 'เบอร์โทร' : 'Phone'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(eventInput) => setPhone(eventInput.target.value)} required />
               <label className="field full-span">
                 <span>{language === 'th' ? 'หมายเหตุเพิ่มเติม' : 'Additional note'}</span>
                 <textarea value={note} onChange={(eventInput) => setNote(eventInput.target.value)} rows={4} />

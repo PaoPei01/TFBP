@@ -16,6 +16,17 @@ import { fetchMyStaffProfile, staffDisplayName, submitStaffEditRequest, updateMy
 import { removeStaffAvatar, resolveStaffAvatarUrl, uploadStaffAvatar } from '../services/staffAvatar';
 import { errorMessage } from '../utils/error';
 
+const requestFieldLabels: Record<string, { th: string; en: string; type?: 'tel' }> = {
+  phone: { th: 'เบอร์โทร', en: 'Phone', type: 'tel' },
+  line_id: { th: 'LINE ID', en: 'LINE ID' },
+  instagram: { th: 'Instagram', en: 'Instagram' },
+  facebook: { th: 'Facebook', en: 'Facebook' },
+  disease: { th: 'โรคประจำตัว', en: 'Medical condition' },
+  drug_allergy: { th: 'แพ้ยา', en: 'Drug allergy' },
+  food_allergy: { th: 'แพ้อาหาร', en: 'Food allergy' },
+  medical_note: { th: 'หมายเหตุสุขภาพ', en: 'Medical note' },
+};
+
 export function StaffProfileEditPage() {
   const { language } = useLanguage();
   const state = useAsync(fetchMyStaffProfile, []);
@@ -198,9 +209,20 @@ export function StaffProfileEditPage() {
       </StickyActionBar>
       <Modal open={requestOpen} title={language === 'th' ? 'ขอแก้ไขข้อมูลสำคัญ' : 'Request sensitive changes'} onClose={() => setRequestOpen(false)}>
         <div className="form-grid two-col modal-body">
-          {Object.keys(requestForm).map((key) => (
-            <Input key={key} label={key} value={requestForm[key as keyof typeof requestForm]} onChange={(event) => setRequestForm({ ...requestForm, [key]: event.target.value })} />
-          ))}
+          {Object.keys(requestForm).map((key) => {
+            const field = requestFieldLabels[key];
+            return (
+              <Input
+                key={key}
+                label={language === 'th' ? field.th : field.en}
+                type={field.type}
+                inputMode={field.type === 'tel' ? 'tel' : undefined}
+                autoComplete={field.type === 'tel' ? 'tel' : undefined}
+                value={requestForm[key as keyof typeof requestForm]}
+                onChange={(event) => setRequestForm({ ...requestForm, [key]: event.target.value })}
+              />
+            );
+          })}
           <div className="form-actions full-span">
             <Button icon={<Send size={18} />} onClick={submitSensitiveRequest}>{language === 'th' ? 'ส่งคำขอ' : 'Submit request'}</Button>
             <Button variant="secondary" onClick={() => setRequestOpen(false)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>

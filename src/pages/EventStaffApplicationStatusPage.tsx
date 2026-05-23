@@ -61,7 +61,7 @@ export function EventStaffApplicationStatusPage() {
         </div>
         <form className="form-grid" onSubmit={submit}>
           <Input label={language === 'th' ? 'อีเมลที่ใช้สมัคร' : 'Application email'} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          <Input label={language === 'th' ? 'เบอร์โทรที่ใช้สมัคร' : 'Application phone'} value={phone} onChange={(event) => setPhone(event.target.value)} required />
+          <Input label={language === 'th' ? 'เบอร์โทรที่ใช้สมัคร' : 'Application phone'} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} required />
           <Button type="submit" size="lg" fullWidth loading={loading}>
             {language === 'th' ? 'ตรวจสอบสถานะ' : 'Check status'}
           </Button>
