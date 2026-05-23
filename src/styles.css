@@ -5502,6 +5502,16 @@ th {
   max-width: 220px;
 }
 
+.form-static-value {
+  min-height: 44px;
+  border: 1px solid rgba(132, 155, 190, 0.22);
+  border-radius: 12px;
+  padding: 0.72rem 0.85rem;
+  background: rgba(245, 248, 252, 0.85);
+  color: #142033;
+  font-weight: 850;
+}
+
 @media (max-width: 760px) {
   .edit-stepper {
     margin-inline: -0.15rem;

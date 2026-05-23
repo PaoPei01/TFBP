@@ -209,12 +209,16 @@ Completed in compatibility pass:
 - Backfilled existing null attendance sessions to the default event when available.
 - Updated create/update attendance session RPCs to keep legacy behavior while storing `event_id`.
 - Added `event_id` to TypeScript attendance session types.
+- Updated admin attendance service calls to accept optional `eventId`.
+- Updated `/admin/staff/attendance` to show the current event, filter sessions by the selected event, and create new sessions with `event_id = currentEventId`.
+- Updated `/admin/staff/attendance/:sessionId` to show the session event name, with a "legacy/default event" label when `event_id` is null.
+- Kept `/staff/attendance` and all QR scan flows unchanged for compatibility.
 
 Deferred:
 
-- Filtering staff/admin attendance pages by selected event.
-- Event switcher integration for attendance.
+- Deeper attendance dashboard redesign by event.
 - Event-aware QR result UI.
+- Staff-side event selection.
 - Event-role RLS for attendance.
 
 ## P6: Event-Scoped Announcements and Documents

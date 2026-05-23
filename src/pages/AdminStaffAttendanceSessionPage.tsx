@@ -3,6 +3,7 @@ import { CheckCircle2, Clock, Copy, Download, QrCode, RefreshCw, Search, ShieldC
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { HelpButton } from '../components/help/HelpButton';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { MobileSearchHeader } from '../components/mobile/MobileSearchHeader';
 import { Button } from '../components/ui/Button';
@@ -14,6 +15,7 @@ import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Select } from '../components/ui/Select';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
+import { useEventContext } from '../context/EventContext';
 import { useAsync } from '../hooks/useAsync';
 import type { StaffAttendanceAdminRow, StaffAttendanceStatus } from '../lib/attendanceTypes';
 import { formatBangkokDateTime } from '../lib/dateTime';
@@ -51,6 +53,7 @@ function statusText(status: string | undefined | null, language: 'th' | 'en') {
 export function AdminStaffAttendanceSessionPage() {
   const { sessionId } = useParams();
   const { language } = useLanguage();
+  const { events } = useEventContext();
   const state = useAsync(() => fetchAdminStaffAttendance(sessionId), [sessionId]);
   const [toast, setToast] = useState<ToastState>(null);
   const [search, setSearch] = useState('');
@@ -176,6 +179,10 @@ export function AdminStaffAttendanceSessionPage() {
   if (!session) return <div className="empty-state">{language === 'th' ? 'ไม่พบรอบเช็กชื่อ' : 'Attendance session not found'}</div>;
 
   const summary = state.data?.summary ?? session.summary;
+  const sessionEvent = events.find((event) => event.id === session.event_id);
+  const eventLabel = sessionEvent
+    ? (language === 'th' ? sessionEvent.name_th : sessionEvent.name_en || sessionEvent.name_th)
+    : (language === 'th' ? 'กิจกรรมเดิม' : 'Legacy/default event');
 
   return (
     <section className="page-stack admin-staff-attendance-page has-sticky-actions">
@@ -183,7 +190,8 @@ export function AdminStaffAttendanceSessionPage() {
       <PageHeader
         eyebrow="Attendance Session"
         title={session.title}
-        description={`${formatBangkokDateTime(session.starts_at, language)} · ${session.status}`}
+        description={`${formatBangkokDateTime(session.starts_at, language)} · ${session.status} · ${eventLabel}`}
+        meta={<EventSwitcher compact />}
         actions={(
           <>
             <Link className="btn btn-secondary" to="/admin/staff/attendance">{language === 'th' ? 'ทุกรอบ' : 'All sessions'}</Link>

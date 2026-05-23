@@ -279,11 +279,15 @@ Use this checklist before real event operations and after every production-readi
 ## Admin Staff Attendance
 
 - [ ] Open `/admin/staff/attendance`.
+- [ ] Admin attendance page shows the current EventSwitcher event.
+- [ ] Switching EventSwitcher filters the admin attendance session list without breaking old routes.
 - [ ] Create attendance session.
-- [ ] New attendance session stores `event_id` as the default event after applying P5 migration.
+- [ ] New attendance session stores `event_id` from the currently selected event after applying P5 migration.
+- [ ] Existing/legacy sessions with null `event_id` remain visible as fallback and still work.
 - [ ] Confirm datetime displays in Asia/Bangkok as entered.
 - [ ] Set late_after and verify late behavior.
 - [ ] Open session detail.
+- [ ] Attendance session detail shows the event name or "กิจกรรมเดิม" for legacy sessions.
 - [ ] Summary cards show total/present/late/missing.
 - [ ] Session QR image is visible and scannable.
 - [ ] Copy session QR link.

@@ -26,10 +26,23 @@ function normalizeSessionInput(input: StaffAttendanceSessionInput): StaffAttenda
   return normalized as StaffAttendanceSessionInput;
 }
 
-export async function fetchAdminStaffAttendance(sessionId?: string | null): Promise<StaffAttendanceAdminData> {
+function sessionMatchesEvent(session: StaffAttendanceSession, eventId?: string | null) {
+  if (!eventId) return true;
+  return session.event_id === eventId || session.event_id === null;
+}
+
+export async function fetchAdminStaffAttendance(sessionId?: string | null, eventId?: string | null): Promise<StaffAttendanceAdminData> {
   const { data, error } = await supabase.rpc('get_staff_attendance_admin', { input_session_id: sessionId ?? null });
   if (error) throw error;
-  return data as StaffAttendanceAdminData;
+  const adminData = data as StaffAttendanceAdminData;
+  if (!eventId || sessionId) return adminData;
+  const sessions = (adminData.sessions ?? []).filter((session) => sessionMatchesEvent(session, eventId));
+  return {
+    ...adminData,
+    sessions,
+    selected_session: sessions[0] ?? null,
+    summary: sessions[0]?.summary ?? adminData.summary,
+  };
 }
 
 export async function createStaffAttendanceSession(input: StaffAttendanceSessionInput): Promise<StaffAttendanceSession> {

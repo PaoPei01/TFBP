@@ -1,6 +1,7 @@
 import { CalendarClock, Plus, RefreshCw, UsersRound } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { EventSwitcher } from '../components/events/EventSwitcher';
 import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Button } from '../components/ui/Button';
@@ -13,6 +14,7 @@ import { ResponsiveDataTable } from '../components/ui/ResponsiveDataTable';
 import { Select } from '../components/ui/Select';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
+import { useEventContext } from '../context/EventContext';
 import { useAsync } from '../hooks/useAsync';
 import { groupMeta, mainGroups, subgroups } from '../lib/groups';
 import { staffOperationalRoles } from '../lib/staffRoles';
@@ -40,8 +42,9 @@ function statusLabel(status: string, language: 'th' | 'en') {
 
 export function AdminStaffAttendancePage() {
   const { language } = useLanguage();
+  const { currentEvent, currentEventId } = useEventContext();
   const navigate = useNavigate();
-  const state = useAsync(() => fetchAdminStaffAttendance(), []);
+  const state = useAsync(() => fetchAdminStaffAttendance(null, currentEventId), [currentEventId]);
   const [toast, setToast] = useState<ToastState>(null);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -71,7 +74,7 @@ export function AdminStaffAttendancePage() {
     event.preventDefault();
     try {
       setSaving(true);
-      const created = await createStaffAttendanceSession(form);
+      const created = await createStaffAttendanceSession({ ...form, event_id: currentEventId ?? undefined });
       setToast({ type: 'success', message: language === 'th' ? 'สร้างรอบเช็กชื่อแล้ว' : 'Attendance session created' });
       setCreating(false);
       await state.reload();
@@ -89,7 +92,10 @@ export function AdminStaffAttendancePage() {
       <PageHeader
         eyebrow="Staff Attendance"
         title={language === 'th' ? 'ระบบเช็กชื่อทีมงาน' : 'Staff Attendance'}
-        description={language === 'th' ? 'สร้างรอบเช็กชื่อ แสดง QR ให้ทีมงานสแกน และเช็กชื่อสำรองแบบ manual ได้' : 'Create sessions, show QR links for staff, and manually check staff in when needed.'}
+        description={language === 'th'
+          ? `สร้างรอบเช็กชื่อ แสดง QR ให้ทีมงานสแกน และเช็กชื่อสำรองแบบ manual ได้${currentEvent ? ` · กิจกรรมปัจจุบัน: ${currentEvent.name_th}` : ''}`
+          : `Create sessions, show QR links for staff, and manually check staff in when needed.${currentEvent ? ` Current event: ${currentEvent.name_en || currentEvent.name_th}` : ''}`}
+        meta={<EventSwitcher compact />}
         actions={(
           <>
             <HelpButton topicId="admin-attendance.create-session" variant="link" />
@@ -135,6 +141,10 @@ export function AdminStaffAttendancePage() {
             <HelpButton topicId="admin-attendance.create-session" variant="compact" />
           </Card>
           <Input label={language === 'th' ? 'ชื่อรอบ' : 'Title'} value={form.title ?? ''} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
+          <div className="field">
+            <span>{language === 'th' ? 'กิจกรรม' : 'Event'}</span>
+            <div className="form-static-value">{currentEvent ? (language === 'th' ? currentEvent.name_th : currentEvent.name_en || currentEvent.name_th) : (language === 'th' ? 'กิจกรรมเดิม' : 'Legacy/default event')}</div>
+          </div>
           <Select label={language === 'th' ? 'ประเภท' : 'Type'} value={form.session_type ?? 'check_in'} onChange={(event) => setForm({ ...form, session_type: event.target.value as StaffAttendanceSessionInput['session_type'] })} options={sessionTypes} />
           <Select label={language === 'th' ? 'กลุ่มเป้าหมาย' : 'Target'} value={form.target_scope ?? 'all'} onChange={(event) => setForm({ ...form, target_scope: event.target.value as StaffAttendanceSessionInput['target_scope'] })} options={targetScopes} />
           {form.target_scope === 'main_group' || form.target_scope === 'subgroup' ? (
