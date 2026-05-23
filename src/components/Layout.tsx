@@ -118,6 +118,7 @@ export function Layout() {
                   <span className="nav-menu-label">{language === 'th' ? 'ระบบเสริม' : 'More tools'}</span>
                   <NavLink to="/admin/documents">{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>
                   <NavLink to="/admin/data-health">{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
+                  <NavLink to="/admin/system-readiness">{language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System Readiness'}</NavLink>
                   <NavLink to="/admin/logs">{t.logs}</NavLink>
                 </>
               ) : null}
@@ -273,6 +274,7 @@ export function Layout() {
             <NavLink to="/admin/emergency"><HeartPulse size={18} />{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</NavLink>
             <NavLink to="/admin/documents"><FileText size={18} />{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>
             <NavLink to="/admin/data-health"><ShieldCheck size={18} />{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
+            <NavLink to="/admin/system-readiness"><ShieldCheck size={18} />{language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System Readiness'}</NavLink>
             <NavLink to="/admin/logs"><Search size={18} />{language === 'th' ? 'ประวัติ' : 'Logs'}</NavLink>
             <button type="button" onClick={() => setLanguage(language === 'th' ? 'en' : 'th')}><Languages size={18} />{language === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}</button>
             {user ? <button type="button" onClick={() => void signOut()}><LogOut size={18} />{language === 'th' ? 'ออกจากระบบ' : 'Sign out'}</button> : null}

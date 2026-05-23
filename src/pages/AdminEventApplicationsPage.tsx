@@ -20,10 +20,18 @@ import { useAsync } from '../hooks/useAsync';
 import { formatBangkokDateTime } from '../lib/dateTime';
 import { getEventContent } from '../lib/eventContent';
 import { eventPath } from '../lib/eventRoutes';
-import { fetchAdminEventById, fetchAdminEventStaffApplications, fetchEventDutyQuotaStatus, promoteStaffApplicationToEventStaff, type AdminStaffApplicationRow, type EventDutyQuotaRow, updateAdminStaffApplicationAssignment, updateAdminStaffApplicationReview } from '../services/events';
+import { fetchAdminEventById, fetchAdminEventStaffApplications, fetchEventDutyQuotaStatus, logStaffApplicationExport, promoteStaffApplicationToEventStaff, type AdminStaffApplicationRow, type EventDutyQuotaRow, updateAdminStaffApplicationAssignment, updateAdminStaffApplicationReview } from '../services/events';
 import { errorMessage } from '../utils/error';
+import { explainSupabaseSchemaError } from '../utils/supabaseDiagnostics';
 
 type ExportPreset = 'all' | 'filtered' | 'by_assigned_duty';
+
+type ExcelExportRequest = {
+  rows: AdminStaffApplicationRow[];
+  filename: string;
+  scope: ExportPreset;
+  filters: Record<string, unknown>;
+};
 
 function text(value: unknown) {
   if (Array.isArray(value)) return value.join(', ');
@@ -137,13 +145,18 @@ export function AdminEventApplicationsPage() {
   const [reviewDraft, setReviewDraft] = useState<{ row: AdminStaffApplicationRow; status: StaffApplicationStatus; finalDuty: string; reviewNote: string } | null>(null);
   const [detailRow, setDetailRow] = useState<AdminStaffApplicationRow | null>(null);
   const [assignmentOverride, setAssignmentOverride] = useState<{ row: AdminStaffApplicationRow; dutyKey: string; isFull: boolean } | null>(null);
-  const [excelExport, setExcelExport] = useState<{ rows: AdminStaffApplicationRow[]; filename: string } | null>(null);
+  const [excelExport, setExcelExport] = useState<ExcelExportRequest | null>(null);
+  const [exportConfirmed, setExportConfirmed] = useState(false);
   const event = eventState.data;
   const rows = useMemo(() => applicationsState.data ?? [], [applicationsState.data]);
   const content = getEventContent(event?.slug);
   const quotaDuties = useMemo(() => quotaState.data?.duties ?? [], [quotaState.data?.duties]);
   const dutiesByKey = useMemo(() => new Map(quotaDuties.map((duty) => [duty.duty_key, duty])), [quotaDuties]);
   const assignedDutyOptions = useMemo(() => quotaDuties.map((duty) => ({ value: duty.duty_key, label: duty.duty_label_th })), [quotaDuties]);
+  const quotaTotal = quotaState.data?.total_quota ?? quotaDuties.reduce((sum, duty) => sum + duty.quota, 0);
+  const quotaAssigned = quotaState.data?.total_assigned ?? quotaDuties.reduce((sum, duty) => sum + duty.assigned_count, 0);
+  const quotaRemaining = quotaState.data?.total_remaining ?? quotaDuties.reduce((sum, duty) => sum + duty.remaining, 0);
+  const overQuotaDuties = quotaDuties.filter((duty) => duty.assigned_count > duty.quota);
   const finalDutyOptions = useMemo(() => {
     const fromContent = content?.staffRecruitment?.dutiesTh ?? [];
     const fromRows = rows.map(finalDuty).filter(Boolean);
@@ -251,7 +264,7 @@ export function AdminEventApplicationsPage() {
       await applicationsState.reload();
       await quotaState.reload();
     } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'บันทึกฝ่ายเบื้องต้นไม่สำเร็จ' : 'Could not save preliminary duty') });
+      setToast({ type: 'error', message: explainSupabaseSchemaError(err, language) || errorMessage(err, language === 'th' ? 'บันทึกฝ่ายเบื้องต้นไม่สำเร็จ' : 'Could not save preliminary duty') });
     } finally {
       setSavingId(null);
     }
@@ -398,24 +411,42 @@ export function AdminEventApplicationsPage() {
   function requestExcelExport(preset: ExportPreset, dutyKey?: string) {
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const base = 'parent-orientation-staff';
+    setExportConfirmed(false);
     if (preset === 'all') {
-      setExcelExport({ rows, filename: `${base}-all-${date}.xlsx` });
+      setExcelExport({ rows, filename: `${base}-all-${date}.xlsx`, scope: 'all', filters: {} });
       return;
     }
     if (preset === 'by_assigned_duty' && dutyKey) {
-      setExcelExport({ rows: rows.filter((row) => row.assigned_duty === dutyKey), filename: `${base}-${dutyKey}-${date}.xlsx` });
+      setExcelExport({
+        rows: rows.filter((row) => row.assigned_duty === dutyKey),
+        filename: `${base}-${dutyKey}-${date}.xlsx`,
+        scope: 'by_assigned_duty',
+        filters: { assigned_duty: dutyKey },
+      });
       return;
     }
-    setExcelExport({ rows: filteredRows, filename: `${base}-filtered-${date}.xlsx` });
+    setExcelExport({ rows: filteredRows, filename: `${base}-filtered-${date}.xlsx`, scope: 'filtered', filters });
   }
 
   async function confirmExcelExport() {
     if (!excelExport) return;
+    if (!exportConfirmed) {
+      setToast({ type: 'error', message: language === 'th' ? 'กรุณายืนยันว่าจะใช้ข้อมูลเฉพาะเพื่อการดำเนินงานกิจกรรม' : 'Please confirm safe use before downloading.' });
+      return;
+    }
     try {
+      await logStaffApplicationExport({
+        eventId,
+        exportScope: excelExport.scope,
+        rowCount: excelExport.rows.length,
+        includesSensitiveFields: true,
+        filters: excelExport.filters,
+      });
       await downloadExcel(excelExport.rows, excelExport.filename);
       setExcelExport(null);
+      setExportConfirmed(false);
     } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ดาวน์โหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่' : 'Could not download the file. Please try again.') });
+      setToast({ type: 'error', message: explainSupabaseSchemaError(err, language) || errorMessage(err, language === 'th' ? 'ดาวน์โหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่' : 'Could not download the file. Please try again.') });
     }
   }
 
@@ -443,6 +474,14 @@ export function AdminEventApplicationsPage() {
           title={language === 'th' ? 'โหลดใบสมัครไม่สำเร็จ' : 'Could not load applications'}
           action={<Button variant="secondary" onClick={() => { void eventState.reload(); void applicationsState.reload(); }}>{language === 'th' ? 'ลองใหม่' : 'Retry'}</Button>}
         />
+      ) : null}
+
+      {quotaState.error ? (
+        <Card variant="warning" className="event-detail-card">
+          <strong>{language === 'th' ? 'โหลดข้อมูลโควต้าไม่สำเร็จ' : 'Could not load quota status'}</strong>
+          <p>{explainSupabaseSchemaError(quotaState.error, language)}</p>
+          <Button variant="secondary" onClick={() => void quotaState.reload()}>{language === 'th' ? 'ลองใหม่' : 'Retry'}</Button>
+        </Card>
       ) : null}
 
       {event ? (
@@ -486,16 +525,49 @@ export function AdminEventApplicationsPage() {
             <div>
               <p className="eyebrow">{language === 'th' ? 'โควต้าฝ่าย' : 'Duty quotas'}</p>
               <h2>{language === 'th' ? 'สรุปฝ่ายที่ระบบจัดให้เบื้องต้น' : 'Preliminary duty summary'}</h2>
-              <p className="muted">{language === 'th' ? 'นับใบสมัครที่ยังไม่ถูกปฏิเสธหรือถอนตัว เพื่อดูโควต้าที่เหลือแบบใช้งานจริง' : 'Counts active applications to show operational remaining quota.'}</p>
+              <p className="muted">{language === 'th' ? 'ตัวเลขนี้เป็นการจัดฝ่ายเบื้องต้น ระบบยังอนุญาตให้ผู้ดูแลปรับภายหลังได้' : 'These are preliminary assignments. Admins can still adjust them later.'}</p>
             </div>
+            <div className="event-stat-grid compact-stat-grid">
+              <Card className="event-detail-card" variant={quotaTotal === 130 ? 'soft' : 'warning'}>
+                <strong>{quotaTotal}</strong>
+                <span>{language === 'th' ? 'โควต้ารวม' : 'Total quota'}</span>
+                {quotaTotal !== 130 ? <small className="field-error">{language === 'th' ? 'ควรเป็น 130' : 'Expected 130'}</small> : null}
+              </Card>
+              <Card className="event-detail-card" variant="soft">
+                <strong>{quotaAssigned}</strong>
+                <span>{language === 'th' ? 'จัดฝ่ายแล้ว' : 'Assigned'}</span>
+              </Card>
+              <Card className="event-detail-card" variant="soft">
+                <strong>{quotaRemaining}</strong>
+                <span>{language === 'th' ? 'คงเหลือ' : 'Remaining'}</span>
+              </Card>
+              <Card className="event-detail-card" variant={overQuotaDuties.length ? 'warning' : 'soft'}>
+                <strong>{overQuotaDuties.length}</strong>
+                <span>{language === 'th' ? 'ฝ่ายเกินโควต้า' : 'Over quota duties'}</span>
+              </Card>
+            </div>
+            {overQuotaDuties.length ? (
+              <Card variant="warning">
+                <strong>{language === 'th' ? 'มีฝ่ายที่เกินโควต้า กรุณาตรวจสอบการปรับด้วยตนเอง' : 'Some duties exceed quota. Please review manual overrides.'}</strong>
+              </Card>
+            ) : null}
             <div className="event-mini-grid">
               {quotaDuties.map((duty) => (
-                <div className={`event-mini-card ${duty.is_full ? 'is-warning' : ''}`} key={duty.duty_key}>
+                <div
+                  className={`event-mini-card quota-click-card ${duty.is_full || duty.assigned_count > duty.quota ? 'is-warning' : ''}`}
+                  key={duty.duty_key}
+                >
                   <strong>{duty.assigned_count}/{duty.quota}</strong>
                   <span>{duty.duty_label_th}</span>
                   <small>{language === 'th' ? `เหลือ ${duty.remaining} คน` : `${duty.remaining} remaining`}</small>
+                  <div className="progress-track" aria-label={`${duty.duty_label_th} ${duty.assigned_count}/${duty.quota}`}>
+                    <span style={{ width: `${Math.min(Math.max((duty.assigned_count / Math.max(duty.quota, 1)) * 100, 0), 100)}%` }} />
+                  </div>
                   {duty.is_full ? <Badge status="pending">{language === 'th' ? 'รับเต็มจำนวนแล้ว' : 'Full'}</Badge> : null}
                   {duty.assigned_count > duty.quota ? <small className="field-error">{language === 'th' ? 'เกินโควต้า' : 'Over quota'}</small> : null}
+                  <Button size="sm" variant="ghost" onClick={() => setFilters({ ...filters, assignedDuty: duty.duty_key })}>
+                    {language === 'th' ? 'ดูผู้สมัครฝ่ายนี้' : 'View this duty'}
+                  </Button>
                   <Button size="sm" variant="secondary" icon={<FileSpreadsheet size={16} />} onClick={() => requestExcelExport('by_assigned_duty', duty.duty_key)}>
                     {language === 'th' ? 'Excel รายฝ่าย' : 'Duty Excel'}
                   </Button>
@@ -687,19 +759,23 @@ export function AdminEventApplicationsPage() {
             ) : null}
           </Modal>
 
-          <Modal open={Boolean(excelExport)} title={language === 'th' ? 'ยืนยันการดาวน์โหลดข้อมูล' : 'Confirm data download'} onClose={() => setExcelExport(null)}>
+          <Modal open={Boolean(excelExport)} title={language === 'th' ? 'ยืนยันการส่งออกข้อมูลส่วนบุคคล' : 'Confirm personal data export'} onClose={() => { setExcelExport(null); setExportConfirmed(false); }}>
             {excelExport ? (
               <div className="modal-body page-stack">
                 <Card variant="warning">
-                  <strong>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคล' : 'This file contains personal data.'}</strong>
-                  <p>{language === 'th' ? 'ไฟล์นี้มีข้อมูลส่วนบุคคล และอาจมีข้อมูลด้านสุขภาพที่ผู้สมัครกรอกเพื่อใช้ในการจัดงานเท่านั้น กรุณาใช้ข้อมูลอย่างระมัดระวัง และห้ามเผยแพร่ต่อสาธารณะ' : 'This file may include personal data and health information submitted for event operations only. Use it carefully and do not publish publicly.'}</p>
+                  <strong>{language === 'th' ? 'ไฟล์นี้อาจมีข้อมูลส่วนบุคคล' : 'This file may contain personal data.'}</strong>
+                  <p>{language === 'th' ? 'ไฟล์นี้อาจมีข้อมูลส่วนบุคคล เช่น เบอร์โทร อีเมล และข้อจำกัดด้านสุขภาพ/การแพ้อาหาร ควรใช้เพื่อการดำเนินงานกิจกรรมเท่านั้น ห้ามเผยแพร่ต่อสาธารณะ' : 'This file may include phone numbers, emails, and health/limitation information. Use it only for event operations and do not publish it publicly.'}</p>
                 </Card>
                 <p className="muted">{language === 'th' ? `จำนวน ${excelExport.rows.length} รายการ` : `${excelExport.rows.length} rows`}</p>
+                <label className="checkbox-row">
+                  <input type="checkbox" checked={exportConfirmed} onChange={(eventInput) => setExportConfirmed(eventInput.target.checked)} />
+                  <span>{language === 'th' ? 'ฉันเข้าใจและจะใช้ข้อมูลนี้เฉพาะเพื่อการดำเนินงานกิจกรรม' : 'I understand and will use this data only for event operations.'}</span>
+                </label>
                 <div className="form-actions">
-                  <Button icon={<FileSpreadsheet size={18} />} onClick={() => void confirmExcelExport()}>
-                    {language === 'th' ? 'ยืนยันดาวน์โหลด' : 'Confirm download'}
+                  <Button icon={<FileSpreadsheet size={18} />} disabled={!exportConfirmed} onClick={() => void confirmExcelExport()}>
+                    {language === 'th' ? 'ดาวน์โหลด Excel' : 'Download Excel'}
                   </Button>
-                  <Button variant="secondary" onClick={() => setExcelExport(null)}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
+                  <Button variant="secondary" onClick={() => { setExcelExport(null); setExportConfirmed(false); }}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
                 </div>
               </div>
             ) : null}

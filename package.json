@@ -11,6 +11,7 @@
     "import:staff": "node scripts/import-staff-xlsx.mjs",
     "import:group-staff": "node scripts/import-group-staff-roster.mjs",
     "check:multi-event-staging": "node scripts/check-multi-event-staging.mjs",
+    "check:production-readiness": "node scripts/check-production-readiness.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

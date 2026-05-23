@@ -1432,6 +1432,39 @@ a {
   font-size: 1.25rem;
 }
 
+.compact-stat-grid {
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+}
+
+.quota-click-card {
+  text-align: left;
+}
+
+.quota-click-card .progress-track {
+  margin: 0.35rem 0 0.5rem;
+}
+
+.quota-click-card .progress-track span {
+  background: #2563eb;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(132, 155, 190, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.checkbox-row input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  accent-color: #2563eb;
+}
+
 .event-list-section {
   display: grid;
   gap: 0.65rem;

@@ -654,6 +654,10 @@ Use this checklist before real event operations and after every production-readi
 ## Parent Orientation Duty Quotas and Excel Export
 
 - [ ] Parent Orientation duty quotas total 130.
+- [ ] Concurrent submissions do not assign two applicants into the same final remaining slot.
+- [ ] `/admin/system-readiness` loads for admins.
+- [ ] `/admin/system-readiness` shows schema/RPC/RLS/Parent Orientation quota status.
+- [ ] `/admin/system-readiness` copy-summary button works.
 - [ ] Applicant can select multiple preferred duties.
 - [ ] Duty cards show quota, remaining slots, and descriptions.
 - [ ] Selected duty cards show text `เลือกแล้ว`.
@@ -675,6 +679,8 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Admin can export Excel for all applications.
 - [ ] Admin can export Excel for current filters.
 - [ ] Admin can export Excel by duty from the duty summary.
+- [ ] Excel export requires the personal-data confirmation checkbox.
+- [ ] Excel export writes a `change_logs` audit record without storing applicant row data.
 - [ ] Excel includes `people` base data and application-submitted data.
 - [ ] Excel export warning appears before files that include health/limitation text.
 - [ ] Exported file uses `.xlsx`, not CSV-only.
@@ -726,6 +732,7 @@ Use this checklist before real event operations and after every production-readi
 
 - [ ] `npm run lint` passes.
 - [ ] `npm run build` passes.
+- [ ] `npm run check:production-readiness` passes.
 - [ ] No service_role key is exposed in frontend.
 - [ ] No raw real user data appears in Guide/Preview mock cards.
 - [ ] Git status is clean before deployment.

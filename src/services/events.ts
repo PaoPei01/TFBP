@@ -456,6 +456,26 @@ export async function fetchEventDutyQuotaStatus(eventId: string): Promise<EventD
   return (data ?? { duties: [], total_quota: 0, total_assigned: 0, total_remaining: 0 }) as EventDutyQuotaStatus;
 }
 
+export async function logStaffApplicationExport(input: {
+  eventId: string;
+  exportScope: 'all' | 'filtered' | 'by_assigned_duty';
+  rowCount: number;
+  includesSensitiveFields: boolean;
+  filters: Record<string, unknown>;
+}): Promise<void> {
+  const { error } = await supabase.rpc('log_staff_application_export', {
+    input_data: {
+      event_id: input.eventId,
+      export_scope: input.exportScope,
+      row_count: input.rowCount,
+      includes_sensitive_fields: input.includesSensitiveFields,
+      filters: input.filters,
+      exported_at: new Date().toISOString(),
+    },
+  });
+  if (error) throw error;
+}
+
 export async function updateAdminStaffApplicationReview(input: {
   id: string;
   status?: string;

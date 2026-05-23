@@ -57,6 +57,7 @@ const StaffProfileEditPage = lazy(() => import('./pages/StaffProfileEditPage').t
 const StaffProfilePage = lazy(() => import('./pages/StaffProfilePage').then((module) => ({ default: module.StaffProfilePage })));
 const StaffProfileVerifyPage = lazy(() => import('./pages/StaffProfileVerifyPage').then((module) => ({ default: module.StaffProfileVerifyPage })));
 const StaffPersonalQrPage = lazy(() => import('./pages/StaffPersonalQrPage').then((module) => ({ default: module.StaffPersonalQrPage })));
+const SystemReadinessPage = lazy(() => import('./pages/SystemReadinessPage').then((module) => ({ default: module.SystemReadinessPage })));
 const Year2PeopleImportPage = lazy(() => import('./pages/Year2PeopleImportPage').then((module) => ({ default: module.Year2PeopleImportPage })));
 
 export function App() {
@@ -126,6 +127,7 @@ export function App() {
           <Route path="admin/requests" element={<Suspense fallback={<LoadingSkeleton />}><PendingRequestsPage /></Suspense>} />
           <Route path="admin/logs" element={<Suspense fallback={<LoadingSkeleton />}><ChangeLogPage /></Suspense>} />
           <Route path="admin/data-health" element={<Suspense fallback={<LoadingSkeleton />}><DataHealthPage /></Suspense>} />
+          <Route path="admin/system-readiness" element={<Suspense fallback={<LoadingSkeleton />}><SystemReadinessPage /></Suspense>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

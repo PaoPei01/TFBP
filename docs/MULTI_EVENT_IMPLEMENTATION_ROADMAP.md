@@ -577,3 +577,23 @@ QA focus:
 - Duty cards show `เลือกแล้ว` and `รับเต็มจำนวนแล้ว` as text, not color only.
 - Final confirmation clearly shows identity status and "ฝ่ายที่ระบบจัดให้เบื้องต้น".
 - Admin filters/search remain readable on mobile cards and desktop table.
+
+## Production Readiness Hardening Pass
+
+Status: implemented as an additive hardening layer for real Parent Orientation staff recruitment.
+
+Completed:
+
+- Replaced `submit_event_staff_application()` with a concurrency-safe version that uses a per-event `pg_advisory_xact_lock` before quota assignment and insert.
+- Added admin-only `get_system_readiness_report()` to check required tables, columns, RPCs, RLS, and Parent Orientation quota status.
+- Added admin-only `log_staff_application_export()` so Excel export events are logged without storing applicant row data.
+- Added `/admin/system-readiness` with build metadata, refresh, copy-summary, and friendly missing-migration diagnostics.
+- Strengthened admin application quota summary with total quota, assigned, remaining, over-quota warnings, progress bars, and duty filter shortcuts.
+- Added required confirmation checkbox before Excel export of personal/sensitive fields.
+- Added static `npm run check:production-readiness` repo verification.
+
+Deferred:
+
+- Production migrations still must be applied manually in Supabase after backup and staging verification.
+- Email notification is intentionally not implemented.
+- Advanced real-time monitoring remains out of scope until core launch is stable.
