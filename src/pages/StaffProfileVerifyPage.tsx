@@ -129,7 +129,7 @@ export function StaffProfileVerifyPage() {
         meta={(
           <>
             <HelpButton topicId="staff.profile-verify" variant="link" />
-            <Link className="btn btn-secondary" to="/login">{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff Login'}</Link>
+            <Link className="btn btn-secondary" to="/login">{language === 'th' ? 'เข้าสู่ระบบทีมงาน' : 'Staff sign in'}</Link>
           </>
         )}
       />

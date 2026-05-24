@@ -141,8 +141,8 @@ export function AdminPeopleDedupePage() {
     <section className="page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People Database'}
-        title={language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Duplicate Check'}
+        eyebrow={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}
+        title={language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Duplicate check'}
         description={language === 'th' ? 'ตรวจสอบและรวมข้อมูลบุคคลที่อาจซ้ำกันจากหลายแหล่ง เช่น Excel ปี 2 ข้อมูลทีมงานเดิม และใบสมัครกิจกรรม' : 'Review and safely merge possible duplicate people from year 2 Excel, legacy staff, participants, and event applications.'}
         meta={<Button variant="secondary" icon={<RefreshCw size={18} />} loading={loading} onClick={() => void loadData()}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>}
         actions={<HelpButton topicId="admin.people-dedupe" variant="link" />}

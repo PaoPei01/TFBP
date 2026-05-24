@@ -1,9 +1,10 @@
 import { X } from 'lucide-react';
-import { useEffect, useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '../ui/Button';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 type MobileMoreMenuProps = {
   open: boolean;
@@ -17,23 +18,7 @@ export function MobileMoreMenu({ open, title, children, onClose }: MobileMoreMen
   const titleId = useId();
   const sheetRef = useRef<HTMLElement>(null);
   useBodyScrollLock(open);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    const previous = document.activeElement as HTMLElement | null;
-    window.setTimeout(() => {
-      const firstFocusable = sheetRef.current?.querySelector<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])');
-      (firstFocusable ?? sheetRef.current)?.focus();
-    }, 0);
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      previous?.focus?.();
-    };
-  }, [onClose, open]);
+  useFocusTrap(open, sheetRef, onClose, 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])');
 
   if (!open) return null;
   return (

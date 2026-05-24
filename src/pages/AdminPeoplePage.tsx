@@ -116,8 +116,8 @@ export function AdminPeoplePage() {
     <section className="page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People Database'}
-        title={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People Database'}
+        eyebrow={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}
+        title={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}
         description={language === 'th' ? 'ข้อมูลบุคคลกลางที่ใช้เชื่อมหลายกิจกรรม เช่น นักศึกษาปี 2 ทีมงาน ผู้เข้าร่วม และผู้สมัครสตาฟ' : 'Central people records used across events, year 2 imports, staff, participants, and staff applications.'}
         meta={<div className="form-actions"><Link className="btn btn-secondary" to="/admin/people/dedupe"><GitMerge size={18} />{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Dedupe'}</Link><Button variant="secondary" icon={<RefreshCw size={18} />} loading={loading} onClick={() => void loadData()}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button></div>}
         actions={<HelpButton topicId="admin.people-directory" variant="link" />}

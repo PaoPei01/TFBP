@@ -94,8 +94,8 @@ export function AdminStaffAttendancePage() {
     <section className="page-stack admin-staff-attendance-page">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow="Staff Attendance"
-        title={language === 'th' ? 'ระบบเช็กชื่อทีมงาน' : 'Staff Attendance'}
+        eyebrow={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}
+        title={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}
         description={language === 'th'
           ? `สร้างรอบเช็กชื่อ แสดง QR ให้ทีมงานสแกน และเช็กชื่อสำรองแบบ manual ได้${currentEvent ? ` · กิจกรรมปัจจุบัน: ${currentEvent.name_th}` : ''}`
           : `Create sessions, show QR links for staff, and manually check staff in when needed.${currentEvent ? ` Current event: ${currentEvent.name_en || currentEvent.name_th}` : ''}`}

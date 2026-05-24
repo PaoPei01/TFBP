@@ -704,6 +704,18 @@ Use this checklist before real event operations and after every production-readi
 - [ ] Click HelpButton on `/admin/events/:eventId/applications`.
 - [ ] Click HelpButton on Document Center event context card.
 - [ ] Click HelpButton on Admin Attendance event context card.
+
+## Phase 6 Global UX Cleanup
+
+- [ ] Thai terminology is consistent for `ผู้เข้าร่วม`, `ข้อมูลของฉัน`, `ทีมงาน`, `เช็กชื่อทีมงาน`, `ศูนย์ควบคุมระบบ`, `ศูนย์เอกสาร`, `ตรวจสุขภาพข้อมูล`, and `ตรวจความพร้อมระบบ`.
+- [ ] English terminology is consistent for `Participants`, `My information`, `Staff`, `Staff check-in`, `Admin Command Center`, `Document Center`, `Data Health`, and `System Readiness`.
+- [ ] Mobile More menu opens, traps focus, closes with Escape/backdrop, and returns focus to the opener.
+- [ ] Mobile filter sheets open, trap focus, close with Escape/backdrop, and restore body scroll.
+- [ ] Modals and Help drawers lock body scroll, trap focus, and restore focus after close.
+- [ ] Icon-only close/menu/filter buttons have accessible labels.
+- [ ] ResponsiveDataTable mobile cards show key fields first and tuck long fields into details.
+- [ ] Export actions use `ส่งออก` / `Export` wording and stay visually secondary when multiple export options exist.
+- [ ] Reduced-motion mode does not rely on hover/reveal/shimmer animation to understand loading or status.
 - [ ] HelpDrawer opens with the correct topic.
 - [ ] Click `อ่านวิธีใช้เต็ม`.
 - [ ] Full guide topic opens.

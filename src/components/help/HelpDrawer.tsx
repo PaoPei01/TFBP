@@ -1,7 +1,9 @@
 import { ArrowRight, X } from 'lucide-react';
-import { useEffect, useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { GuideTopic } from '../../lib/guideContent';
 import { getGuideTopicPath } from '../../lib/guideRegistry';
 import { Button } from '../ui/Button';
@@ -16,21 +18,8 @@ export function HelpDrawer({ open, topic, onClose }: HelpDrawerProps) {
   const { language } = useLanguage();
   const titleId = useId();
   const drawerRef = useRef<HTMLElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    previousFocusRef.current = document.activeElement as HTMLElement | null;
-    window.setTimeout(() => drawerRef.current?.focus(), 0);
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      previousFocusRef.current?.focus?.();
-    };
-  }, [onClose, open]);
+  useBodyScrollLock(open);
+  useFocusTrap(open, drawerRef, onClose);
 
   if (!open) return null;
 

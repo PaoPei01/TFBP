@@ -119,7 +119,7 @@ export function DataHealthPage() {
         eyebrow="Data Health"
         title={language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}
         description={language === 'th' ? 'ตรวจข้อมูลนำเข้า สาขา placeholder ข้อมูลซ้ำ และ assignment ที่อาจผิดปกติ' : 'Check imports, majors, placeholders, duplicates, and assignment integrity.'}
-        meta={<div className="form-actions"><Button variant="secondary" icon={<Download size={18} />} onClick={downloadIssueCsv}>{language === 'th' ? 'Download CSV' : 'Download CSV'}</Button><Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button></div>}
+        meta={<div className="form-actions"><Button variant="secondary" icon={<Download size={18} />} onClick={downloadIssueCsv}>{language === 'th' ? 'ส่งออก CSV' : 'Export CSV'}</Button><Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button></div>}
       />
 
       {state.loading ? <LoadingSkeleton /> : null}

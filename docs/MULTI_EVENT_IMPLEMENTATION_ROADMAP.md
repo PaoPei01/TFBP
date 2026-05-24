@@ -742,3 +742,21 @@ QA focus:
 - Existing DOCX template upload, preview, generation, download, and history download still work.
 - Missing information warning helps admins complete settings without changing backend validation.
 - Document Center remains admin-only and private storage behavior is unchanged.
+
+## Global Portal Cleanup Pass
+
+Status: implemented as a frontend-only quality pass with no backend, schema, RPC, RLS, or Storage changes.
+
+Completed:
+
+- Added shared copy keys for repeated role-aware portal terminology such as participants, My information, Staff check-in, Admin Command Center, Document Center, Data Health, System Readiness, edit/update requests, duplicate check, export, and more actions.
+- Standardized visible copy on high-use admin/staff surfaces from older labels such as `Staff Attendance`, `People Database`, and raw `Download CSV` to clearer Thai-first and concise English labels.
+- Improved modal, Help drawer, mobile More menu, and mobile filter sheet accessibility with shared focus trapping, Escape close, focus return, and stronger body scroll locking.
+- Improved `ResponsiveDataTable` mobile cards with localized details labels, status-friendly empty state semantics, and labelled mobile action areas.
+- Added guidance and QA checks for export wording, mobile sheet behavior, icon-only controls, reduced motion, and terminology consistency.
+
+QA focus:
+
+- Mobile menus and sheets do not allow background scroll and return focus correctly.
+- Admin/staff export buttons still work and use clearer `ส่งออก / Export` wording.
+- Existing routes and permissions remain unchanged.

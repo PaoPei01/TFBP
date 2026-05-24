@@ -651,7 +651,7 @@ export function AdminEventApplicationsPage() {
                     {language === 'th' ? 'ดูผู้สมัครฝ่ายนี้' : 'View this duty'}
                   </Button>
                   <Button size="sm" variant="secondary" icon={<FileSpreadsheet size={16} />} onClick={() => requestExcelExport('by_assigned_duty', duty.duty_key)}>
-                    {language === 'th' ? 'Excel รายฝ่าย' : 'Duty Excel'}
+                    {language === 'th' ? 'ดาวน์โหลด Excel ฝ่ายนี้' : 'Export this duty'}
                   </Button>
                 </div>
               ))}
@@ -705,7 +705,7 @@ export function AdminEventApplicationsPage() {
               </div>
             </details>
             <div>
-              <p className="eyebrow">{language === 'th' ? 'ดาวน์โหลดข้อมูลผู้สมัคร' : 'Download applications'}</p>
+              <p className="eyebrow">{language === 'th' ? 'ส่งออกข้อมูล' : 'Export data'}</p>
             </div>
             <div className="event-card-actions">
               <ExportActions

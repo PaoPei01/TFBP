@@ -60,6 +60,7 @@ export function Layout() {
   const canAttend = Boolean(isStaff || access?.can_mark_attendance);
   const canEmergency = Boolean(access?.can_view_emergency || access?.is_admin);
   const loginCopy = language === 'th' ? copy.th : copy.en;
+  const uiCopy = language === 'th' ? copy.th : copy.en;
   const langButtonLabel = language === 'th' ? 'ไทย' : 'EN';
   const switchLanguageLabel = language === 'th' ? 'EN' : 'ไทย';
 
@@ -104,7 +105,7 @@ export function Layout() {
               {isAdmin ? (
                 <>
                   <span className="nav-menu-label">{language === 'th' ? 'ภาพรวม' : 'Overview'}</span>
-                  <NavLink to="/admin">{language === 'th' ? 'ศูนย์ควบคุมระบบ' : 'Admin Command Center'}</NavLink>
+                  <NavLink to="/admin">{uiCopy.adminCommandCenter}</NavLink>
                   <NavLink to="/admin/dashboard">{t.dashboard}</NavLink>
                   <NavLink to="/admin/events">{t('navigation.events')}</NavLink>
                   <NavLink to="/admin/announcements">{t('navigation.announcements')}</NavLink>
@@ -114,24 +115,24 @@ export function Layout() {
                   <NavLink to="/admin/people-groups">{language === 'th' ? 'รายชื่อและกลุ่ม' : 'People & Groups'}</NavLink>
                   <NavLink to="/admin/people">{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}</NavLink>
                   <NavLink to="/admin/groups">{t.groups}</NavLink>
-                  <NavLink to="/admin/requests">{language === 'th' ? 'คำขอแก้ไขเดิม' : 'Edit Requests'}</NavLink>
-                  <NavLink to="/admin/people/update-requests">{language === 'th' ? 'คำร้องแก้ข้อมูล' : 'Update requests'}</NavLink>
-                  <NavLink to="/admin/people/dedupe">{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Duplicate check'}</NavLink>
+                  <NavLink to="/admin/requests">{uiCopy.editRequests}</NavLink>
+                  <NavLink to="/admin/people/update-requests">{uiCopy.updateRequests}</NavLink>
+                  <NavLink to="/admin/people/dedupe">{uiCopy.duplicateCheck}</NavLink>
                   <NavLink to="/admin/people/import-year2">{language === 'th' ? 'นำเข้าฐานปี 2' : 'Import Year 2'}</NavLink>
 
                   <span className="nav-menu-label">{language === 'th' ? 'งานทีมงาน' : 'Staff Operations'}</span>
                   <NavLink to="/admin/staff-ops">{language === 'th' ? 'งานทีมงาน' : 'Staff Operations'}</NavLink>
                   <NavLink to="/admin/staff">{t('navigation.staff')}</NavLink>
-                  <NavLink to="/admin/staff/attendance">{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</NavLink>
+                  <NavLink to="/admin/staff/attendance">{uiCopy.staffCheckIn}</NavLink>
                   <NavLink to="/admin/staff/operations">{language === 'th' ? 'โควตา/งานทีมงาน' : 'Staff Quota / Operations'}</NavLink>
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
                   <NavLink to="/admin/staff/requests">{language === 'th' ? 'คำขอแก้ไขทีมงาน' : 'Staff Requests'}</NavLink>
-                  <NavLink to="/admin/emergency">{language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'}</NavLink>
+                  <NavLink to="/admin/emergency">{uiCopy.emergency}</NavLink>
 
                   <span className="nav-menu-label">{language === 'th' ? 'เอกสารและระบบ' : 'Documents & System'}</span>
-                  <NavLink to="/admin/documents">{language === 'th' ? 'ศูนย์เอกสาร' : 'Document Center'}</NavLink>
-                  <NavLink to="/admin/data-health">{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
-                  <NavLink to="/admin/system-readiness">{language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System Readiness'}</NavLink>
+                  <NavLink to="/admin/documents">{uiCopy.documentCenter}</NavLink>
+                  <NavLink to="/admin/data-health">{uiCopy.dataHealth}</NavLink>
+                  <NavLink to="/admin/system-readiness">{uiCopy.systemReadiness}</NavLink>
                   <NavLink to="/admin/logs">{t.logs}</NavLink>
                 </>
               ) : null}
@@ -155,7 +156,7 @@ export function Layout() {
                 <strong>{user.email ?? user.id}</strong>
                 {isStaff ? <NavLink to="/staff">{loginCopy.staffHome}</NavLink> : null}
                 {isStaff ? <NavLink to="/staff/profile">{language === 'th' ? 'โปรไฟล์ของฉัน' : 'My Profile'}</NavLink> : null}
-                {isAdmin ? <NavLink to="/admin">{language === 'th' ? 'ศูนย์ควบคุมระบบ' : 'Admin Command Center'}</NavLink> : null}
+                {isAdmin ? <NavLink to="/admin">{uiCopy.adminCommandCenter}</NavLink> : null}
                 <button type="button" onClick={signOut}><LogOut size={16} />{language === 'th' ? 'ออกจากระบบ' : 'Sign out'}</button>
               </div>
             </details>
@@ -205,7 +206,7 @@ export function Layout() {
           <>
             <NavLink to="/admin">
               <Shield size={19} />
-              <span>{language === 'th' ? 'แดชบอร์ด' : 'Dashboard'}</span>
+              <span>{language === 'th' ? 'ศูนย์ควบคุม' : 'Dashboard'}</span>
             </NavLink>
             <NavLink to="/admin/people-groups">
               <UsersRound size={19} />
@@ -234,7 +235,7 @@ export function Layout() {
             {canAttend ? (
               <NavLink to="/staff/attendance">
                 <UserCheck size={19} />
-                <span>{language === 'th' ? 'เช็กชื่อ' : 'Check-in'}</span>
+                <span>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}</span>
               </NavLink>
             ) : null}
             {access?.can_view_staff ? (
@@ -266,7 +267,7 @@ export function Layout() {
           <>
             <div className="mobile-more-section">
               <span className="mobile-more-section-title">{language === 'th' ? 'ภาพรวม' : 'Overview'}</span>
-              <NavLink to="/admin"><Shield size={18} />{language === 'th' ? 'ศูนย์ควบคุมระบบ' : 'Admin Command Center'}</NavLink>
+              <NavLink to="/admin"><Shield size={18} />{uiCopy.adminCommandCenter}</NavLink>
               <NavLink to="/admin/dashboard"><Shield size={18} />{language === 'th' ? 'แดชบอร์ด' : 'Dashboard'}</NavLink>
               <NavLink to="/admin/events"><CalendarDays size={18} />{language === 'th' ? 'กิจกรรม' : 'Events'}</NavLink>
               <NavLink to="/admin/announcements"><Bell size={18} />{language === 'th' ? 'ประกาศ' : 'Announcements'}</NavLink>
@@ -276,25 +277,25 @@ export function Layout() {
               <span className="mobile-more-section-title">{language === 'th' ? 'รายชื่อและกลุ่ม' : 'People & Groups'}</span>
               <NavLink to="/admin/people-groups"><UsersRound size={18} />{language === 'th' ? 'รายชื่อและกลุ่ม' : 'People & Groups'}</NavLink>
               <NavLink to="/admin/groups"><UsersRound size={18} />{language === 'th' ? 'จัดกลุ่ม' : 'Groups'}</NavLink>
-              <NavLink to="/admin/people"><Database size={18} />{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People Database'}</NavLink>
-              <NavLink to="/admin/people/update-requests"><Database size={18} />{language === 'th' ? 'คำร้องแก้ข้อมูล' : 'Update Requests'}</NavLink>
-              <NavLink to="/admin/people/dedupe"><Database size={18} />{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Duplicate Check'}</NavLink>
+              <NavLink to="/admin/people"><Database size={18} />{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}</NavLink>
+              <NavLink to="/admin/people/update-requests"><Database size={18} />{uiCopy.updateRequests}</NavLink>
+              <NavLink to="/admin/people/dedupe"><Database size={18} />{uiCopy.duplicateCheck}</NavLink>
               <NavLink to="/admin/people/import-year2"><Database size={18} />{language === 'th' ? 'นำเข้าฐานปี 2' : 'Import Year 2'}</NavLink>
             </div>
             <div className="mobile-more-section">
               <span className="mobile-more-section-title">{language === 'th' ? 'งานสตาฟ' : 'Staff Operations'}</span>
               <NavLink to="/admin/staff-ops"><UserCheck size={18} />{language === 'th' ? 'งานทีมงาน' : 'Staff Operations'}</NavLink>
               <NavLink to="/admin/staff"><UserCheck size={18} />{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
-              <NavLink to="/admin/staff/attendance"><UserCheck size={18} />{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</NavLink>
+              <NavLink to="/admin/staff/attendance"><UserCheck size={18} />{uiCopy.staffCheckIn}</NavLink>
               <NavLink to="/admin/staff/operations"><UsersRound size={18} />{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
               <NavLink to="/admin/staff/requests"><Pencil size={18} />{language === 'th' ? 'คำขอทีมงาน' : 'Staff Requests'}</NavLink>
-              <NavLink to="/admin/emergency"><HeartPulse size={18} />{language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'}</NavLink>
+              <NavLink to="/admin/emergency"><HeartPulse size={18} />{uiCopy.emergency}</NavLink>
             </div>
             <div className="mobile-more-section">
               <span className="mobile-more-section-title">{language === 'th' ? 'เอกสารและระบบ' : 'Documents & System'}</span>
-              <NavLink to="/admin/documents"><FileText size={18} />{language === 'th' ? 'ศูนย์เอกสาร' : 'Document Center'}</NavLink>
-              <NavLink to="/admin/data-health"><ShieldCheck size={18} />{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
-              <NavLink to="/admin/system-readiness"><ShieldCheck size={18} />{language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System Readiness'}</NavLink>
+              <NavLink to="/admin/documents"><FileText size={18} />{uiCopy.documentCenter}</NavLink>
+              <NavLink to="/admin/data-health"><ShieldCheck size={18} />{uiCopy.dataHealth}</NavLink>
+              <NavLink to="/admin/system-readiness"><ShieldCheck size={18} />{uiCopy.systemReadiness}</NavLink>
               <NavLink to="/admin/logs"><Search size={18} />{language === 'th' ? 'ประวัติ' : 'Logs'}</NavLink>
               <div className="mobile-more-control"><ThemeSwitcher /></div>
               <button type="button" aria-label="เปลี่ยนภาษา / Change language" onClick={toggleLanguage}><Languages size={18} />{language === 'th' ? 'เปลี่ยนภาษาเป็น EN' : 'Change language to ไทย'}</button>
@@ -307,7 +308,7 @@ export function Layout() {
               <span className="mobile-more-section-title">{language === 'th' ? 'งานวันนี้' : 'Today'}</span>
               <NavLink to="/staff"><Shield size={18} />{language === 'th' ? 'หน้าทีมงาน' : 'Staff home'}</NavLink>
               {access?.can_view_staff ? <NavLink to="/staff/my-group"><UsersRound size={18} />{language === 'th' ? 'รายชื่อกลุ่มของฉัน' : 'My group list'}</NavLink> : null}
-              {canAttend ? <NavLink to="/staff/attendance"><UserCheck size={18} />{language === 'th' ? 'เช็กชื่อ' : 'Attendance'}</NavLink> : null}
+              {canAttend ? <NavLink to="/staff/attendance"><UserCheck size={18} />{uiCopy.staffCheckIn}</NavLink> : null}
               {canEmergency ? <NavLink to="/staff/emergency"><HeartPulse size={18} />{language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'}</NavLink> : null}
             </div>
             <div className="mobile-more-section">

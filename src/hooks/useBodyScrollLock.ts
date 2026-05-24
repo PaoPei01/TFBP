@@ -12,9 +12,17 @@ export function useBodyScrollLock(locked: boolean) {
       left: document.body.style.left,
       right: document.body.style.right,
       width: document.body.style.width,
+      overscrollBehavior: document.body.style.overscrollBehavior,
+    };
+    const previousHtmlStyle = {
+      overflow: document.documentElement.style.overflow,
+      overscrollBehavior: document.documentElement.style.overscrollBehavior,
     };
 
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.overscrollBehavior = 'none';
     document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
     document.body.style.left = '0';
@@ -28,6 +36,9 @@ export function useBodyScrollLock(locked: boolean) {
       document.body.style.left = previousBodyStyle.left;
       document.body.style.right = previousBodyStyle.right;
       document.body.style.width = previousBodyStyle.width;
+      document.body.style.overscrollBehavior = previousBodyStyle.overscrollBehavior;
+      document.documentElement.style.overflow = previousHtmlStyle.overflow;
+      document.documentElement.style.overscrollBehavior = previousHtmlStyle.overscrollBehavior;
       window.scrollTo(0, scrollY);
     };
   }, [locked]);

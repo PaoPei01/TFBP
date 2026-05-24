@@ -200,7 +200,7 @@ export function AdminStaffAttendanceSessionPage() {
         actions={(
           <>
             <Link className="btn btn-secondary" to="/admin/staff/attendance">{language === 'th' ? 'ทุกรอบ' : 'All sessions'}</Link>
-            <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportStaffAttendanceCsv(state.data?.roster ?? [], `${session.title}.csv`)}>CSV</Button>
+            <Button variant="secondary" icon={<Download size={18} />} onClick={() => exportStaffAttendanceCsv(state.data?.roster ?? [], `${session.title}.csv`)}>{language === 'th' ? 'ส่งออก CSV' : 'Export CSV'}</Button>
             <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
           </>
         )}

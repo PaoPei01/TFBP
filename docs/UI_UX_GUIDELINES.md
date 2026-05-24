@@ -141,13 +141,15 @@ Preferred wording:
 - Touch targets must be at least 44px.
 - Focus states must be visible.
 - Icon-only buttons need `aria-label`.
-- Modals must keep focus inside the dialog, restore focus on close, and close on Escape/backdrop where safe.
-- Mobile bottom sheets and menus must focus the sheet on open and restore focus on close.
+- Modals, help drawers, mobile More menus, and mobile filter sheets must keep focus inside the dialog, restore focus on close, and close on Escape/backdrop where safe.
+- Mobile bottom sheets and menus must lock body scroll while open and restore scroll position on close.
 - Do not rely on color alone.
 - Form inputs need labels.
 - Phone fields should use `type="tel"` and `inputMode="tel"`; email fields should use `type="email"`.
 - Tables need headers.
 - Respect `prefers-reduced-motion`.
+- Export buttons should be grouped under `ส่งออก / Export` or visually treated as secondary actions when multiple export formats exist.
+- Use `ส่งออก CSV / Export CSV` and `ส่งออกข้อมูล / Export data` instead of mixing raw `Download CSV` labels into Thai UI.
 
 ## Layout Stability
 

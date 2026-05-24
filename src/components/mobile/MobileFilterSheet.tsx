@@ -1,9 +1,10 @@
 import { SlidersHorizontal, X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '../ui/Button';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 type MobileFilterSheetProps = {
   open: boolean;
@@ -20,23 +21,7 @@ export function MobileFilterSheet({ open, title, description, children, primaryL
   const { language } = useLanguage();
   const sheetRef = useRef<HTMLElement>(null);
   useBodyScrollLock(open);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    const previous = document.activeElement as HTMLElement | null;
-    window.setTimeout(() => {
-      const firstFocusable = sheetRef.current?.querySelector<HTMLElement>('input, select, textarea, button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
-      (firstFocusable ?? sheetRef.current)?.focus();
-    }, 0);
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      previous?.focus?.();
-    };
-  }, [onClose, open]);
+  useFocusTrap(open, sheetRef, onClose, 'input, select, textarea, button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
 
   if (!open) return null;
   return (

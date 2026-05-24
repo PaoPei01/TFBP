@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { Card } from './Card';
 
 export type Column<T> = {
@@ -42,12 +43,15 @@ export function ResponsiveDataTable<T>({
   mobileSubtitle,
   mobileMeta,
   mobileActions,
-  mobileDetailsLabel = 'Details',
+  mobileDetailsLabel,
   mobileDefaultOpen = false,
   getRowTone,
 }: Props<T>) {
+  const { language } = useLanguage();
+  const detailsLabel = mobileDetailsLabel ?? (language === 'th' ? 'รายละเอียดเพิ่มเติม' : 'More details');
+
   if (!rows.length) {
-    return <div className="empty-state">{emptyText}</div>;
+    return <div className="empty-state" role="status">{emptyText}</div>;
   }
 
   const mobileColumns = columns.filter((column) => column.key !== 'actions' && !column.mobileHidden);
@@ -107,7 +111,7 @@ export function ResponsiveDataTable<T>({
             ) : null}
             {mobileDetailColumns.length ? (
               <details open={mobileDefaultOpen}>
-                <summary>{mobileDetailsLabel}</summary>
+                <summary aria-label={language === 'th' ? 'เปิดรายละเอียดเพิ่มเติมของรายการนี้' : 'Open more details for this record'}>{detailsLabel}</summary>
                 {mobileDetailColumns.map((column) => (
                   <div key={column.key} className={column.priority ? `mobile-detail-${column.priority}` : undefined}>
                     <span>{column.mobileLabel ?? column.header}</span>
@@ -126,7 +130,7 @@ export function ResponsiveDataTable<T>({
                 ))}
               </div>
             ) : null}
-            {mobileActions ? <div className="mobile-card-actions">{mobileActions(row)}</div> : actionColumn ? <div className="mobile-card-actions">{actionColumn.render(row)}</div> : null}
+            {mobileActions ? <div className="mobile-card-actions" aria-label={language === 'th' ? 'การทำงานของรายการนี้' : 'Record actions'}>{mobileActions(row)}</div> : actionColumn ? <div className="mobile-card-actions" aria-label={language === 'th' ? 'การทำงานของรายการนี้' : 'Record actions'}>{actionColumn.render(row)}</div> : null}
           </Card>
         ))}
       </div>

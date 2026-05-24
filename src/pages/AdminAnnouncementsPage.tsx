@@ -45,7 +45,7 @@ export function AdminAnnouncementsPage() {
         onConfirm={remove}
         onClose={() => setDeleteId(null)}
       />
-      <PageHeader eyebrow="Announcements" title={language === 'th' ? 'จัดการประกาศกิจกรรม' : 'Manage Announcements'} description={language === 'th' ? 'แผนที่ กำหนดการ จราจร FAQ และอัปเดตสำคัญ' : 'Maps, schedules, traffic plans, FAQs, and important updates.'} meta={<EventSwitcher compact />} actions={<Link className="btn btn-primary" to="/admin/announcements/new"><Plus size={18} />{language === 'th' ? 'สร้างประกาศ' : 'New'}</Link>} />
+      <PageHeader eyebrow="Announcements" title={language === 'th' ? 'จัดการประกาศกิจกรรม' : 'Manage announcements'} description={language === 'th' ? 'แผนที่ กำหนดการ จราจร FAQ และอัปเดตสำคัญ' : 'Maps, schedules, traffic plans, FAQs, and important updates.'} meta={<EventSwitcher compact />} actions={<Link className="btn btn-primary" to="/admin/announcements/new"><Plus size={18} />{language === 'th' ? 'สร้างประกาศ' : 'New announcement'}</Link>} />
       {state.loading ? <LoadingSkeleton /> : null}
       {state.error ? <div className="error-state">{state.error}</div> : null}
       <ResponsiveDataTable
@@ -61,7 +61,7 @@ export function AdminAnnouncementsPage() {
           { key: 'event', header: language === 'th' ? 'กิจกรรม' : 'Event', render: (row) => events.find((event) => event.id === row.event_id)?.name_th ?? (row.event_id ? row.event_id : (language === 'th' ? 'ทุกกิจกรรม' : 'Global')) },
           { key: 'priority', header: language === 'th' ? 'ความสำคัญ' : 'Priority', render: (row) => <Badge status={row.priority === 'critical' ? 'rejected' : row.priority === 'important' ? 'pending' : 'approved'}>{row.priority}</Badge> },
           { key: 'visible', header: language === 'th' ? 'แสดง' : 'Visible', render: (row) => row.visible ? 'ON' : 'OFF' },
-          { key: 'actions', header: language === 'th' ? 'จัดการ' : 'Actions', render: (row) => <div className="row-actions"><Link className="btn btn-secondary" to={`/admin/announcements/${row.id}/edit`}><Edit3 size={16} />Edit</Link><Button variant="danger" icon={<Trash2 size={16} />} onClick={() => setDeleteId(row.id)}>Delete</Button></div> },
+          { key: 'actions', header: language === 'th' ? 'จัดการ' : 'Actions', render: (row) => <div className="row-actions"><Link className="btn btn-secondary" to={`/admin/announcements/${row.id}/edit`}><Edit3 size={16} />{language === 'th' ? 'แก้ไข' : 'Edit'}</Link><Button variant="danger" icon={<Trash2 size={16} />} onClick={() => setDeleteId(row.id)}>{language === 'th' ? 'ลบ' : 'Delete'}</Button></div> },
         ]}
       />
     </section>

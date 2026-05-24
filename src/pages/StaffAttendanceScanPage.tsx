@@ -135,7 +135,7 @@ export function StaffAttendanceScanPage() {
     <section className="narrow-page page-stack staff-attendance-scan-page">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow="Staff Attendance"
+        eyebrow={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}
         title={language === 'th' ? 'เช็กชื่อด้วย QR รอบกิจกรรม' : 'Session QR Check-in'}
         description={language === 'th' ? 'กรอกอีเมลและเบอร์โทรที่ใช้ลงทะเบียนทีมงาน หากไม่ได้เข้าสู่ระบบ' : 'Enter the email and phone used for staff registration if you are not signed in.'}
         actions={<HelpButton topicId="staff-attendance.session-qr" variant="link" />}
@@ -153,7 +153,7 @@ export function StaffAttendanceScanPage() {
         <Card className="scan-verify-card">
           <div>
             <p className="eyebrow">{language === 'th' ? 'ยืนยันตัวตนทีมงาน' : 'Staff verification'}</p>
-            <h2>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</h2>
+            <h2>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}</h2>
             <p>{language === 'th' ? 'กรอกอีเมลและเบอร์โทรที่ใช้ลงทะเบียนทีมงาน' : 'Enter the email and phone used for staff registration.'}</p>
           </div>
           <form className="form-grid" onSubmit={submitVerified}>

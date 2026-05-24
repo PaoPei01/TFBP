@@ -168,13 +168,13 @@ export function StaffAttendancePage() {
     <section className="page-stack staff-page staff-attendance-home staff-attendance-simple">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow="Staff Attendance"
+        eyebrow={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}
         title={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}
         description={language === 'th' ? 'ยืนยันตัวตนครั้งเดียว แล้วเลือกว่าจะให้แอดมินสแกนคุณ หรือสแกน QR รอบเช็กชื่อด้วยตัวเอง' : 'Verify once, then choose whether an admin scans you or you scan the session QR yourself.'}
         actions={(
           <>
             <HelpButton topicId="staff-attendance.overview" variant="link" />
-            {isAuthenticated ? <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าสตาฟ' : 'Staff Home'}</Link> : null}
+            {isAuthenticated ? <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าทีมงาน' : 'Staff home'}</Link> : null}
           </>
         )}
       />
