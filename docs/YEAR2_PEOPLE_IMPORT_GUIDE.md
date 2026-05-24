@@ -99,6 +99,46 @@ They are not imported into `people`, `people.metadata`, legacy `profiles`, or `s
 
 Public pages must continue reading from public-safe participant views/routes. `people` is admin-only by RLS.
 
+## Private Health Profile Backfill
+
+Reusable health data for staff application prefill belongs in `public.person_health_profiles`, not in `public.people` and not in `people.metadata`.
+
+The staff application form reads `person_health_profiles` only through a safe applicant RPC after identity verification. It still stores a submitted snapshot in `staff_applications.answers.health_details` after the applicant reviews and confirms the data.
+
+For future maintenance, admins can preview Year 2 staged health data before manually backfilling private health profiles:
+
+```sql
+select public.preview_person_health_profiles_year2_backfill();
+```
+
+Review:
+
+- `source_rows_with_health_data`
+- `matched_people`
+- `already_existing_profiles`
+- `rows_that_would_insert`
+- `rows_that_would_update`
+- `unmatched_rows`
+- `sample_matched_rows`
+- `sample_unmatched_rows`
+
+If the preview looks correct, an admin may manually run:
+
+```sql
+select public.backfill_person_health_profiles_from_year2_import();
+```
+
+This RPC:
+
+- reads `medical_condition_raw`, `drug_allergy_raw`, and `food_allergy_raw` from `public.people_import_year2_2569`.
+- matches active `people` rows by cleaned `student_id`.
+- skips `people.merged_into is not null`.
+- upserts `public.person_health_profiles` by `person_id`.
+- sets `source = 'people_import_year2_2569'`.
+- preserves an existing `health_note` when updating an existing profile.
+
+The backfill is never automatic on deploy. Do not run it until the preview is reviewed.
+
 ## Rollback Notes
 
 Before production import, take a database backup or snapshot.
