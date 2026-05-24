@@ -23,6 +23,7 @@ const DemoAttendanceFlowPage = lazy(() => import('./pages/DemoAttendanceFlowPage
 const DemoEmergencyFlowPage = lazy(() => import('./pages/DemoEmergencyFlowPage').then((module) => ({ default: module.DemoEmergencyFlowPage })));
 const DemoLandingPage = lazy(() => import('./pages/DemoLandingPage').then((module) => ({ default: module.DemoLandingPage })));
 const DemoStaffFlowPage = lazy(() => import('./pages/DemoStaffFlowPage').then((module) => ({ default: module.DemoStaffFlowPage })));
+const DemoStoryPage = lazy(() => import('./pages/DemoStoryPage').then((module) => ({ default: module.DemoStoryPage })));
 const DemoSystemFlowPage = lazy(() => import('./pages/DemoSystemFlowPage').then((module) => ({ default: module.DemoSystemFlowPage })));
 const EventsPage = lazy(() => import('./pages/EventsPage').then((module) => ({ default: module.EventsPage })));
 const EventAnnouncementDetailPage = lazy(() => import('./pages/EventAnnouncementDetailPage').then((module) => ({ default: module.EventAnnouncementDetailPage })));
@@ -79,6 +80,7 @@ export function App() {
         <Route path="announcements" element={<Suspense fallback={<RouteLoadingFallback />}><AnnouncementsPage /></Suspense>} />
         <Route path="announcements/:id" element={<Suspense fallback={<RouteLoadingFallback />}><AnnouncementDetailPage /></Suspense>} />
         <Route path="demo" element={<Suspense fallback={<RouteLoadingFallback />}><DemoLandingPage /></Suspense>} />
+        <Route path="demo/story" element={<Suspense fallback={<RouteLoadingFallback />}><DemoStoryPage /></Suspense>} />
         <Route path="demo/staff" element={<Suspense fallback={<RouteLoadingFallback />}><DemoStaffFlowPage /></Suspense>} />
         <Route path="demo/system" element={<Suspense fallback={<RouteLoadingFallback />}><DemoSystemFlowPage /></Suspense>} />
         <Route path="demo/attendance" element={<Suspense fallback={<RouteLoadingFallback />}><DemoAttendanceFlowPage /></Suspense>} />

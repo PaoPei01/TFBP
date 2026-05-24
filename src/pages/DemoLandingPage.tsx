@@ -1,10 +1,17 @@
-import { Activity, AlertTriangle, ClipboardCheck, Settings, UsersRound } from 'lucide-react';
+import { Activity, AlertTriangle, ClipboardCheck, Presentation, Settings, UsersRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { PageHeader } from '../components/ui/PageHeader';
 import { demoEvent } from '../data/demoEntaneerGear56';
 
 const demoCards = [
+  {
+    icon: <Presentation size={24} />,
+    title: 'Demo Story',
+    description: 'หน้าเล่าเรื่องสำหรับ briefing และอัดวิดีโออธิบายระบบ Entaneer Gear 56 แบบเป็นลำดับ',
+    cta: 'เปิด Demo Story',
+    to: '/demo/story',
+  },
   {
     icon: <UsersRound size={24} />,
     title: 'ทีมงานทั่วไป',

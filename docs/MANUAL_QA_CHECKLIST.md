@@ -80,11 +80,17 @@ Use this checklist before real event operations and after every production-readi
 ## Public
 
 - [ ] Open `/#/demo`.
+- [ ] Open `/#/demo/story`.
 - [ ] Open `/#/demo/staff`.
 - [ ] Open `/#/demo/system`.
 - [ ] Open `/#/demo/attendance`.
 - [ ] Open `/#/demo/emergency`.
 - [ ] Confirm `/#/demo/documents` does not exist and redirects or falls back safely.
+- [ ] Confirm `/#/demo/story` uses Entaneer Gear 56 mock data only.
+- [ ] Confirm `/#/demo/story` has no Parent Orientation, document feature, or public applicant content.
+- [ ] Confirm `/#/demo/story` keyboard controls work: right arrow/space next, left arrow previous, escape back to `/#/demo`.
+- [ ] Confirm `/#/demo/story` has no horizontal scroll at mobile and desktop widths.
+- [ ] Confirm `/#/demo/story` is readable in dark theme.
 - [ ] Confirm no Parent Orientation content appears in Demo Mode.
 - [ ] Confirm no document feature, document template, document generation, or document history appears in Demo Mode.
 - [ ] Confirm every demo page says `โหมดสาธิต`, `Demo Mode`, and that all data is mock data.
