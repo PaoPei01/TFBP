@@ -509,15 +509,15 @@ export function AdminEventApplicationsPage() {
     return [
       {
         label: language === 'th' ? 'โรคประจำตัว / ข้อจำกัด' : 'Chronic condition / limitation',
-        value: details.chronic_condition || row.people?.disease,
+        value: details.chronic_condition,
       },
       {
         label: language === 'th' ? 'แพ้อาหาร' : 'Food allergy',
-        value: details.food_allergy || row.people?.food_allergy,
+        value: details.food_allergy,
       },
       {
         label: language === 'th' ? 'แพ้ยา' : 'Drug allergy',
-        value: details.drug_allergy || row.people?.drug_allergy,
+        value: details.drug_allergy,
       },
       {
         label: language === 'th' ? 'หมายเหตุสุขภาพ' : 'Health note',
