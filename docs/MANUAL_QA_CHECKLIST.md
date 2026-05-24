@@ -718,6 +718,18 @@ Use this checklist before real event operations and after every production-readi
 
 ## Mobile QA
 
+- [ ] Public `/` shows the `สานสัมพันธ์ 69 / Entaneer Bonding 69` participant portal hero above search.
+- [ ] Public portal action card `ค้นหารายชื่อและกลุ่ม` scrolls to participant search and focuses the search input.
+- [ ] Public portal action cards link to `/me`, `/events`, and `/announcements`.
+- [ ] Public participant search copy says it shows only safe public information and hides contact, health, and private details.
+- [ ] Public participant modal shows only safe fields, explains self-verification, and links to `/me`.
+- [ ] `/me` and `/edit` both keep email + phone verification and show the `ข้อมูลของฉัน / My information` flow.
+- [ ] Edit request submit action appears only after a real editable-field change.
+- [ ] `ล้างการแก้ไข / Reset changes` restores editable fields to verified profile values.
+- [ ] Group info after verification shows basic info, group, meeting point, and privacy-safe staff/mentor details when available.
+- [ ] Friend recommendations are collapsed by default and labeled as public-profile-only group members.
+- [ ] Event detail pages show action cards for registration, staff application, application status, profile/group check, and event announcements.
+- [ ] Closed/not-open event actions use friendly disabled copy and old deep event routes still open directly.
 - [ ] `/portal` loads for public users and shows public, events, my information, staff, announcements, and sign-in options.
 - [ ] `/portal` redirects authenticated staff to `/staff` and authenticated admins to `/admin`.
 - [ ] `/me` loads the My information flow and keeps email + phone verification.

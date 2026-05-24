@@ -37,6 +37,12 @@ function registrationCopy(status: string, language: 'th' | 'en') {
   return language === 'th' ? 'ยังไม่เปิดรับสมัคร' : 'Registration is not open yet';
 }
 
+function staffApplyCopy(status: string, language: 'th' | 'en') {
+  if (status === 'staff_recruiting') return language === 'th' ? 'สมัครเป็นทีมงาน' : 'Apply as staff';
+  if (status === 'completed' || status === 'archived') return language === 'th' ? 'ปิดรับสมัครแล้ว' : 'Registration is closed';
+  return language === 'th' ? 'รอประกาศเพิ่มเติม' : 'More details coming soon';
+}
+
 export function EventDetailPage() {
   const { language } = useLanguage();
   const { eventSlug = '' } = useParams();
@@ -46,7 +52,6 @@ export function EventDetailPage() {
   const title = event ? (language === 'th' ? event.name_th : event.name_en || event.name_th) : (language === 'th' ? 'รายละเอียดกิจกรรม' : 'Event details');
   const canRegister = event ? ['registration_open', 'active'].includes(event.status) : false;
   const canApplyStaff = event?.status === 'staff_recruiting';
-  const showEventProfileTools = event ? ['parent-orientation-staff-2569', 'entaneer-bonding-69'].includes(event.slug) : false;
 
   return (
     <section className="events-page page-stack">
@@ -112,8 +117,8 @@ export function EventDetailPage() {
               ) : (
                 <div className="event-action-card is-disabled" aria-disabled="true">
                   <CalendarCheck size={22} />
-                  <strong>{registrationCopy(event.status, language)}</strong>
-                  <span>{language === 'th' ? 'กลับมาตรวจสอบอีกครั้งเมื่อผู้ดูแลเปิดรับสมัคร' : 'Check back when registration opens.'}</span>
+                  <strong>{language === 'th' ? 'สมัครเข้าร่วมกิจกรรม' : 'Register'}</strong>
+                  <span>{registrationCopy(event.status, language)} · {language === 'th' ? 'กลับมาตรวจสอบอีกครั้งเมื่อผู้ดูแลเปิดรับสมัคร' : 'Check back when registration opens.'}</span>
                 </div>
               )}
               {canApplyStaff ? (
@@ -122,19 +127,23 @@ export function EventDetailPage() {
                   <strong>{language === 'th' ? 'สมัครเป็นทีมงาน' : 'Apply as staff'}</strong>
                   <span>{language === 'th' ? 'กรอกใบสมัครและเลือกฝ่ายที่สนใจ' : 'Submit an application and choose preferred duties'}</span>
                 </Link>
-              ) : null}
+              ) : (
+                <div className="event-action-card is-disabled" aria-disabled="true">
+                  <UserPlus size={22} />
+                  <strong>{language === 'th' ? 'สมัครเป็นทีมงาน' : 'Apply as staff'}</strong>
+                  <span>{staffApplyCopy(event.status, language)} · {language === 'th' ? 'เมื่อเปิดรับทีมงาน ปุ่มสมัครจะแสดงในหน้านี้' : 'When staff recruitment opens, the apply link will appear here.'}</span>
+                </div>
+              )}
               <Link className="event-action-card" to={eventStaffApplicationStatusPath(event.slug)}>
                 <ClipboardCheck size={22} />
                 <strong>{language === 'th' ? 'ตรวจสถานะใบสมัครทีมงาน' : 'Check application status'}</strong>
                 <span>{language === 'th' ? 'ดูผลการสมัครหรือสถานะรอตรวจสอบ' : 'View application or review status'}</span>
               </Link>
-              {showEventProfileTools ? (
-                <Link className="event-action-card" to={eventProfileCheckPath(event.slug)}>
-                  <SearchCheck size={22} />
-                  <strong>{language === 'th' ? 'ตรวจข้อมูลหรือกลุ่มของฉัน' : 'Check my info or group'}</strong>
-                  <span>{language === 'th' ? 'ตรวจข้อมูลของฉันโดยไม่เปิดเผยข้อมูลส่วนตัวต่อสาธารณะ' : 'Check my info without exposing private details publicly'}</span>
-                </Link>
-              ) : null}
+              <Link className="event-action-card" to={eventProfileCheckPath(event.slug)}>
+                <SearchCheck size={22} />
+                <strong>{language === 'th' ? 'ตรวจข้อมูลหรือกลุ่มของฉัน' : 'Check my info or group'}</strong>
+                <span>{language === 'th' ? 'ตรวจข้อมูลของฉันโดยไม่เปิดเผยข้อมูลส่วนตัวต่อสาธารณะ' : 'Check my info without exposing private details publicly'}</span>
+              </Link>
               <Link className="event-action-card" to={eventAnnouncementsPath(event.slug)}>
                 <Bell size={22} />
                 <strong>{language === 'th' ? 'อ่านประกาศกิจกรรม' : 'View event announcements'}</strong>

@@ -3,6 +3,56 @@
   max-width: 760px;
 }
 
+.participant-portal-hero {
+  display: grid;
+  gap: 1.1rem;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+  border-color: rgba(40, 104, 232, 0.16);
+  background:
+    linear-gradient(135deg, rgba(40, 104, 232, 0.11), rgba(255, 255, 255, 0.82) 52%),
+    rgba(255, 255, 255, 0.74);
+}
+
+.participant-portal-copy {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 760px;
+}
+
+.participant-portal-copy h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.participant-portal-copy p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.participant-portal-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.8rem;
+}
+
+.participant-portal-actions .event-action-card {
+  width: 100%;
+  min-width: 0;
+  border-color: rgba(40, 104, 232, 0.14);
+  text-align: left;
+}
+
+button.event-action-card {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+}
+
 .public-privacy-notice {
   align-items: flex-start;
   gap: var(--space-3);

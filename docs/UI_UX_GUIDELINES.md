@@ -75,6 +75,11 @@ Destructive actions must live in `DangerZone` or use `ConfirmDialog`. Do not pla
 
 - Use Thai-first operational wording.
 - Public copy should be friendly and reassuring.
+- Public participant entry should feel like one participant portal: search, my information, events, and announcements should be visible without requiring users to understand internal route names.
+- Public profile modals should show only safe public fields. Do not show email, phone, health, or other private field rows, even as masked placeholders, unless the user has verified their own identity.
+- Use `ข้อมูลของฉัน / My information` for participant self-service flows. Avoid framing the main public flow as an internal edit-request form.
+- Edit request submit buttons should appear only after a real editable-field change; otherwise show a calm hint that users can edit a field first.
+- Event detail pages should act as event hubs with clear actions: `สมัครเข้าร่วมกิจกรรม`, `สมัครเป็นทีมงาน`, `ตรวจสถานะใบสมัคร`, `ตรวจข้อมูลของฉัน`, and `อ่านประกาศกิจกรรม`.
 - Staff copy should be action-oriented.
 - Admin copy should be precise.
 - Emergency copy should be short and direct.

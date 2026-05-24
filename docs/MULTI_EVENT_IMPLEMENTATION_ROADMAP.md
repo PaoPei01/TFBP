@@ -661,3 +661,23 @@ QA focus:
 - Legacy values display as canonical Thai labels without mutating existing application data.
 - Export still works and uses canonical duty labels.
 - Health/limitations remain out of the main table.
+
+## Public Participant Portal UX Pass
+
+Status: implemented as a public UX cleanup with no database/schema/RPC changes.
+
+Completed:
+
+- Added a participant-portal hero to `/` with direct actions for search, My information, events, and announcements.
+- Updated public participant search copy to explain that only safe public information is shown.
+- Cleaned participant cards so nickname/name, major, and group are easier to scan, with subtle group color treatment.
+- Simplified the public participant modal to show only safe public fields and route self-verification to `/me`.
+- Updated `/me` and `/edit` visible copy around `ข้อมูลของฉัน / My information`, protected identity fields, no-change hints, reset changes, and collapsed public-profile-only friend recommendations.
+- Made event detail pages act as event hubs with action cards for participant registration, staff application, application status, profile/group check, and event announcements.
+
+QA focus:
+
+- Public modal does not expose email, phone, health, or private fields.
+- Edit request submit appears only after real changes and reset restores verified values.
+- Event hub action cards keep old deep routes working.
+- Public routes remain usable on mobile without horizontal scroll.

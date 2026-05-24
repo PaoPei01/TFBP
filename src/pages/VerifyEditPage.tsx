@@ -61,7 +61,7 @@ type VerifyEditPageProps = {
   titleMode?: 'edit' | 'me';
 };
 
-export function VerifyEditPage({ titleMode = 'edit' }: VerifyEditPageProps) {
+export function VerifyEditPage(_props: VerifyEditPageProps = {}) {
   const { language } = useLanguage();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -200,13 +200,11 @@ export function VerifyEditPage({ titleMode = 'edit' }: VerifyEditPageProps) {
     <section className={`narrow-page page-stack ${showMobileSubmit ? 'has-sticky-actions' : ''}`}>
       <Toast toast={toast} />
       <PageHeader
-        eyebrow={titleMode === 'me' ? 'My information' : 'Edit Request'}
-        title={titleMode === 'me'
-          ? (language === 'th' ? 'ข้อมูลของฉัน' : 'My information')
-          : (language === 'th' ? 'ตรวจสอบและขอแก้ไขข้อมูลผู้เข้าร่วม' : 'Verify and Request Participant Data Edits')}
+        eyebrow={language === 'th' ? 'ข้อมูลของฉัน' : 'My information'}
+        title={language === 'th' ? 'ข้อมูลของฉัน' : 'My information'}
         description={language === 'th'
-          ? 'กรอกอีเมลและเบอร์โทรที่ใช้ลงทะเบียนเพื่อยืนยันตัวตน จากนั้นเลือกข้อมูลที่ต้องการแก้ไข คำขอจะถูกส่งให้แอดมินตรวจสอบก่อนอัปเดตจริง'
-          : 'Enter the email and phone used during registration, then edit allowed fields. Requests are reviewed by admins before updates are applied.'}
+          ? 'ยืนยันตัวตนด้วยอีเมลและเบอร์โทรที่ใช้ลงทะเบียน เพื่อตรวจสอบข้อมูล กลุ่ม และส่งคำขอแก้ไขให้แอดมินอนุมัติ'
+          : 'Verify with the email and phone used during registration to review your information, group details, and request admin-approved changes.'}
         actions={<HelpButton topicId="participant.edit-info" variant="link" />}
       />
 
@@ -250,7 +248,7 @@ export function VerifyEditPage({ titleMode = 'edit' }: VerifyEditPageProps) {
             <div>
               <p className="eyebrow">{language === 'th' ? 'พบข้อมูลของคุณแล้ว' : 'Profile Found'}</p>
               <h2>{profile.name_th || profile.name_en || profile.nickname || '-'}</h2>
-              <p>{language === 'th' ? 'ตรวจสอบข้อมูลด้านล่าง หากต้องการแก้ไขให้กรอกเฉพาะช่องที่ต้องการเปลี่ยน' : 'Review the summary below. Fill only the fields you want to change.'}</p>
+              <p>{language === 'th' ? 'ตรวจสอบข้อมูลพื้นฐานของฉัน หากต้องการแก้ไขให้กรอกเฉพาะช่องที่ต้องการเปลี่ยน' : 'Review my basic information below. Fill only the fields you want to change.'}</p>
             </div>
             <div className="edit-privacy-grid">
               <span><strong>{language === 'th' ? 'ชื่อเล่น' : 'Nickname'}</strong>{profile.nickname || '-'}</span>
@@ -323,7 +321,7 @@ export function VerifyEditPage({ titleMode = 'edit' }: VerifyEditPageProps) {
             ) : null}
             <Card className="privacy-notice">
               <strong>{language === 'th' ? 'ข้อมูลที่แก้ไขไม่ได้จากหน้านี้' : 'Protected fields'}</strong>
-              <span>{language === 'th' ? 'อีเมล รหัสนักศึกษา ชื่อจริง และสาขาเป็นข้อมูลยืนยันตัวตน หากผิดให้ติดต่อแอดมิน' : 'Email, student ID, legal name, and major are protected identity fields. Contact an admin if they are incorrect.'}</span>
+              <span>{language === 'th' ? 'ข้อมูลยืนยันตัวตน เช่น อีเมล รหัสนักศึกษา ชื่อจริง และสาขา หากผิดกรุณาติดต่อแอดมิน' : 'Identity fields such as email, student ID, legal name, and major are protected. Contact an admin if they are incorrect.'}</span>
             </Card>
             <form className="form-grid two-col edit-request-form" onSubmit={handleSubmit}>
               <section className="edit-form-section full-span">
@@ -346,9 +344,11 @@ export function VerifyEditPage({ titleMode = 'edit' }: VerifyEditPageProps) {
               </section>
               <div className="form-actions full-span">
                 {hasChanges ? <Button type="button" variant="secondary" onClick={resetChanges}>{language === 'th' ? 'ล้างการแก้ไข' : 'Reset changes'}</Button> : null}
-                <Button type="submit" loading={submitting} disabled={submitted || !hasChanges} icon={<Save size={18} />}>
-                  {submitted ? (language === 'th' ? 'ส่งคำขอแล้ว' : 'Submitted') : (language === 'th' ? 'ส่งคำขอแก้ไข' : 'Submit edit request')}
-                </Button>
+                {hasChanges ? (
+                  <Button type="submit" loading={submitting} disabled={submitted} icon={<Save size={18} />}>
+                    {submitted ? (language === 'th' ? 'ส่งคำขอแล้ว' : 'Submitted') : (language === 'th' ? 'ส่งคำขอแก้ไข' : 'Submit edit request')}
+                  </Button>
+                ) : null}
               </div>
             </form>
           </Card>
@@ -358,7 +358,7 @@ export function VerifyEditPage({ titleMode = 'edit' }: VerifyEditPageProps) {
               <summary>
                 <span>
                   <strong>{language === 'th' ? 'เพื่อนในกลุ่มที่เปิดโปรไฟล์สาธารณะ' : 'Group members with public profiles'}</strong>
-                  <small>{language === 'th' ? `ตัวเลือกเสริม · พบ ${friends.length} คน · แสดงเฉพาะข้อมูลที่เจ้าของโปรไฟล์เปิดไว้` : `Optional · ${friends.length} found · Only information the owner made public is shown`}</small>
+                  <small>{language === 'th' ? `พบ ${friends.length} คน · แสดงเฉพาะคนที่เปิดโปรไฟล์สาธารณะเท่านั้น` : `${friends.length} found · Only people who enabled public profiles are shown.`}</small>
                 </span>
                 <em>{language === 'th' ? 'ตัวเลือกเสริม' : 'Optional'}</em>
               </summary>
