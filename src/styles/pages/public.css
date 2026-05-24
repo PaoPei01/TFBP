@@ -1,0 +1,40 @@
+/* Public participant list and privacy-facing pages. */
+.public-list-page .page-header p {
+  max-width: 760px;
+}
+
+.public-privacy-notice {
+  align-items: flex-start;
+  gap: var(--space-3);
+  line-height: 1.55;
+}
+
+.public-privacy-notice strong {
+  color: var(--text);
+}
+
+.public-privacy-notice span {
+  color: var(--muted);
+}
+
+.participant-card h2 {
+  color: var(--text);
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.participant-card p {
+  color: var(--muted);
+}
+
+.participant-card-badges .major-badge {
+  color: var(--text);
+  background: var(--surface-strong);
+  border-color: var(--border);
+}
+
+.participant-card-badges .group-badge {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--group-color, var(--accent)) 42%, transparent);
+  background: color-mix(in srgb, var(--group-soft, var(--accent)) 34%, white);
+}

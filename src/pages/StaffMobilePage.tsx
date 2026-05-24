@@ -44,9 +44,9 @@ export function StaffMobilePage() {
   return (
     <section className="page-stack staff-page">
       <div className="section-heading">
-        <p className="eyebrow">{language === 'th' ? 'มุมมองสตาฟมือถือ' : 'Staff Mobile View'}</p>
+        <p className="eyebrow">{language === 'th' ? 'หน้าทีมงานสำหรับหน้างาน' : 'Event Staff View'}</p>
         <h1>{context.assignment?.main_group ? groupLabel(context.assignment.main_group, context.assignment.subgroup, language) : language === 'th' ? 'ทุกกลุ่ม' : 'All groups'}</h1>
-        <p>{language === 'th' ? 'ดูข้อมูลเฉพาะกลุ่มที่รับผิดชอบสำหรับหน้างาน' : 'View only the assigned group data needed for event operations.'}</p>
+        <p>{language === 'th' ? 'ดูรายชื่อ น้องในกลุ่ม จุดนัดหมาย และข้อมูลสำคัญที่ต้องใช้ระหว่างกิจกรรม' : 'View assigned participants, meeting points, and key details for event operations.'}</p>
       </div>
 
       <div className="staff-sticky-actions">
@@ -57,8 +57,8 @@ export function StaffMobilePage() {
 
       {canViewMedical ? (
         <Card className="emergency-notice compact-notice">
-          <strong>{language === 'th' ? 'ข้อมูลสุขภาพเป็นความลับ' : 'Medical data is confidential'}</strong>
-          <span>{language === 'th' ? 'ใช้เฉพาะเพื่อดูแลความปลอดภัยหน้างาน ห้ามแชร์ต่อสาธารณะ' : 'Use only for event safety. Do not share publicly.'}</span>
+          <strong>{language === 'th' ? 'ข้อมูลสุขภาพเป็นข้อมูลส่วนตัว' : 'Health details are private'}</strong>
+          <span>{language === 'th' ? 'ใช้เฉพาะเพื่อดูแลความปลอดภัยระหว่างกิจกรรมเท่านั้น ห้ามส่งต่อหรือเผยแพร่' : 'Use them only for safety during the event. Do not share or publish them.'}</span>
         </Card>
       ) : null}
 
@@ -95,7 +95,7 @@ export function StaffMobilePage() {
                 {canViewMedical && hasHealthFlag(staff) ? (
                   <details className="staff-health-details">
                     <summary>
-                      <span className="special-care-badge">{language === 'th' ? 'ต้องดูแลพิเศษ' : 'Special care'}</span>
+                      <span className="special-care-badge">{language === 'th' ? 'ต้องดูแลเป็นพิเศษ' : 'Needs special care'}</span>
                       <em>{language === 'th' ? 'ดูรายละเอียดสุขภาพ' : 'View health details'}</em>
                     </summary>
                     <HealthFlags profile={staff} detail />
@@ -117,7 +117,7 @@ export function StaffMobilePage() {
       <div className="segmented-control compact-segments" aria-label={language === 'th' ? 'ตัวกรองด่วน' : 'Quick filters'}>
         {[
           { value: 'all', label: language === 'th' ? 'ทั้งหมด' : 'All' },
-          { value: 'special', label: language === 'th' ? 'ต้องดูแลพิเศษ' : 'Special care' },
+          { value: 'special', label: language === 'th' ? 'ต้องดูแลเป็นพิเศษ' : 'Needs special care' },
           { value: 'sameMajor', label: language === 'th' ? 'สาขาเดียวกัน' : 'Same major' },
         ].map((item) => (
           <button key={item.value} type="button" className={quickFilter === item.value ? 'active' : ''} onClick={() => setQuickFilter(item.value as typeof quickFilter)}>
@@ -152,7 +152,7 @@ export function StaffMobilePage() {
                 <div>
                   <h2>{language === 'en' ? profile.nickname_en || profile.nickname || profile.name_en || profile.name_th : profile.nickname || profile.name_th}</h2>
                   <p>{language === 'en' ? profile.name_en || profile.name_th : profile.name_th}</p>
-                  {hasHealthFlag(profile) ? <span className="special-care-badge">{language === 'th' ? 'ต้องดูแลพิเศษ' : 'Special care'}</span> : null}
+                  {hasHealthFlag(profile) ? <span className="special-care-badge">{language === 'th' ? 'ต้องดูแลเป็นพิเศษ' : 'Needs special care'}</span> : null}
                 </div>
               </div>
               <div className="profile-facts">
@@ -168,7 +168,7 @@ export function StaffMobilePage() {
               {canViewMedical && hasHealthFlag(profile) ? (
                 <details className="staff-health-details">
                   <summary>
-                    <span className="special-care-badge">{language === 'th' ? 'ต้องดูแลพิเศษ' : 'Special care'}</span>
+                    <span className="special-care-badge">{language === 'th' ? 'ต้องดูแลเป็นพิเศษ' : 'Needs special care'}</span>
                     <em>{language === 'th' ? 'ดูรายละเอียดสุขภาพ' : 'View health details'}</em>
                   </summary>
                   <HealthFlags profile={profile} detail />

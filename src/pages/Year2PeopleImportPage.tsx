@@ -91,7 +91,7 @@ export function Year2PeopleImportPage() {
     try {
       const data = await importYear2PeopleFromStaging();
       setResult(data);
-      setToast({ type: 'success', message: language === 'th' ? 'นำเข้า people สำเร็จ' : 'People import completed' });
+      setToast({ type: 'success', message: language === 'th' ? 'นำเข้าฐานข้อมูลปี 2 สำเร็จ' : 'Year 2 import completed' });
       await runPreview();
     } catch (err) {
       setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'นำเข้า people ไม่สำเร็จ' : 'Import failed') });
@@ -104,7 +104,7 @@ export function Year2PeopleImportPage() {
     <section className="page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow="People Import"
+        eyebrow={language === 'th' ? 'นำเข้าฐานข้อมูลบุคคล' : 'People Import'}
         title={language === 'th' ? 'นำเข้าข้อมูลนักศึกษาปี 2' : 'Import Year 2 Student Data'}
         description={language === 'th' ? 'นำเข้าฐานข้อมูลนักศึกษาวิศวกรรมปี 2 ผ่าน staging table ก่อน upsert เข้า people อย่างปลอดภัย' : 'Safely stage Engineering year 2 student data before upserting into the central people table.'}
         meta={<Badge status="pending">{language === 'th' ? 'Admin only' : 'Admin only'}</Badge>}

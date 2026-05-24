@@ -212,7 +212,7 @@ export function StaffProfileVerifyPage() {
           <Input label={language === 'th' ? 'แพ้อาหาร' : 'Food allergy'} value={requestForm.food_allergy} onChange={(event) => setRequestForm({ ...requestForm, food_allergy: event.target.value })} />
           <Input label={language === 'th' ? 'หมายเหตุสุขภาพ/ฉุกเฉิน' : 'Medical/emergency note'} value={requestForm.medical_note} onChange={(event) => setRequestForm({ ...requestForm, medical_note: event.target.value })} />
           <Card className="privacy-notice full-span">
-            <strong>{language === 'th' ? 'ข้อมูลสุขภาพเป็นความลับ' : 'Medical data is confidential'}</strong>
+            <strong>{language === 'th' ? 'ข้อมูลสุขภาพเป็นข้อมูลส่วนตัว' : 'Health details are private'}</strong>
             <span>{language === 'th' ? 'การส่งคำขอนี้จะยังไม่อัปเดตทันที ต้องรอแอดมินอนุมัติก่อน' : 'This request will not update immediately. Admin approval is required.'}</span>
           </Card>
           <div className="form-actions full-span">

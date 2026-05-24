@@ -2,7 +2,9 @@
 @import './styles/base.css';
 @import './styles/layout.css';
 @import './styles/components.css';
+@import './styles/pages/public.css';
 @import './styles/pages/admin.css';
 @import './styles/pages/staff.css';
 @import './styles/pages/documents.css';
+@import './styles/pages/emergency.css';
 @import './styles/mobile.css';

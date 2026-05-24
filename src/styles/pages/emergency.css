@@ -1,0 +1,31 @@
+/* Emergency pages: high-contrast, fast-action surfaces. */
+.emergency-page .section-heading p {
+  max-width: 760px;
+}
+
+.emergency-notice {
+  border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+  background: var(--danger-surface);
+}
+
+.emergency-quick-actions .btn,
+.emergency-contact-grid .call-card,
+.primary-call {
+  min-height: 52px;
+}
+
+.emergency-quick-actions .btn-primary,
+.primary-call {
+  box-shadow: 0 14px 32px rgba(201, 52, 68, 0.2);
+}
+
+.emergency-card .badge {
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .emergency-quick-actions,
+  .emergency-contact-grid {
+    grid-template-columns: 1fr;
+  }
+}

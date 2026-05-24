@@ -112,7 +112,7 @@ export function EventProfileCheckPage() {
       <PageHeader
         eyebrow="Profile Check"
         title={language === 'th' ? 'ตรวจสอบข้อมูลของฉัน' : 'Check My Profile'}
-        description={language === 'th' ? 'หน้านี้ใช้สำหรับตรวจสอบข้อมูลที่พบในฐานข้อมูลกลาง และส่งคำร้องแก้ไขหากข้อมูลไม่ถูกต้อง' : 'Check the safe data found in the central people database and request corrections if needed.'}
+        description={language === 'th' ? 'ตรวจข้อมูลที่พบในฐานข้อมูลบุคคล และส่งคำร้องแก้ไขได้หากข้อมูลไม่ถูกต้อง' : 'Check the safe data found in the People Database and request corrections if needed.'}
         actions={<Button variant="secondary" icon={<RefreshCw size={18} />} onClick={eventState.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>}
       />
 

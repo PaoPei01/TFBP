@@ -80,10 +80,10 @@ export function DocumentGeneratePage() {
         preview_html: html,
         event_id: currentEventId,
       });
-      setToast({ type: 'success', message: `สร้าง DOCX v${reserved.version} และบันทึกลง Storage แล้ว` });
+      setToast({ type: 'success', message: `สร้างและดาวน์โหลดเอกสาร v${reserved.version} แล้ว` });
       await state.reload();
     } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, 'สร้าง DOCX ไม่สำเร็จ ตรวจ template และ Storage permission อีกครั้ง') });
+      setToast({ type: 'error', message: errorMessage(err, 'สร้างเอกสารไม่สำเร็จ กรุณาตรวจเทมเพลตและสิทธิ์ Storage แล้วลองอีกครั้ง') });
     } finally {
       setGenerating(false);
     }
@@ -93,9 +93,9 @@ export function DocumentGeneratePage() {
     <section className="page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow="Document Center"
-        title="Generate DOCX"
-        description="เลือกประเภทเอกสาร ตรวจข้อมูลที่ขาด ดูตัวอย่าง และดาวน์โหลดไฟล์"
+        eyebrow="ศูนย์เอกสาร"
+        title="สร้างไฟล์เอกสาร"
+        description="เลือกเทมเพลต ตรวจข้อมูลที่ยังขาด ดูตัวอย่างก่อนสร้างไฟล์ และดาวน์โหลดเอกสารพร้อมใช้งาน"
         meta={<EventSwitcher compact />}
         actions={<HelpButton topicId="documents.generate" variant="link" />}
       />
@@ -113,27 +113,27 @@ export function DocumentGeneratePage() {
               { value: 'closing_report', label: 'รายงานสรุปโครงการ' },
               { value: 'custom', label: 'กำหนดเอง' },
             ]} />
-            <Select label="Template" value={templateId} onChange={(event) => { setTemplateId(event.target.value); setPreviewHtml(''); }} options={templates.map((item) => ({ value: item.id, label: item.name }))} placeholder="เลือก template" />
+            <Select label="เทมเพลตเอกสาร" value={templateId} onChange={(event) => { setTemplateId(event.target.value); setPreviewHtml(''); }} options={templates.map((item) => ({ value: item.id, label: item.name }))} placeholder="เลือกเทมเพลต" />
             <Input label="ชื่อเอกสาร" value={title} onChange={(event) => setTitle(event.target.value)} placeholder={template?.name ?? documentTypeLabel(documentType)} />
             <div className="document-readiness">
               <Badge status={missing.length ? 'pending' : 'approved'}>{missing.length ? `ขาด ${missing.length} ช่อง` : 'ข้อมูลพร้อม'}</Badge>
               {template ? <Badge status={documentScopeTone(template.event_id, currentEventId)}>{documentScopeLabel(template.event_id, currentEventId, 'th')}</Badge> : null}
-              <span>{template ? `${template.placeholders.length} placeholders · ${missing.length ? 'ยังไม่พร้อมเต็มที่' : 'พร้อมสร้าง'}` : 'ยังไม่ได้เลือก template'}</span>
+              <span>{template ? `${template.placeholders.length} ช่องข้อมูล · ${missing.length ? 'ยังไม่พร้อมเต็มที่' : 'พร้อมสร้าง'}` : 'ยังไม่ได้เลือกเทมเพลต'}</span>
             </div>
             <div className="form-actions full-span">
-              <Button variant="secondary" icon={<Eye size={18} />} onClick={preview}>HTML Preview</Button>
-              <Button icon={<Download size={18} />} onClick={download} disabled={!template || generating}>{generating ? 'กำลังสร้าง...' : 'ดาวน์โหลด DOCX'}</Button>
+              <Button variant="secondary" icon={<Eye size={18} />} onClick={preview}>ดูตัวอย่าง</Button>
+              <Button icon={<Download size={18} />} onClick={download} disabled={!template || generating}>{generating ? 'กำลังสร้างเอกสาร...' : 'สร้างและดาวน์โหลดเอกสาร'}</Button>
             </div>
           </Card>
           {template ? (
             <Card className="privacy-notice" variant="soft">
-              <strong>Template scope</strong>
+              <strong>ขอบเขตเทมเพลต</strong>
               <span>{documentScopeLabel(template.event_id, currentEventId, 'th')} · ข้อมูลที่เติมในเอกสารจะใช้ข้อมูลของกิจกรรมที่เลือกด้านบน</span>
             </Card>
           ) : null}
           <Card className="document-missing-card">
             <div className="section-title-row">
-              <h2>Missing info checker</h2>
+              <h2>ข้อมูลที่ยังขาด</h2>
               <HelpButton topicId="documents.generate" variant="compact" />
             </div>
             {missing.length ? (

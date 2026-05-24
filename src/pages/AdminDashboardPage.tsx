@@ -58,8 +58,8 @@ export function AdminDashboardPage() {
   const groupOptions = mainGroups.map((item) => ({ value: item, label: `${groupMeta[item].th} / ${groupMeta[item].en}` }));
   const subgroupOptions = subgroups.map((item) => ({ value: item, label: `Group ${item}` }));
   const healthOptions = [
-    { value: 'any', label: language === 'th' ? 'มีข้อมูลสุขภาพใด ๆ' : 'Any health flag' },
-    { value: 'disease', label: language === 'th' ? 'โรคประจำตัว' : 'Disease' },
+    { value: 'any', label: language === 'th' ? 'มีข้อมูลที่ต้องดูแล' : 'Any health flag' },
+    { value: 'disease', label: language === 'th' ? 'โรคประจำตัว' : 'Medical condition' },
     { value: 'drug_allergy', label: language === 'th' ? 'แพ้ยา' : 'Drug allergy' },
     { value: 'food_allergy', label: language === 'th' ? 'แพ้อาหาร' : 'Food allergy' },
   ];
@@ -87,7 +87,7 @@ export function AdminDashboardPage() {
       setEditing(null);
       await profilesState.reload();
     } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'บันทึกไม่สำเร็จ' : 'Save failed') });
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'บันทึกไม่สำเร็จ กรุณาตรวจสอบข้อมูลแล้วลองอีกครั้ง' : 'Could not save. Please check the information and try again.') });
     }
   }
 
@@ -99,7 +99,7 @@ export function AdminDashboardPage() {
       setDeleting(null);
       await profilesState.reload();
     } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ลบไม่สำเร็จ' : 'Delete failed') });
+      setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ลบข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง' : 'Could not delete. Please try again.') });
     }
   }
 
@@ -107,7 +107,7 @@ export function AdminDashboardPage() {
     <section className="page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow="Dashboard"
+        eyebrow={language === 'th' ? 'แดชบอร์ด' : 'Dashboard'}
         title={t.dashboard}
         description={t.adminOnly}
         meta={<EventSwitcher compact />}
@@ -124,11 +124,11 @@ export function AdminDashboardPage() {
       {summaryState.data ? (
         <div className="stats-grid">
           <DashboardStatCard label={t.totalParticipants} value={summaryState.data.total} icon={<UsersRound size={20} />} />
-          <DashboardStatCard label={t.pendingRequests} value={summaryState.data.pending} helper={language === 'th' ? 'ตรวจสอบในหน้าคำขอแก้ไข' : 'Review in requests page'} />
+          <DashboardStatCard label={t.pendingRequests} value={summaryState.data.pending} helper={language === 'th' ? 'ไปที่หน้าคำขอเพื่อตรวจสอบ' : 'Open requests to review them'} />
           <DashboardStatCard
             label={t.healthData}
             value={summaryState.data.health.food_allergy + summaryState.data.health.disease + summaryState.data.health.drug_allergy}
-            helper={language === 'th' ? 'แพ้อาหาร โรคประจำตัว แพ้ยา' : 'Food allergies, medical conditions, drug allergies'}
+            helper={language === 'th' ? 'ข้อมูลสุขภาพที่ต้องดูแลระหว่างกิจกรรม' : 'Health details that may need attention during the event'}
             icon={<HeartPulse size={20} />}
           />
         </div>
@@ -136,7 +136,7 @@ export function AdminDashboardPage() {
 
       {summaryState.data ? (
         <details className="filter-disclosure major-summary-disclosure">
-          <summary>{language === 'th' ? 'สรุปตามสาขา' : 'Major summary'}</summary>
+          <summary>{language === 'th' ? 'สรุปจำนวนตามสาขา' : 'Major summary'}</summary>
           <Card className="major-summary" variant="soft">
             <div>
               {Object.entries(summaryState.data.byMajor).map(([name, count]) => (
@@ -153,7 +153,7 @@ export function AdminDashboardPage() {
         label={t.searchParticipants}
         value={search}
         onChange={setSearch}
-        placeholder={language === 'th' ? 'ชื่อ อีเมล เบอร์ Line IG Facebook' : 'Name, email, phone, Line, IG, Facebook'}
+        placeholder={language === 'th' ? 'ชื่อ เบอร์ อีเมล หรือช่องทางติดต่อ' : 'Name, phone, email, or contact channel'}
         resultText={language === 'th' ? `${profiles.length.toLocaleString('th-TH')} รายการ` : `${profiles.length.toLocaleString('en-US')} results`}
         trailing={(
           <>
@@ -167,7 +167,7 @@ export function AdminDashboardPage() {
 
       <FilterPanel
         className="desktop-filter-panel"
-        title={language === 'th' ? 'ค้นหาและตัวกรอง' : 'Search and filters'}
+        title={language === 'th' ? 'ค้นหาและกรองรายชื่อ' : 'Search and filters'}
         description={language === 'th' ? `แสดงผล ${profiles.length.toLocaleString('th-TH')} รายการ` : `${profiles.length.toLocaleString('en-US')} results`}
         actions={<><HelpButton topicId="admin.participants" variant="compact" /><Button variant="ghost" onClick={clearFilters}>{language === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}</Button></>}
         chips={activeFilterChips.length ? (
@@ -176,7 +176,7 @@ export function AdminDashboardPage() {
           </div>
         ) : null}
       >
-        <Input label={t.searchParticipants} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={language === 'th' ? 'ชื่อ อีเมล เบอร์ Line IG Facebook' : 'Name, email, phone, Line, IG, Facebook'} />
+        <Input label={t.searchParticipants} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={language === 'th' ? 'ชื่อ เบอร์ อีเมล หรือช่องทางติดต่อ' : 'Name, phone, email, or contact channel'} />
         <Select label={t.filterMajor} placeholder={t.all} value={major} onChange={(event) => setMajor(event.target.value)} options={majorOptions} />
         <Select label={t.filterGroup} placeholder={t.all} value={group} onChange={(event) => setGroup(event.target.value)} options={groupOptions} />
         <Select label={t.filterSubgroup} placeholder={t.all} value={subgroup} onChange={(event) => setSubgroup(event.target.value)} options={subgroupOptions} />
@@ -186,7 +186,7 @@ export function AdminDashboardPage() {
       <MobileFilterSheet
         open={filterOpen}
         title={language === 'th' ? 'ตัวกรองผู้เข้าร่วม' : 'Participant filters'}
-        description={language === 'th' ? 'เลือกสาขา กลุ่ม และข้อมูลสุขภาพที่ต้องการดู' : 'Filter by major, group, subgroup, and health flags.'}
+        description={language === 'th' ? 'เลือกสาขา กลุ่มสี กลุ่มย่อย หรือข้อมูลที่ต้องดูแล' : 'Filter by major, color group, subgroup, and health flags.'}
         primaryLabel={language === 'th' ? 'ใช้ตัวกรอง' : 'Apply'}
         clearLabel={language === 'th' ? 'ล้าง' : 'Clear'}
         onClose={() => setFilterOpen(false)}

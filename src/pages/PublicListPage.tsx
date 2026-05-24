@@ -67,14 +67,14 @@ export function PublicListPage() {
         compact
         eyebrow={t.participants}
         title={language === 'th' ? 'ค้นหารายชื่อ' : 'Search participants'}
-        description={language === 'th' ? 'ค้นหารายชื่อและกลุ่มได้อย่างปลอดภัย' : 'Search names and group assignments safely.'}
+        description={language === 'th' ? 'ค้นหารายชื่อ สาขา และกลุ่มของผู้เข้าร่วม โดยไม่แสดงข้อมูลส่วนตัว' : 'Search participant names, majors, and groups without showing private details.'}
         meta={<strong className="count-badge">{resultText}</strong>}
       />
 
       <Card className="privacy-notice public-privacy-notice">
         <strong>{language === 'th' ? 'ประกาศความเป็นส่วนตัว' : 'Privacy notice'}</strong>
-        <span>{language === 'th' ? 'แสดงเฉพาะชื่อ สาขา และกลุ่ม ข้อมูลติดต่อและสุขภาพถูกซ่อนไว้' : 'Only name, major, and group are visible. Contact and medical data stay private.'}</span>
-        <Button variant="secondary" onClick={() => navigate('/edit')}>{language === 'th' ? 'ตรวจสอบ/แก้ไขข้อมูลของฉัน' : 'Check/edit my information'}</Button>
+        <span>{language === 'th' ? 'หน้านี้แสดงเฉพาะข้อมูลที่ปลอดภัย เช่น ชื่อ สาขา และกลุ่ม ข้อมูลติดต่อ สุขภาพ และข้อมูลส่วนตัวอื่น ๆ จะไม่แสดงต่อสาธารณะ' : 'This page only shows safe public information such as name, major, and group. Contact, health, and other private details are hidden.'}</span>
+        <Button variant="secondary" onClick={() => navigate('/edit')}>{language === 'th' ? 'ตรวจสอบหรือขอแก้ไขข้อมูลของฉัน' : 'Check or request changes to my information'}</Button>
       </Card>
 
       <MobileSearchHeader
@@ -123,7 +123,7 @@ export function PublicListPage() {
       <MobileFilterSheet
         open={filtersOpen}
         title={language === 'th' ? 'ตัวกรองรายชื่อ' : 'Participant filters'}
-        description={language === 'th' ? 'เลือกสาขา สี หรือกลุ่มย่อย' : 'Choose major, color, or subgroup'}
+        description={language === 'th' ? 'เลือกสาขา กลุ่มสี หรือกลุ่มย่อย' : 'Choose major, color group, or subgroup'}
         primaryLabel={language === 'th' ? 'แสดงผล' : 'Apply'}
         clearLabel={language === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}
         onClose={() => setFiltersOpen(false)}

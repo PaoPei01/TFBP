@@ -202,7 +202,7 @@ export function AdminEventDetailPage() {
                   <QuickAction to="/admin/staff" icon={<UserCheck size={20} />} title={language === 'th' ? 'จัดการสตาฟกิจกรรม' : 'Manage event staff'} description={language === 'th' ? 'เปิดหน้าทีมงานหลัก' : 'Open staff management'} />
                   <QuickAction to="/admin/staff/attendance" icon={<QrCode size={20} />} title={language === 'th' ? 'สร้างรอบเช็กชื่อ' : 'Create attendance session'} description={language === 'th' ? 'ใช้ event ที่เลือกใน EventSwitcher' : 'Uses selected EventSwitcher event'} />
                   <QuickAction to="/admin/announcements" icon={<Bell size={20} />} title={language === 'th' ? 'จัดการประกาศ' : 'Announcements'} description={language === 'th' ? 'ประกาศตามกิจกรรม' : 'Event-aware announcements'} />
-                  <QuickAction to="/admin/documents" icon={<FileText size={20} />} title={language === 'th' ? 'เปิด Document Center' : 'Document Center'} description={language === 'th' ? 'ข้อมูลโครงการและเอกสาร' : 'Project data and documents'} />
+                  <QuickAction to="/admin/documents" icon={<FileText size={20} />} title={language === 'th' ? 'เปิดศูนย์เอกสาร' : 'Open Document Center'} description={language === 'th' ? 'ข้อมูลตั้งต้นและเอกสารของกิจกรรม' : 'Event document settings and files'} />
                 </div>
               </Card>
 

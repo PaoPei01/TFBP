@@ -55,10 +55,10 @@ export function DocumentSettingsPage() {
     try {
       setSaving(true);
       await saveProjectProfile({ profile: { ...profile, event_id: currentEventId }, budgetItems, scheduleItems: scheduleItems.map((item) => ({ ...item, time_range: timeRange(item.start_time, item.end_time), duration_minutes: durationMinutes(item.start_time, item.end_time) })), venues, equipmentItems });
-      setToast({ type: 'success', message: 'บันทึกข้อมูลศูนย์เอกสารแล้ว' });
+      setToast({ type: 'success', message: 'บันทึกข้อมูลตั้งต้นเอกสารแล้ว' });
       await state.reload();
     } catch (err) {
-      setToast({ type: 'error', message: errorMessage(err, 'บันทึกไม่สำเร็จ') });
+      setToast({ type: 'error', message: errorMessage(err, 'บันทึกข้อมูลไม่สำเร็จ กรุณาตรวจสอบข้อมูลแล้วลองอีกครั้ง') });
     } finally {
       setSaving(false);
     }
@@ -67,7 +67,7 @@ export function DocumentSettingsPage() {
   return (
     <section className="page-stack">
       <Toast toast={toast} />
-      <PageHeader eyebrow="Document Center" title="ตั้งค่าโครงการ" description="ข้อมูลนี้จะถูกนำไปเติมใน DOCX template ด้วย placeholder มาตรฐานตัวพิมพ์เล็ก" meta={<EventSwitcher compact />} />
+      <PageHeader eyebrow="ศูนย์เอกสาร" title="ข้อมูลตั้งต้นเอกสาร" description="ข้อมูลนี้จะถูกนำไปเติมในเทมเพลตเอกสารด้วยช่องข้อมูลมาตรฐานตัวพิมพ์เล็ก" meta={<EventSwitcher compact />} />
       {state.loading ? <LoadingSkeleton /> : null}
       <DocumentEventContextCard showGlobalTemplateNote={false} />
       <Card className="form-grid two-col">
@@ -173,7 +173,7 @@ export function DocumentSettingsPage() {
       </EditableSection>
 
       <div className="sticky-form-actions">
-        <Button icon={<Save size={18} />} onClick={save} disabled={saving}>บันทึกข้อมูลโครงการ</Button>
+        <Button icon={<Save size={18} />} onClick={save} disabled={saving}>บันทึกข้อมูลตั้งต้นเอกสาร</Button>
       </div>
     </section>
   );

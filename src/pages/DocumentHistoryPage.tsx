@@ -35,7 +35,7 @@ export function DocumentHistoryPage() {
   return (
     <section className="page-stack">
       <Toast toast={toast} />
-      <PageHeader eyebrow="Document Center" title="ประวัติเอกสาร" description="ดาวน์โหลดไฟล์ DOCX ที่เคย generate จาก private Supabase Storage" meta={<EventSwitcher compact />} />
+      <PageHeader eyebrow="ศูนย์เอกสาร" title="ประวัติเอกสาร" description="ดูและดาวน์โหลดเอกสารที่เคยสร้างไว้" meta={<EventSwitcher compact />} />
       {state.loading ? <LoadingSkeleton /> : null}
       <DocumentEventContextCard />
       <ResponsiveDataTable
@@ -52,7 +52,7 @@ export function DocumentHistoryPage() {
         columns={[
           { key: 'file', header: 'ไฟล์', render: (row) => <div className="participant-admin-cell"><strong>{row.title || row.file_name}</strong><span>{row.file_name}</span></div> },
           { key: 'event', header: 'กิจกรรม', render: (row) => <div className="participant-admin-cell"><strong>{row.event_id ? documentEventName(currentEvent, 'th') : 'ทุกกิจกรรม'}</strong><span>{row.event_id ? 'ข้อมูลกิจกรรมที่เลือก' : 'global/history เดิม'}</span></div> },
-          { key: 'scope', header: 'Template scope', render: (row) => {
+          { key: 'scope', header: 'ขอบเขตเทมเพลต', render: (row) => {
             const template = templates.find((item) => item.id === row.template_id);
             return <Badge status={documentScopeTone(template?.event_id, currentEventId)}>{documentScopeLabel(template?.event_id, currentEventId, 'th')}</Badge>;
           } },
@@ -61,8 +61,8 @@ export function DocumentHistoryPage() {
           { key: 'status', header: 'สถานะ', render: (row) => row.status ?? '-' },
           { key: 'generated', header: 'สร้างเมื่อ', render: (row) => (row.generated_at ?? row.created_at) ? new Date(row.generated_at ?? row.created_at ?? '').toLocaleString('th-TH') : '-' },
           { key: 'missing', header: 'ข้อมูลที่ขาด', render: (row) => row.missing_fields.join(', ') || '-' },
-          { key: 'preview', header: 'Preview', render: (row) => row.preview_html ? <Card className="document-history-preview"><History size={16} /> มี HTML preview</Card> : '-' },
-          { key: 'actions', header: 'ดาวน์โหลด', render: (row) => <Button variant="secondary" icon={<Download size={16} />} onClick={() => download(row)}>DOCX</Button> },
+          { key: 'preview', header: 'ดูตัวอย่าง', render: (row) => row.preview_html ? <Card className="document-history-preview"><History size={16} /> มีตัวอย่าง</Card> : '-' },
+          { key: 'actions', header: 'ดาวน์โหลด', render: (row) => <Button variant="secondary" icon={<Download size={16} />} onClick={() => download(row)}>ดาวน์โหลด</Button> },
         ]}
       />
     </section>

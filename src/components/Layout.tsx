@@ -98,12 +98,12 @@ export function Layout() {
             <div>
               {isAdmin ? (
                 <>
-                  <span className="nav-menu-label">{language === 'th' ? 'งานหลัก' : 'Core'}</span>
+                  <span className="nav-menu-label">{language === 'th' ? 'ภาพรวม' : 'Overview'}</span>
                   <NavLink to="/admin/events">{language === 'th' ? 'กิจกรรม' : 'Events'}</NavLink>
                   <NavLink to="/admin/dashboard">{t.dashboard}</NavLink>
                   <NavLink to="/admin/announcements">{language === 'th' ? 'ประกาศ/ข้อมูลกิจกรรม' : 'Announcements'}</NavLink>
                   <NavLink to="/admin/groups">{t.groups}</NavLink>
-                  <NavLink to="/admin/emergency">{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</NavLink>
+                  <NavLink to="/admin/emergency">{language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'}</NavLink>
                   <NavLink to="/admin/requests">{t.requests}</NavLink>
                   <span className="nav-menu-label">{language === 'th' ? 'ทีมงาน' : 'Staff'}</span>
                   <NavLink to="/admin/staff">{language === 'th' ? 'ทีมงาน' : 'Staff'}</NavLink>
@@ -111,11 +111,11 @@ export function Layout() {
                   <NavLink to="/admin/staff/operations">{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
                   <NavLink to="/admin/staff/import">{language === 'th' ? 'นำเข้าสตาฟ' : 'Import Staff'}</NavLink>
                   <NavLink to="/admin/staff/requests">{language === 'th' ? 'คำขอแก้ไขทีมงาน' : 'Staff Requests'}</NavLink>
-                  <NavLink to="/admin/people">{language === 'th' ? 'ฐานข้อมูลกลาง' : 'People'}</NavLink>
-                  <NavLink to="/admin/people/update-requests">{language === 'th' ? 'คำร้องแก้ข้อมูลบุคคล' : 'People Update Requests'}</NavLink>
-                  <NavLink to="/admin/people/dedupe">{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'People Dedupe'}</NavLink>
-                  <NavLink to="/admin/people/import-year2">{language === 'th' ? 'นำเข้า people ปี 2' : 'Import Year 2 People'}</NavLink>
-                  <span className="nav-menu-label">{language === 'th' ? 'ระบบเสริม' : 'More tools'}</span>
+                  <NavLink to="/admin/people">{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People Database'}</NavLink>
+                  <NavLink to="/admin/people/update-requests">{language === 'th' ? 'คำร้องแก้ข้อมูล' : 'Update Requests'}</NavLink>
+                  <NavLink to="/admin/people/dedupe">{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Duplicate Check'}</NavLink>
+                  <NavLink to="/admin/people/import-year2">{language === 'th' ? 'นำเข้าฐานปี 2' : 'Import Year 2'}</NavLink>
+                  <span className="nav-menu-label">{language === 'th' ? 'เอกสารและระบบ' : 'Documents & System'}</span>
                   <NavLink to="/admin/documents">{language === 'th' ? 'ศูนย์เอกสาร' : 'Documents'}</NavLink>
                   <NavLink to="/admin/data-health">{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</NavLink>
                   <NavLink to="/admin/system-readiness">{language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System Readiness'}</NavLink>
@@ -131,7 +131,7 @@ export function Layout() {
                   {access?.can_view_staff ? <NavLink to="/staff/my-group">{language === 'th' ? 'กลุ่มของฉัน' : 'My Group'}</NavLink> : null}
                   {canAttend ? <NavLink to="/staff/attendance">{language === 'th' ? 'เช็กชื่อ' : 'Attendance'}</NavLink> : null}
                   <NavLink to="/staff/profile/qr">{language === 'th' ? 'QR ส่วนตัวทีมงาน' : 'Staff Personal QR'}</NavLink>
-                  {canEmergency ? <NavLink to="/staff/emergency">{language === 'th' ? 'สุขภาพฉุกเฉิน' : 'Staff Emergency'}</NavLink> : null}
+                  {canEmergency ? <NavLink to="/staff/emergency">{language === 'th' ? 'เหตุฉุกเฉิน' : 'Staff Emergency'}</NavLink> : null}
                 </>
               ) : null}
               {!isAdmin && !isStaff ? (
@@ -268,10 +268,10 @@ export function Layout() {
             <div className="mobile-more-section">
               <span className="mobile-more-section-title">{language === 'th' ? 'รายชื่อและกลุ่ม' : 'People & Groups'}</span>
               <NavLink to="/admin/groups"><UsersRound size={18} />{language === 'th' ? 'จัดกลุ่ม' : 'Groups'}</NavLink>
-              <NavLink to="/admin/people"><Database size={18} />{language === 'th' ? 'ฐานข้อมูลกลาง' : 'People'}</NavLink>
-              <NavLink to="/admin/people/update-requests"><Database size={18} />{language === 'th' ? 'คำร้องแก้ข้อมูลบุคคล' : 'People Update Requests'}</NavLink>
-              <NavLink to="/admin/people/dedupe"><Database size={18} />{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'People Dedupe'}</NavLink>
-              <NavLink to="/admin/people/import-year2"><Database size={18} />{language === 'th' ? 'นำเข้า people ปี 2' : 'Import Year 2 People'}</NavLink>
+              <NavLink to="/admin/people"><Database size={18} />{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People Database'}</NavLink>
+              <NavLink to="/admin/people/update-requests"><Database size={18} />{language === 'th' ? 'คำร้องแก้ข้อมูล' : 'Update Requests'}</NavLink>
+              <NavLink to="/admin/people/dedupe"><Database size={18} />{language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Duplicate Check'}</NavLink>
+              <NavLink to="/admin/people/import-year2"><Database size={18} />{language === 'th' ? 'นำเข้าฐานปี 2' : 'Import Year 2'}</NavLink>
             </div>
             <div className="mobile-more-section">
               <span className="mobile-more-section-title">{language === 'th' ? 'งานสตาฟ' : 'Staff Operations'}</span>
@@ -279,7 +279,7 @@ export function Layout() {
               <NavLink to="/admin/staff/attendance"><UserCheck size={18} />{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff Attendance'}</NavLink>
               <NavLink to="/admin/staff/operations"><UsersRound size={18} />{language === 'th' ? 'โควตาทีมงาน' : 'Staff Ops'}</NavLink>
               <NavLink to="/admin/staff/requests"><Pencil size={18} />{language === 'th' ? 'คำขอทีมงาน' : 'Staff Requests'}</NavLink>
-              <NavLink to="/admin/emergency"><HeartPulse size={18} />{language === 'th' ? 'ฉุกเฉิน' : 'Emergency'}</NavLink>
+              <NavLink to="/admin/emergency"><HeartPulse size={18} />{language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'}</NavLink>
             </div>
             <div className="mobile-more-section">
               <span className="mobile-more-section-title">{language === 'th' ? 'เอกสารและระบบ' : 'Documents & System'}</span>

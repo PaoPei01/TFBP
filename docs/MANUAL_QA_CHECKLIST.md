@@ -757,6 +757,13 @@ Use this checklist before real event operations and after every production-readi
 
 ## Accessibility
 
+- [ ] Public participant page says it shows only safe public information and hides contact/health/private details.
+- [ ] Public edit CTA reads naturally as `ตรวจสอบหรือขอแก้ไขข้อมูลของฉัน`.
+- [ ] Admin dashboard labels use plain Thai: `คำขอที่รอตรวจสอบ`, `ข้อมูลที่ต้องดูแลเป็นพิเศษ`, `สรุปจำนวนตามสาขา`.
+- [ ] Staff mobile page title reads `หน้าทีมงานสำหรับหน้างาน` and health details stay collapsed by default.
+- [ ] Emergency page uses calm action wording such as `โทรทันที` and avoids technical audit wording in the primary description.
+- [ ] Document Center uses consistent Thai terms: `ศูนย์เอกสาร`, `เทมเพลตเอกสาร`, `สร้างไฟล์เอกสาร`, `ดูตัวอย่าง`, `ข้อมูลที่ยังขาด`.
+- [ ] Admin navigation uses `ฐานข้อมูลบุคคล / People Database` consistently instead of ambiguous `People`.
 - [ ] Keyboard can reach top nav, More menu, forms, modals.
 - [ ] Focus visible on links/buttons/inputs.
 - [ ] Modal opens with focus inside.
