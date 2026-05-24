@@ -1,6 +1,7 @@
 import { ClipboardCheck, RefreshCw } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { LineGroupCard } from '../components/events/LineGroupCard';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -10,6 +11,7 @@ import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
 import { getApplicationStatusLabel, getApplicationStatusTone } from '../lib/applicationStatus';
 import { formatBangkokDateTime } from '../lib/dateTime';
+import { getEventContent } from '../lib/eventContent';
 import { eventPath } from '../lib/eventRoutes';
 import { checkStaffApplicationStatus, type StaffApplicationStatusResult } from '../services/events';
 import { errorMessage } from '../utils/error';
@@ -27,6 +29,9 @@ function assignmentMethodLabel(method: string | null | undefined, t: (key: strin
 export function EventStaffApplicationStatusPage() {
   const { language, t } = useLanguage();
   const { eventSlug = '' } = useParams();
+  const content = getEventContent(eventSlug);
+  const lineGroup = content?.staffRecruitment?.lineGroup;
+  const isParentOrientationStaff = eventSlug === 'parent-orientation-staff-2569';
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,6 +57,9 @@ export function EventStaffApplicationStatusPage() {
 
   const eventName = result?.event ? (language === 'th' ? result.event.name_th : result.event.name_en || result.event.name_th) : '';
   const application = result?.success ? result.application : null;
+  const statusLabel = application?.status === 'approved' && isParentOrientationStaff
+    ? (language === 'th' ? 'ผ่านการคัดเลือกเบื้องต้น' : 'Preliminarily accepted')
+    : application ? getApplicationStatusLabel(application.status, language) : '';
 
   return (
     <section className="events-page narrow-page page-stack">
@@ -83,9 +91,9 @@ export function EventStaffApplicationStatusPage() {
           <ClipboardCheck size={30} />
           <div>
             <p className="eyebrow">{eventName || (language === 'th' ? 'ผลการตรวจสอบ' : 'Status result')}</p>
-            <h2>{getApplicationStatusLabel(application.status, language)}</h2>
+            <h2>{statusLabel}</h2>
             <div className="badge-row">
-              <Badge status={getApplicationStatusTone(application.status)}>{getApplicationStatusLabel(application.status, language)}</Badge>
+              <Badge status={getApplicationStatusTone(application.status)}>{statusLabel}</Badge>
               {application.submitted_at ? <Badge>{formatBangkokDateTime(application.submitted_at, language)}</Badge> : null}
             </div>
             <Card variant="soft">
@@ -110,6 +118,15 @@ export function EventStaffApplicationStatusPage() {
               <p className="muted">{t('staffApplication.pendingIdentityReviewNote')}</p>
             ) : null}
             {application.review_note ? <p>{application.review_note}</p> : null}
+            {lineGroup ? (
+              <LineGroupCard
+                label={language === 'th' ? lineGroup.labelTh : lineGroup.labelEn}
+                note={language === 'th' ? lineGroup.noteTh : lineGroup.noteEn}
+                url={lineGroup.url}
+                qrImagePath={lineGroup.qrImagePath}
+                language={language}
+              />
+            ) : null}
           </div>
         </Card>
       ) : null}

@@ -43,6 +43,14 @@ export type EventContent = {
     clothingNoteTh?: string;
     clothingNoteEn?: string;
     dutiesTh: string[];
+    lineGroup?: {
+      labelTh: string;
+      labelEn: string;
+      url: string;
+      qrImagePath?: string;
+      noteTh: string;
+      noteEn: string;
+    };
     importantDatesTh: Array<{ dateTh: string; titleTh: string; noteTh?: string }>;
     applicationFields: Array<{
       key: string;
@@ -154,8 +162,8 @@ export const eventContentBySlug: Record<string, EventContent> = {
     public: {
       titleTh: 'เปิดรับสตาฟงานปฐมนิเทศผู้ปกครอง ประจำปีการศึกษา 2569',
       titleEn: 'Parent Orientation Staff Recruitment 2026',
-      summaryTh: 'เปิดรับสมัครสตาฟช่วยงานปฐมนิเทศผู้ปกครอง ประจำปีการศึกษา 2569 สำหรับนักศึกษาชั้นปีที่ 2–3 โดยผู้สมัครสามารถเลือกฝ่ายที่สนใจได้มากกว่า 1 ฝ่าย และระบบจะจัดสรรฝ่ายเบื้องต้นตามโควต้าและความเหมาะสม',
-      summaryEn: 'Staff recruitment for the 2026 Parent Orientation event for 2nd- and 3rd-year Engineering students. Applicants may choose more than one preferred duty, and the system will make a preliminary assignment based on quota and suitability.',
+      summaryTh: 'เปิดรับสมัครสตาฟช่วยงานปฐมนิเทศผู้ปกครอง ประจำปีการศึกษา 2569 สำหรับนักศึกษาชั้นปีที่ 2–3 โดยผู้สมัครเลือกตำแหน่งฝ่ายที่ต้องการสมัคร 1 ตำแหน่ง และผู้ดูแลสามารถปรับเปลี่ยนได้ตามความเหมาะสม',
+      summaryEn: 'Staff recruitment for the 2026 Parent Orientation event for 2nd- and 3rd-year Engineering students. Applicants choose one preferred duty position, and admins may adjust assignments as needed.',
       targetAudienceTh: 'นักศึกษาชั้นปีที่ 2 และ 3',
       eventDateTh: 'วันที่ 12 มิถุนายน 2569',
       locationTh: 'คณะวิศวกรรมศาสตร์ มหาวิทยาลัยเชียงใหม่',
@@ -170,8 +178,14 @@ export const eventContentBySlug: Record<string, EventContent> = {
       rehearsalDateTh: '10 มิถุนายน 2569',
       rehearsalTimeTh: '16:00 น.',
       dressCodeTh: 'ชุดช็อปถูกระเบียบ',
-      clothingNoteTh: 'หมายเหตุเรื่องชุด: ผู้ที่มีชุดช็อปแล้ว ให้แต่งกายด้วยชุดช็อปถูกระเบียบในวันปฏิบัติงาน สำหรับผู้ที่ได้สั่งซื้อชุดช็อปไว้แล้วแต่ยังไม่ได้รับชุด ขอให้แจ้งสถานะไว้ในหมายเหตุเพิ่มเติม เพื่อให้ผู้ดูแลพิจารณาและประสานแนวทางการแต่งกายที่เหมาะสมอีกครั้ง',
-      clothingNoteEn: 'Uniform note: Applicants who already have the workshop uniform should wear the proper workshop uniform on the event day. If you have already ordered the workshop uniform but have not received it yet, please mention this in the additional note so the admin team can coordinate an appropriate dress-code arrangement.',
+      lineGroup: {
+        labelTh: 'เข้ากลุ่มไลน์สตาฟงานปฐมนิเทศผู้ปกครอง',
+        labelEn: 'Join the Parent Orientation Staff Line group',
+        url: 'https://line.me/R/ti/g/REPLACE_WITH_PARENT_ORIENTATION_STAFF_LINE_GROUP',
+        qrImagePath: '/line-parent-orientation-staff-2569.png',
+        noteTh: 'หลังส่งใบสมัครแล้ว สามารถเข้ากลุ่มไลน์นี้ได้ทันที เพื่อรับข่าวสาร การนัดหมาย และประกาศเพิ่มเติม ไม่จำเป็นต้องรอผลการคัดเลือก',
+        noteEn: 'After submitting your application, you may join this Line group immediately for updates, schedules, and announcements. You do not need to wait for approval.',
+      },
       dutiesTh: [
         'ฝ่ายจราจร (10 คน)',
         'ฝ่ายพยาบาล (5 คน)',
@@ -192,7 +206,6 @@ export const eventContentBySlug: Record<string, EventContent> = {
         { key: 'email', labelTh: 'อีเมล CMU / อีเมลที่ใช้ติดต่อ', type: 'text', required: true },
         { key: 'phone', labelTh: 'เบอร์โทร', type: 'text', required: true },
         { key: 'preferred_duties', labelTh: 'ฝ่ายที่สนใจ', type: 'multiselect', required: true, optionsTh: ['ฝ่ายจราจร', 'ฝ่ายพยาบาล', 'ฝ่ายลงทะเบียน', 'ฝ่ายสวัสดิการ', 'ฝ่ายสิทธิประโยชน์', 'ฝ่ายสนับสนุนระบบลงทะเบียน (IT)', 'ฝ่ายประสานงานเวที', 'ฝ่ายทั่วไป'] },
-        { key: 'availability', labelTh: 'ช่วงเวลาที่สะดวก', type: 'textarea', required: true, helpTh: 'ระบุช่วงเวลาที่สามารถช่วยงานได้ หากสามารถอยู่ได้ทั้งวันให้ระบุว่า “ทั้งวัน”' },
         { key: 'can_attend_rehearsal', labelTh: 'สามารถเข้าซ้อมวันที่ 10 มิถุนายน 2569 เวลา 16:00 น. ได้หรือไม่', type: 'radio', required: true, optionsTh: ['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ'] },
         { key: 'can_work_event_day', labelTh: 'ยืนยันว่าสามารถปฏิบัติงานวันที่ 12 มิถุนายน 2569 ได้หรือไม่', type: 'radio', required: true, optionsTh: ['ได้', 'ไม่ได้', 'ยังไม่แน่ใจ'] },
         { key: 'staff_experience', labelTh: 'เคยมีประสบการณ์เป็นสตาฟหรือไม่', type: 'textarea' },
@@ -203,25 +216,13 @@ export const eventContentBySlug: Record<string, EventContent> = {
           optionsTh: ['ไม่มี', 'มี'],
           helpTh: 'หากเลือก “มี” ระบบจะแสดงช่องสำหรับระบุโรคประจำตัว การแพ้อาหาร การแพ้ยา หรือข้อจำกัดที่จำเป็นต่อการดูแลความปลอดภัยและการจัดสรรหน้าที่',
         },
-        {
-          key: 'workshop_uniform_status',
-          labelTh: 'สถานะชุดช็อปของท่าน',
-          type: 'radio',
-          required: true,
-          optionsTh: [
-            'มีชุดช็อปแล้ว',
-            'สั่งซื้อไว้แล้ว แต่ยังไม่ได้รับ',
-            'ยังไม่มี / ต้องแจ้งผู้ดูแล',
-          ],
-          helpTh: 'ใช้สำหรับพิจารณาและประสานแนวทางการแต่งกายในวันปฏิบัติงาน',
-        },
         { key: 'note', labelTh: 'หมายเหตุเพิ่มเติม', type: 'textarea' },
       ],
       consentItemsTh: [
         'ยืนยันว่าข้อมูลที่กรอกถูกต้อง',
         'ยินยอมให้ใช้ข้อมูลสำหรับการจัดสรรหน้าที่และติดต่อประสานงานกิจกรรมนี้',
         'รับทราบว่าหน้าที่อาจมีการเปลี่ยนแปลงหลังปิดรับสมัคร',
-        'รับทราบว่าต้องแต่งกายด้วยชุดช็อปถูกระเบียบในวันปฏิบัติงาน หากสั่งซื้อชุดช็อปไว้แล้วแต่ยังไม่ได้รับ ให้แจ้งไว้ในหมายเหตุเพิ่มเติม',
+        'รับทราบว่าต้องแต่งกายด้วยชุดช็อปถูกระเบียบในวันปฏิบัติงาน',
       ],
     },
   },

@@ -1173,6 +1173,19 @@
     justify-content: center;
   }
 
+  .line-group-card {
+    grid-template-columns: 1fr;
+  }
+
+  .line-group-card-copy .btn {
+    width: 100%;
+  }
+
+  .line-group-qr {
+    width: min(180px, 58vw);
+    justify-self: center;
+  }
+
   .event-timeline-item {
     grid-template-columns: 1fr;
     align-items: start;
