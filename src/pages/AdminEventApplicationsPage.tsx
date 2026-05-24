@@ -110,6 +110,22 @@ function exportCell(value: unknown) {
   return valueText || '-';
 }
 
+function notSpecified(language: 'th' | 'en') {
+  return language === 'th' ? 'ไม่ระบุ' : 'Not specified';
+}
+
+function healthDetails(row: AdminStaffApplicationRow) {
+  return answerObject(row.answers?.health_details);
+}
+
+function healthValue(row: AdminStaffApplicationRow, key: 'chronic_condition' | 'food_allergy' | 'drug_allergy' | 'health_note') {
+  return text(healthDetails(row)[key]).trim();
+}
+
+function healthSummary(row: AdminStaffApplicationRow, language: 'th' | 'en') {
+  return text(row.answers?.health_or_limitations).trim() || notSpecified(language);
+}
+
 function applicantNickname(row: AdminStaffApplicationRow) {
   return row.people?.nickname || row.people?.nickname_th || row.people?.nickname_en || '';
 }
@@ -437,7 +453,7 @@ export function AdminEventApplicationsPage() {
       'ปฏิบัติงานวันที่ 12 มิ.ย. ได้หรือไม่': text(row.answers?.can_work_event_day),
       'ช่วงเวลาที่สะดวก': text(row.availability?.text ?? row.answers?.availability),
       'ประสบการณ์สตาฟ': text(row.answers?.staff_experience ?? row.experience),
-      'ข้อจำกัดด้านสุขภาพ/การแพ้อาหารที่จำเป็นต้องแจ้ง': text(row.answers?.health_or_limitations),
+      'ข้อจำกัดด้านสุขภาพ/การแพ้อาหารที่จำเป็นต้องแจ้ง': healthSummary(row, language),
       'หมายเหตุเพิ่มเติม': text(row.answers?.note ?? row.motivation),
       'หมายเหตุจากผู้ดูแล': row.review_note ?? '',
       'final_duty/manual override if exists': getDutyLabelTh(finalDuty(row)) || assignedDutyLabel(row, dutiesByKey) || '',
@@ -455,19 +471,16 @@ export function AdminEventApplicationsPage() {
   }
 
   function handoffRows(rowsToExport: AdminStaffApplicationRow[]): StaffApplicantExportRow[] {
-    return rowsToExport.map((row) => {
-      const healthDetails = answerObject(row.answers?.health_details);
-      return {
-        'ชื่อ สกุล': exportCell(row.people?.name_th || row.people?.name_en || row.requested_name_th || row.requested_name_en),
-        'สาขา': exportCell(majorLabel(row.people?.major || row.requested_major || '')),
-        'รหัสนักศึกษา': exportCell(row.people?.student_id || row.requested_student_id),
-        'เบอร์': exportCell(row.people?.phone || row.requested_phone),
-        'ตำแหน่ง': exportCell(handoffPosition(row)),
-        'โรคประจำตัว': exportCell(healthDetails.chronic_condition || row.people?.disease),
-        'แพ้ยา': exportCell(healthDetails.drug_allergy || row.people?.drug_allergy),
-        'แพ้อาหาร': exportCell(healthDetails.food_allergy || row.people?.food_allergy),
-      };
-    });
+    return rowsToExport.map((row) => ({
+      'ชื่อ สกุล': exportCell(row.people?.name_th || row.people?.name_en || row.requested_name_th || row.requested_name_en),
+      'สาขา': exportCell(majorLabel(row.people?.major || row.requested_major || '')),
+      'รหัสนักศึกษา': exportCell(row.people?.student_id || row.requested_student_id),
+      'เบอร์': exportCell(row.people?.phone || row.requested_phone),
+      'ตำแหน่ง': exportCell(handoffPosition(row)),
+      'โรคประจำตัว': exportCell(healthValue(row, 'chronic_condition') || text(row.answers?.health_or_limitations)),
+      'แพ้ยา': exportCell(healthValue(row, 'drug_allergy')),
+      'แพ้อาหาร': exportCell(healthValue(row, 'food_allergy')),
+    }));
   }
 
   async function downloadHandoffExcel() {
@@ -577,6 +590,7 @@ export function AdminEventApplicationsPage() {
       {eventState.error || applicationsState.error ? (
         <EmptyState
           title={language === 'th' ? 'โหลดใบสมัครไม่สำเร็จ' : 'Could not load applications'}
+          description={language === 'th' ? 'กรุณาลองใหม่อีกครั้ง หากยังพบปัญหาให้ตรวจสอบโครงสร้างข้อมูลใบสมัคร' : 'Please try again. If the problem continues, check the application data structure.'}
           action={<Button variant="secondary" onClick={() => { void eventState.reload(); void applicationsState.reload(); }}>{language === 'th' ? 'ลองใหม่' : 'Retry'}</Button>}
         />
       ) : null}
@@ -1016,12 +1030,23 @@ export function AdminEventApplicationsPage() {
                 <Card variant="warning">
                   <div className="section-heading">
                     <ShieldAlert size={20} />
-                    <div>
-                      <h2>{language === 'th' ? 'ข้อมูลสุขภาพ/ข้อจำกัด' : 'Health or limitations'}</h2>
-                      <p>{language === 'th' ? 'ข้อมูลนี้ใช้เพื่อจัดสรรหน้าที่และดูแลความปลอดภัยเท่านั้น' : 'Use this only for duty allocation and safety care.'}</p>
-                    </div>
+                  <div>
+                    <h2>{language === 'th' ? 'ข้อมูลสุขภาพ/ข้อจำกัด' : 'Health or limitations'}</h2>
+                    <p>{language === 'th' ? 'ข้อมูลนี้ใช้เพื่อจัดสรรหน้าที่และดูแลความปลอดภัยเท่านั้น' : 'Use this only for duty allocation and safety care.'}</p>
                   </div>
-                  <p>{text(detailRow.answers?.health_or_limitations) || '-'}</p>
+                </div>
+                  <div className="application-detail-grid">
+                    <span>{language === 'th' ? 'สรุปข้อมูลสุขภาพ' : 'Health summary'}</span>
+                    <strong>{healthSummary(detailRow, language)}</strong>
+                    <span>{language === 'th' ? 'โรคประจำตัว / ข้อจำกัด' : 'Chronic condition / limitation'}</span>
+                    <strong>{healthValue(detailRow, 'chronic_condition') || notSpecified(language)}</strong>
+                    <span>{language === 'th' ? 'แพ้ยา' : 'Drug allergy'}</span>
+                    <strong>{healthValue(detailRow, 'drug_allergy') || notSpecified(language)}</strong>
+                    <span>{language === 'th' ? 'แพ้อาหาร' : 'Food allergy'}</span>
+                    <strong>{healthValue(detailRow, 'food_allergy') || notSpecified(language)}</strong>
+                    <span>{language === 'th' ? 'หมายเหตุสุขภาพเพิ่มเติม' : 'Additional health note'}</span>
+                    <strong>{healthValue(detailRow, 'health_note') || notSpecified(language)}</strong>
+                  </div>
                 </Card>
               </div>
             ) : null}
