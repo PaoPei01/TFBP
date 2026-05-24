@@ -181,7 +181,7 @@ export const eventContentBySlug: Record<string, EventContent> = {
       lineGroup: {
         labelTh: 'เข้ากลุ่มไลน์สตาฟงานปฐมนิเทศผู้ปกครอง',
         labelEn: 'Join the Parent Orientation Staff Line group',
-        url: 'https://line.me/R/ti/g/REPLACE_WITH_PARENT_ORIENTATION_STAFF_LINE_GROUP',
+        url: 'https://line.me/R/ti/g/mmPpqfmHEn',
         qrImagePath: '/line-parent-orientation-staff-2569.png',
         noteTh: 'หลังส่งใบสมัครแล้ว สามารถเข้ากลุ่มไลน์นี้ได้ทันที เพื่อรับข่าวสาร การนัดหมาย และประกาศเพิ่มเติม ไม่จำเป็นต้องรอผลการคัดเลือก',
         noteEn: 'After submitting your application, you may join this Line group immediately for updates, schedules, and announcements. You do not need to wait for approval.',
