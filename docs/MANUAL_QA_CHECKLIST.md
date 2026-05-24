@@ -79,25 +79,22 @@ Use this checklist before real event operations and after every production-readi
 
 ## Public
 
-- [ ] Open `/#/demo`.
-- [ ] Open `/#/demo/story`.
-- [ ] Open `/#/demo/staff`.
-- [ ] Open `/#/demo/system`.
-- [ ] Open `/#/demo/attendance`.
-- [ ] Open `/#/demo/emergency`.
-- [ ] Confirm `/#/demo/documents` does not exist and redirects or falls back safely.
-- [ ] Confirm `/#/demo/story` uses Entaneer Gear 56 mock data only.
-- [ ] Confirm `/#/demo/story` has no Parent Orientation, document feature, or public applicant content.
-- [ ] Confirm `/#/demo/story` keyboard controls work: right arrow/space next, left arrow previous, escape back to `/#/demo`.
-- [ ] Confirm `/#/demo/story` has no horizontal scroll at mobile and desktop widths.
-- [ ] Confirm `/#/demo/story` is readable in dark theme.
-- [ ] Confirm no Parent Orientation content appears in Demo Mode.
-- [ ] Confirm no document feature, document template, document generation, or document history appears in Demo Mode.
-- [ ] Confirm every demo page says `โหมดสาธิต`, `Demo Mode`, and that all data is mock data.
-- [ ] Confirm demo pages use mock data only and no real student, staff, participant, contact, health, or incident data.
-- [ ] Confirm demo actions use local state only and do not call Supabase write operations.
-- [ ] Confirm demo pages work on mobile without horizontal scroll.
-- [ ] Confirm demo pages are readable in dark theme.
+- [ ] Open `/#/lab`.
+- [ ] Open `/#/lab/station-readiness`.
+- [ ] Open `/#/lab/incident-board`.
+- [ ] Open `/#/lab/round-control`.
+- [ ] Open `/#/lab/readiness-checklist`.
+- [ ] Open `/#/lab/broadcast`.
+- [ ] Confirm `/#/demo` redirects to `/#/lab`.
+- [ ] Confirm old `/#/demo/story`, `/#/demo/staff`, `/#/demo/system`, `/#/demo/attendance`, and `/#/demo/emergency` redirect to `/#/lab`.
+- [ ] Confirm Feature Lab warning is visible on every lab page.
+- [ ] Confirm Feature Lab uses mock data only and no real student, staff, participant, contact, health, or incident data.
+- [ ] Confirm Feature Lab actions use local state only and do not call Supabase write operations.
+- [ ] Confirm no Parent Orientation content appears in Feature Lab.
+- [ ] Confirm no Document Center, document template, document generation, or document history appears in Feature Lab.
+- [ ] Confirm no public applicant demo appears in Feature Lab.
+- [ ] Confirm Feature Lab pages work on mobile without horizontal scroll.
+- [ ] Confirm Feature Lab pages are readable in dark theme.
 
 - [ ] Open `/`.
 - [ ] Participant list loads.

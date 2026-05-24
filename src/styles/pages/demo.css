@@ -3,6 +3,252 @@
   margin: 0 auto;
 }
 
+.feature-lab-page {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.feature-lab-badge,
+.lab-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.feature-lab-badge,
+.lab-status-info {
+  color: var(--primary-soft-text);
+  background: var(--primary-soft);
+}
+
+.lab-status-success {
+  color: var(--success-soft-text);
+  background: var(--success-soft);
+}
+
+.lab-status-warning {
+  color: var(--warning-soft-text);
+  background: var(--warning-soft);
+}
+
+.lab-status-danger {
+  color: var(--danger-soft-text);
+  background: var(--danger-soft);
+}
+
+.lab-status-muted {
+  color: var(--text-muted);
+  background: var(--surface-muted);
+}
+
+.feature-lab-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.feature-lab-warning > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.feature-lab-warning span,
+.feature-lab-card p,
+.feature-lab-note,
+.feature-lab-explainer,
+.feature-lab-why li {
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.feature-lab-event-card,
+.feature-lab-card,
+.feature-lab-why,
+.feature-lab-explainer {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.feature-lab-event-card h2,
+.feature-lab-card h2,
+.feature-lab-why h2 {
+  margin: 0;
+}
+
+.feature-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;
+}
+
+.feature-lab-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.feature-lab-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--primary-soft-text);
+  background: var(--primary-soft);
+}
+
+.feature-lab-card .btn {
+  width: fit-content;
+}
+
+.feature-lab-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.feature-lab-metrics,
+.feature-lab-chip-row,
+.feature-lab-quick-row,
+.feature-lab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.feature-lab-metrics span,
+.feature-lab-chip-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.55rem 0.7rem;
+  color: var(--text);
+  background: var(--surface-soft);
+}
+
+.feature-lab-metrics strong {
+  color: var(--primary);
+  font-size: 1.25rem;
+}
+
+.feature-lab-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+  gap: 0.6rem;
+  margin: 0;
+}
+
+.feature-lab-facts div {
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.65rem;
+  background: var(--surface-soft);
+}
+
+.feature-lab-facts dt {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.feature-lab-facts dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 900;
+}
+
+.feature-lab-timeline {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.feature-lab-timeline span {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.55rem 0.8rem;
+  color: var(--text-muted);
+  background: var(--surface-soft);
+  font-weight: 900;
+}
+
+.feature-lab-timeline .is-active {
+  color: var(--primary-soft-text);
+  background: var(--primary-soft);
+}
+
+.feature-lab-checklist {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.feature-lab-checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.65rem;
+  background: var(--surface-soft);
+  font-weight: 800;
+}
+
+.feature-lab-checklist input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.12rem;
+  accent-color: var(--primary);
+}
+
+.feature-lab-progress {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.feature-lab-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
+.feature-lab-why ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 640px) {
+  .feature-lab-warning,
+  .feature-lab-card-head {
+    display: grid;
+  }
+
+  .feature-lab-card .btn,
+  .feature-lab-actions .btn,
+  .feature-lab-quick-row .btn {
+    width: 100%;
+  }
+}
+
 .demo-mode-badge {
   display: inline-flex;
   align-items: center;
