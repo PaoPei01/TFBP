@@ -3300,6 +3300,8 @@
 
   .staff-attendance-action-card {
     min-height: 160px;
+    min-width: 0;
+    overflow-x: visible;
   }
 
   .staff-attendance-identity-card {
