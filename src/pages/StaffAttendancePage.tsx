@@ -1,4 +1,4 @@
-import { Camera, History, Home, LogOut, QrCode, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Camera, History, Home, LogOut, QrCode, RefreshCw, ShieldCheck, UserRound } from 'lucide-react';
 import { FormEvent, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { HelpButton } from '../components/help/HelpButton';
@@ -210,6 +210,10 @@ export function StaffAttendancePage() {
         actions={(
           <>
             <HelpButton topicId="staff-attendance.overview" variant="link" />
+            <Link className="btn btn-secondary" to="/staff/profile/verify">
+              <UserRound size={18} />
+              {language === 'th' ? 'กลับไปศูนย์ทีมงานทั่วไป' : 'Back to General Staff Access'}
+            </Link>
             {isAuthenticated ? <Link className="btn btn-secondary" to="/staff"><Home size={18} />{language === 'th' ? 'หน้าทีมงาน' : 'Staff home'}</Link> : null}
           </>
         )}

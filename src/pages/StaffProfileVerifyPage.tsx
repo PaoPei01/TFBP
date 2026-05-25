@@ -1,7 +1,8 @@
 import { ClipboardCheck, LogIn, QrCode, Save, SearchCheck, Send, UserRound } from 'lucide-react';
-import { FormEvent, useMemo, useRef, useState } from 'react';
+import { FormEvent, lazy, Suspense, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HelpButton } from '../components/help/HelpButton';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PublicStaffCard } from '../components/PublicStaffCard';
 import { StickyActionBar } from '../components/mobile/StickyActionBar';
 import { Button } from '../components/ui/Button';
@@ -11,11 +12,25 @@ import { Modal } from '../components/ui/Modal';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Toast, ToastState } from '../components/ui/Toast';
 import { useLanguage } from '../context/LanguageContext';
+import type { VerifiedStaffAttendanceIdentity } from '../lib/attendanceTypes';
 import { groupLabel } from '../lib/grouping';
 import { identityFromAttendanceResult, saveVerifiedStaffIdentity } from '../lib/verifiedStaffIdentity';
 import { verifyStaffAttendanceIdentity } from '../services/staffAttendance';
 import { submitStaffEditRequestVerified, updateStaffPublicProfileVerified, verifyStaffIdentity, staffDisplayName, type StaffPublicProfileInput, type VerifiedStaffProfileContext } from '../services/staffProfiles';
 import { errorMessage } from '../utils/error';
+
+const StaffPersonalQrModal = lazy(() => import('../components/attendance/StaffPersonalQrModal').then((module) => ({ default: module.StaffPersonalQrModal })));
+
+function requestFormFromContext(data: VerifiedStaffProfileContext, fallbackPhone: string) {
+  return {
+    phone: data.profile.phone ?? fallbackPhone,
+    line_id: data.profile.line_id ?? '',
+    disease: data.medical_info?.disease ?? '',
+    drug_allergy: data.medical_info?.drug_allergy ?? '',
+    food_allergy: data.medical_info?.food_allergy ?? '',
+    medical_note: data.medical_info?.medical_note ?? '',
+  };
+}
 
 export function StaffProfileVerifyPage() {
   const { language } = useLanguage();
@@ -25,6 +40,8 @@ export function StaffProfileVerifyPage() {
   const [form, setForm] = useState<StaffPublicProfileInput & { instagram?: string | null; facebook?: string | null }>({ interests: [] });
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestForm, setRequestForm] = useState({ phone: '', line_id: '', disease: '', drug_allergy: '', food_allergy: '', medical_note: '' });
+  const [verifiedAttendanceIdentity, setVerifiedAttendanceIdentity] = useState<VerifiedStaffAttendanceIdentity | null>(null);
+  const [personalQrOpen, setPersonalQrOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
   const profileEditRef = useRef<HTMLDivElement | null>(null);
@@ -61,6 +78,7 @@ export function StaffProfileVerifyPage() {
     event.preventDefault();
     setLoading(true);
     setToast(null);
+    setVerifiedAttendanceIdentity(null);
     try {
       const result = await verifyStaffIdentity(email, phone);
       if (!result) {
@@ -68,6 +86,7 @@ export function StaffProfileVerifyPage() {
         return;
       }
       setData(result);
+      setRequestForm(requestFormFromContext(result, phone));
       setForm({
         avatar_path: result.public_profile?.avatar_path ?? null,
         avatar_url: result.public_profile?.avatar_url ?? '',
@@ -88,6 +107,7 @@ export function StaffProfileVerifyPage() {
         const attendanceIdentity = identityFromAttendanceResult(attendanceResult);
         if (attendanceIdentity) {
           saveVerifiedStaffIdentity(attendanceIdentity);
+          setVerifiedAttendanceIdentity(attendanceIdentity);
           setToast({
             type: 'success',
             message: language === 'th'
@@ -113,6 +133,7 @@ export function StaffProfileVerifyPage() {
     try {
       const result = await updateStaffPublicProfileVerified(email, phone, mergedForm);
       setData(result);
+      setRequestForm(requestFormFromContext(result, phone));
       setToast({ type: 'success', message: language === 'th' ? 'บันทึกโปรไฟล์ทีมงานแล้ว' : 'Staff profile saved' });
     } catch (err) {
       setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'บันทึกไม่สำเร็จ' : 'Save failed') });
@@ -132,6 +153,7 @@ export function StaffProfileVerifyPage() {
       setToast({ type: 'success', message: language === 'th' ? 'ส่งคำขอแก้ไขแล้ว รอแอดมินอนุมัติ' : 'Request submitted for admin approval' });
       const refreshed = await verifyStaffIdentity(email, phone);
       setData(refreshed);
+      if (refreshed) setRequestForm(requestFormFromContext(refreshed, phone));
     } catch (err) {
       setToast({ type: 'error', message: errorMessage(err, language === 'th' ? 'ส่งคำขอไม่สำเร็จ' : 'Request failed') });
     } finally {
@@ -142,6 +164,37 @@ export function StaffProfileVerifyPage() {
   function scrollToProfileEdit() {
     profileEditRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     window.setTimeout(() => firstProfileEditInputRef.current?.focus(), 350);
+  }
+
+  async function openPersonalQr() {
+    if (verifiedAttendanceIdentity) {
+      setPersonalQrOpen(true);
+      return;
+    }
+    try {
+      setLoading(true);
+      const attendanceResult = await verifyStaffAttendanceIdentity(email, phone);
+      const attendanceIdentity = identityFromAttendanceResult(attendanceResult);
+      if (!attendanceIdentity) {
+        setToast({
+          type: 'error',
+          message: language === 'th'
+            ? 'ยังไม่สามารถเปิด QR ส่วนตัวได้ กรุณาลองยืนยันตัวตนอีกครั้ง'
+            : 'Could not open personal QR. Please verify again.',
+        });
+        return;
+      }
+      saveVerifiedStaffIdentity(attendanceIdentity);
+      setVerifiedAttendanceIdentity(attendanceIdentity);
+      setPersonalQrOpen(true);
+    } catch (err) {
+      setToast({
+        type: 'error',
+        message: errorMessage(err, language === 'th' ? 'ยังไม่สามารถเปิด QR ส่วนตัวได้ กรุณาลองยืนยันตัวตนอีกครั้ง' : 'Could not open personal QR. Please verify again.'),
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -181,12 +234,12 @@ export function StaffProfileVerifyPage() {
               <p className="muted">{language === 'th' ? 'บางเครื่องมือใช้อีเมลและเบอร์โทรยืนยันตัวตนได้ โดยไม่ต้องเข้าสู่ระบบ' : 'Some tools support email and phone verification without signing in.'}</p>
             </div>
             <div className="staff-action-grid staff-lite-action-grid">
-              <Link className="staff-action-card" to="/staff/attendance?open=personal-qr">
+              <button className="staff-action-card" type="button" onClick={() => void openPersonalQr()}>
                 <QrCode size={26} />
                 <strong>{language === 'th' ? 'QR ส่วนตัวสำหรับเช็กชื่อ' : 'Personal check-in QR'}</strong>
                 <span>{language === 'th' ? 'เปิด QR ของคุณทันทีหลังยืนยันตัวตน เพื่อให้แอดมินหรือหัวหน้าทีมสแกน' : 'Open your QR immediately after verification so an admin or team lead can scan it.'}</span>
                 <em>{language === 'th' ? 'เปิด QR ของฉัน' : 'Open my QR'}</em>
-              </Link>
+              </button>
               <Link className="staff-action-card" to="/staff/attendance">
                 <ClipboardCheck size={26} />
                 <strong>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}</strong>
@@ -280,6 +333,17 @@ export function StaffProfileVerifyPage() {
           </div>
         </div>
       </Modal>
+
+      {personalQrOpen ? (
+        <Suspense fallback={<LoadingSkeleton />}>
+          <StaffPersonalQrModal
+            open={personalQrOpen}
+            onClose={() => setPersonalQrOpen(false)}
+            staffIdentity={verifiedAttendanceIdentity}
+            qrPayload={verifiedAttendanceIdentity?.personal_qr_payload}
+          />
+        </Suspense>
+      ) : null}
     </section>
   );
 }

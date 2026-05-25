@@ -39,8 +39,9 @@ export type StaffDirectoryRow = PublicStaffCardData & {
 };
 
 export type VerifiedStaffProfileContext = {
-  profile: Pick<StaffProfile, 'id' | 'student_id' | 'email' | 'name_th' | 'name_en' | 'nickname' | 'nickname_th' | 'nickname_en' | 'major' | 'instagram' | 'facebook' | 'position'>;
+  profile: Pick<StaffProfile, 'id' | 'student_id' | 'email' | 'name_th' | 'name_en' | 'nickname' | 'nickname_th' | 'nickname_en' | 'major' | 'phone' | 'instagram' | 'line_id' | 'facebook' | 'position'>;
   public_profile: StaffPublicProfile | null;
+  medical_info: Pick<StaffMedicalInfo, 'disease' | 'drug_allergy' | 'food_allergy' | 'medical_note'> | null;
   assignment: Pick<StaffAssignment, 'main_group' | 'subgroup' | 'primary_role' | 'secondary_roles' | 'base_number'> | null;
   edit_requests: Array<Pick<StaffEditRequest, 'id' | 'status' | 'created_at' | 'admin_note'>>;
 };
