@@ -97,6 +97,7 @@ export function StaffManagementPage() {
           major: editing.major,
           instagram: editing.instagram,
           line_id: editing.line_id,
+          facebook: editing.facebook,
           other_contact: editing.other_contact,
           position: editing.position,
         },
@@ -334,7 +335,7 @@ export function StaffManagementPage() {
           { key: 'ops_role', header: language === 'th' ? 'หน้าที่' : 'Ops role', render: (row) => <div className="participant-admin-cell"><strong>{row.assignment?.primary_role || row.position || '-'}</strong><span>{row.assignment?.secondary_roles?.join(', ') || '-'}</span></div> },
           { key: 'group', header: language === 'th' ? 'กลุ่ม' : 'Group', render: (row) => groupLabel(row.assignment?.main_group, row.assignment?.subgroup, language) },
           { key: 'phone', header: language === 'th' ? 'เบอร์' : 'Phone', render: (row) => row.phone || '-' },
-          { key: 'contact', header: language === 'th' ? 'ช่องทางติดต่อ' : 'Contact', render: (row) => <ContactLinks instagram={row.instagram} lineId={row.line_id} other={row.other_contact} /> },
+          { key: 'contact', header: language === 'th' ? 'ช่องทางติดต่อ' : 'Contact', render: (row) => <ContactLinks instagram={row.instagram} lineId={row.line_id} facebook={row.facebook} other={row.other_contact} /> },
           { key: 'medical', header: language === 'th' ? 'สุขภาพ' : 'Medical', render: (row) => <HealthFlags profile={{ disease: row.medical_info?.disease ?? null, drug_allergy: row.medical_info?.drug_allergy ?? null, food_allergy: row.medical_info?.food_allergy ?? null }} detail /> },
           { key: 'profile_status', header: language === 'th' ? 'โปรไฟล์' : 'Profile', render: (row) => row.public_profile?.public_profile_enabled ? (row.public_profile.avatar_path || row.public_profile.avatar_url ? 'complete' : 'missing avatar') : 'public disabled' },
           {
@@ -366,6 +367,7 @@ export function StaffManagementPage() {
             <Select label={language === 'th' ? 'สาขา' : 'Major'} value={editing.major ? normalizeMajor(editing.major) : ''} options={majorCatalog.map((item) => ({ value: normalizeMajor(`(${item.code})`), label: majorLabel(`(${item.code})`, language) }))} onChange={(event) => patchEditing({ major: event.target.value })} />
             <Input label="Instagram" value={editing.instagram ?? ''} onChange={(event) => patchEditing({ instagram: event.target.value })} />
             <Input label="Line ID" value={editing.line_id ?? ''} onChange={(event) => patchEditing({ line_id: event.target.value })} />
+            <Input label="Facebook" value={editing.facebook ?? ''} onChange={(event) => patchEditing({ facebook: event.target.value })} />
             <Input label={language === 'th' ? 'ช่องทางอื่น' : 'Other contact'} value={editing.other_contact ?? ''} onChange={(event) => patchEditing({ other_contact: event.target.value })} />
             <Input label={language === 'th' ? 'ตำแหน่ง' : 'Position'} value={editing.position ?? ''} onChange={(event) => patchEditing({ position: event.target.value })} />
             <Select label={language === 'th' ? 'สิทธิ์ระบบ' : 'System Role'} value={editing.assignment?.role ?? ''} options={roles} onChange={(event) => patchEditing({ assignment: { ...(editing.assignment ?? blankAssignment(editing.id)), role: (event.target.value || null) as StaffRole | null } })} />

@@ -90,7 +90,7 @@ export function StaffMobilePage() {
               <div key={`${staff.main_group}-${staff.subgroup}-${staff.student_id || staff.name}`} className="staff-roster-person">
                 <strong>{staff.nickname || staff.name}</strong>
                 <span>{staff.name}</span>
-                <ContactLinks instagram={staff.instagram} lineId={staff.line_id} other={staff.other_contact} />
+                <ContactLinks instagram={staff.instagram} facebook={staff.facebook} lineId={staff.line_id} other={staff.other_contact} />
                 {canCallStaff && staff.phone ? <a className="btn btn-secondary btn-compact" href={`tel:${staff.phone}`}><Phone size={16} />{language === 'th' ? 'โทร' : 'Call'}</a> : null}
                 {canViewMedical && hasHealthFlag(staff) ? (
                   <details className="staff-health-details">
@@ -174,7 +174,7 @@ export function StaffMobilePage() {
                   <HealthFlags profile={profile} detail />
                 </details>
               ) : null}
-              <ContactLinks instagram={profile.instagram} lineId={profile.line_id} other={profile.other_contact} />
+              <ContactLinks instagram={profile.instagram} facebook={profile.facebook} lineId={profile.line_id} other={profile.other_contact} />
             </Card>
           );
         })}

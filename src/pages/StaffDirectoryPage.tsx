@@ -89,7 +89,7 @@ export function StaffDirectoryPage() {
           { key: 'role', header: language === 'th' ? 'หน้าที่' : 'Role', render: (row) => row.primary_role || row.position || '-' },
           { key: 'group', header: language === 'th' ? 'กลุ่ม' : 'Group', render: (row) => groupLabel(row.main_group, row.subgroup, language) },
           { key: 'phone', header: language === 'th' ? 'เบอร์' : 'Phone', render: (row) => row.phone || '-' },
-          { key: 'contact', header: language === 'th' ? 'ช่องทาง' : 'Contact', render: (row) => [row.instagram && 'IG', row.line_id && 'LINE'].filter(Boolean).join(' · ') || '-' },
+          { key: 'contact', header: language === 'th' ? 'ช่องทาง' : 'Contact', render: (row) => [row.instagram && 'IG', row.line_id && 'LINE', row.facebook && 'FB'].filter(Boolean).join(' · ') || '-' },
         ]}
       />
     </section>

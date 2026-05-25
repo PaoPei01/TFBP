@@ -1,4 +1,4 @@
-import { Instagram, Phone } from 'lucide-react';
+import { Facebook, Instagram, Phone } from 'lucide-react';
 import { StaffAvatar } from './StaffAvatar';
 import { groupLabel } from '../lib/grouping';
 import { joinDisplayParts } from '../lib/display';
@@ -32,6 +32,7 @@ export function PublicStaffCard({ staff, internal = false }: PublicStaffCardProp
         {staff.interests?.length ? <small>{staff.interests.join(' · ')}</small> : null}
         <div className="staff-contact-row">
           {staff.instagram ? <a href={`https://www.instagram.com/${staff.instagram.replace(/^@/, '')}/`} target="_blank" rel="noreferrer"><Instagram size={15} /> IG</a> : null}
+          {staff.facebook ? <span><Facebook size={15} /> FB</span> : null}
           {staff.line_id ? <span>LINE</span> : null}
           {internal && staff.phone ? <a href={`tel:${staff.phone}`}><Phone size={15} /> {staff.phone}</a> : null}
         </div>

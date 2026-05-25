@@ -118,7 +118,7 @@ export function StaffImportPage() {
   }
 
   function downloadTemplate() {
-    const headers = ['student_id', 'email', 'name_th', 'name_en', 'nickname_th', 'nickname_en', 'phone', 'instagram', 'line_id', 'major', 'position', 'role', 'primary_role', 'secondary_roles', 'main_group', 'subgroup'];
+    const headers = ['student_id', 'email', 'name_th', 'name_en', 'nickname_th', 'nickname_en', 'phone', 'instagram', 'line_id', 'facebook', 'major', 'position', 'role', 'primary_role', 'secondary_roles', 'main_group', 'subgroup'];
     const blob = new Blob([`\uFEFF${headers.join(',')}\n`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -249,7 +249,7 @@ export function StaffImportPage() {
               { key: 'major', header: language === 'th' ? 'สาขา' : 'Major', render: (row) => majorLabel(row.profile.major, language) },
               { key: 'position', header: language === 'th' ? 'ตำแหน่ง' : 'Position', render: (row) => row.profile.position || '-' },
               { key: 'group', header: language === 'th' ? 'กลุ่ม' : 'Group', render: (row) => groupLabel(row.assignment.main_group, row.assignment.subgroup, language) },
-              { key: 'contact', header: language === 'th' ? 'แยก contact' : 'Parsed contact', render: (row) => <span>{['IG ' + (row.contact_preview.instagram ?? '-'), 'Line ' + (row.contact_preview.line_id ?? '-')].join(' · ')}</span> },
+              { key: 'contact', header: language === 'th' ? 'แยก contact' : 'Parsed contact', render: (row) => <span>{['IG ' + (row.contact_preview.instagram ?? '-'), 'Line ' + (row.contact_preview.line_id ?? '-'), 'FB ' + (row.contact_preview.facebook ?? '-')].join(' · ')}</span> },
               { key: 'warnings', header: language === 'th' ? 'คำเตือน' : 'Warnings', render: (row) => row.warnings.length ? row.warnings.join(', ') : <CheckCircle2 size={16} /> },
             ]}
           />

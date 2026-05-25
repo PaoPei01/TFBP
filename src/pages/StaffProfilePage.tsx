@@ -34,6 +34,7 @@ export function StaffProfilePage() {
     interests: data.public_profile?.interests ?? [],
     instagram: data.public_profile?.show_instagram ? data.profile.instagram : null,
     line_id: data.public_profile?.show_line_id ? data.profile.line_id : null,
+    facebook: data.public_profile?.show_facebook ? data.profile.facebook : null,
     phone: null,
   } : null;
   return (

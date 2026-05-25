@@ -29,6 +29,7 @@ export type PublicStaffCardData = {
   interests: string[] | null;
   instagram: string | null;
   line_id: string | null;
+  facebook: string | null;
   phone: string | null;
 };
 
@@ -38,7 +39,7 @@ export type StaffDirectoryRow = PublicStaffCardData & {
 };
 
 export type VerifiedStaffProfileContext = {
-  profile: Pick<StaffProfile, 'id' | 'student_id' | 'email' | 'name_th' | 'name_en' | 'nickname' | 'nickname_th' | 'nickname_en' | 'major' | 'phone' | 'instagram' | 'line_id' | 'position'>;
+  profile: Pick<StaffProfile, 'id' | 'student_id' | 'email' | 'name_th' | 'name_en' | 'nickname' | 'nickname_th' | 'nickname_en' | 'major' | 'phone' | 'instagram' | 'line_id' | 'facebook' | 'position'>;
   public_profile: StaffPublicProfile | null;
   medical_info: Pick<StaffMedicalInfo, 'disease' | 'drug_allergy' | 'food_allergy' | 'medical_note'> | null;
   assignment: Pick<StaffAssignment, 'main_group' | 'subgroup' | 'primary_role' | 'secondary_roles' | 'base_number'> | null;
@@ -59,20 +60,6 @@ export type StaffPublicProfileInput = Partial<Pick<
   | 'show_phone_to_staff'
   | 'show_phone_to_public'
 >>;
-
-export type VerifiedStaffPublicProfileInput = Partial<Pick<
-  StaffPublicProfile,
-  | 'avatar_path'
-  | 'avatar_url'
-  | 'bio'
-  | 'public_profile_enabled'
-  | 'show_instagram'
-  | 'show_line_id'
-  | 'show_phone_to_staff'
-  | 'show_phone_to_public'
->> & {
-  instagram?: string | null;
-};
 
 function cleanInput(input: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(input).map(([key, value]) => [
@@ -112,7 +99,7 @@ export async function submitStaffEditRequest(input: { profile?: Record<string, u
   return data as StaffEditRequest;
 }
 
-export async function updateStaffPublicProfileVerified(email: string, phone: string, input: VerifiedStaffPublicProfileInput) {
+export async function updateStaffPublicProfileVerified(email: string, phone: string, input: StaffPublicProfileInput & { instagram?: string | null; facebook?: string | null }) {
   const { data, error } = await supabase.rpc('update_staff_public_profile_verified', {
     input_email: cleanEmail(email),
     input_phone: normalizePhoneNumber(phone),

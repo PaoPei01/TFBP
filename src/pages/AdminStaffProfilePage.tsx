@@ -45,6 +45,7 @@ export function AdminStaffProfilePage() {
     interests: mergedPublic.interests ?? [],
     instagram: mergedPublic.show_instagram ? data.profile.instagram : null,
     line_id: mergedPublic.show_line_id ? data.profile.line_id : null,
+    facebook: mergedPublic.show_facebook ? data.profile.facebook : null,
     phone: mergedPublic.show_phone_to_public ? data.profile.phone : null,
   } : null;
 
@@ -157,7 +158,7 @@ export function AdminStaffProfilePage() {
               <Input label="Bio" value={mergedPublic.bio ?? ''} onChange={(event) => setPublicPatch({ ...publicPatch, bio: event.target.value })} />
               <Input label={language === 'th' ? 'ภูมิลำเนา' : 'Hometown'} value={mergedPublic.hometown ?? ''} onChange={(event) => setPublicPatch({ ...publicPatch, hometown: event.target.value })} />
               <Input label={language === 'th' ? 'ความสนใจ' : 'Interests'} value={(mergedPublic.interests ?? []).join(', ')} onChange={(event) => setPublicPatch({ ...publicPatch, interests: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} />
-              {['public_profile_enabled', 'show_instagram', 'show_line_id', 'show_phone_to_staff', 'show_phone_to_public'].map((key) => (
+              {['public_profile_enabled', 'show_instagram', 'show_line_id', 'show_facebook', 'show_phone_to_staff', 'show_phone_to_public'].map((key) => (
                 <label className="check-field" key={key}>
                   <input type="checkbox" checked={Boolean(mergedPublic[key as keyof StaffPublicProfileInput])} onChange={(event) => setPublicPatch({ ...publicPatch, [key]: event.target.checked })} />
                   <span>{key}</span>

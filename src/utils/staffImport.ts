@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import { cleanNullableText, normalizePhoneNumber } from '../lib/dataClean';
 import { cleanEmail } from '../lib/cleaners';
-import { normalizeMajor } from '../lib/major';
+import { getMajorCode, normalizeMajor } from '../lib/major';
 import { normalizeStaffOperationalRole, normalizeStaffSecondaryRoles, normalizeStaffSystemRole } from '../lib/staffRoles';
 import type { MainGroup, StaffRole, Subgroup } from '../lib/types';
 
@@ -21,6 +21,7 @@ export type StaffImportRow = {
     major: string | null;
     instagram: string | null;
     line_id: string | null;
+    facebook: string | null;
     other_contact: string | null;
     position: string | null;
   };
@@ -41,6 +42,7 @@ export type StaffImportRow = {
     raw: string | null;
     instagram: string | null;
     line_id: string | null;
+    facebook: string | null;
     other_contact: string | null;
   };
   warnings: string[];
@@ -122,12 +124,13 @@ function findHeaderRowIndex(matrix: Array<Array<string | null>>) {
 function parseStaffContact(raw: string | null) {
   const text = raw ?? '';
   const line = text.match(/(?:line|ไลน์)\s*[:=@]?\s*([A-Za-z0-9._-]{2,40})/i)?.[1] ?? null;
+  const facebook = text.match(/(?:facebook|fb)\s*[:=@]?\s*([A-Za-z0-9._/-]{2,80})/i)?.[1] ?? null;
   const explicitIg = text.match(/(?:ig|instagram)\s*[:=@]?\s*([A-Za-z0-9._]{2,30})|@([A-Za-z0-9._]{2,30})/i);
-  const stripped = clean(text.replace(/(?:line|ไลน์|LINE|ig|instagram)\s*[:=@]?/gi, '').replace(/[;,|]+/g, ' '));
+  const stripped = clean(text.replace(/(?:line|ไลน์|LINE|ig|instagram|facebook|fb)\s*[:=@]?/gi, '').replace(/[;,|]+/g, ' '));
   const plainUsername = stripped && /^[A-Za-z0-9._]{2,30}$/.test(stripped) ? stripped : null;
-  const instagram = explicitIg?.[1] ?? explicitIg?.[2] ?? (!line ? plainUsername : null);
-  const other = instagram || line ? null : stripped;
-  return { raw, instagram: clean(instagram), line_id: clean(line), other_contact: clean(other) };
+  const instagram = explicitIg?.[1] ?? explicitIg?.[2] ?? (!line && !facebook ? plainUsername : null);
+  const other = instagram || line || facebook ? null : stripped;
+  return { raw, instagram: clean(instagram), line_id: clean(line), facebook: clean(facebook), other_contact: clean(other) };
 }
 
 const groupMap: Record<string, MainGroup> = {
@@ -157,6 +160,10 @@ function normalizeSubgroup(value: string | null): Subgroup | null {
   return match === 'A' || match === 'B' ? match : null;
 }
 
+function looksLikeMajor(value: string | null) {
+  return Boolean(value && getMajorCode(value) !== value);
+}
+
 function rowToStaff(row: Record<string, string | null>, sourceSheet: string, sourceRow: number): StaffImportRow {
   const contact = get(row, ['ช่องทางการติดต่อ', 'contact', 'contact_channel', 'ช่องทางติดต่อ']);
   const parsed = parseStaffContact(contact);
@@ -175,9 +182,14 @@ function rowToStaff(row: Record<string, string | null>, sourceSheet: string, sou
     major: normalizeMajor(get(row, ['major', 'department', 'program', 'curriculum', 'สาขา', 'สาขาวิชา', 'หลักสูตร', 'ภาควิชา'])),
     instagram: get(row, ['instagram', 'ig']) ?? parsed.instagram,
     line_id: get(row, ['line_id', 'line']) ?? parsed.line_id,
-    other_contact: get(row, ['other_contact', 'facebook', 'fb']) ?? parsed.other_contact,
+    facebook: get(row, ['facebook', 'fb']) ?? parsed.facebook,
+    other_contact: get(row, ['other_contact']) ?? parsed.other_contact,
     position: get(row, ['position', 'ตำแหน่ง']),
   };
+  if (!profile.major && looksLikeMajor(profile.facebook)) {
+    profile.major = normalizeMajor(profile.facebook);
+    profile.facebook = null;
+  }
   if (profile.line_id && /พี่กลุ่ม|ทีมงาน|สตาฟ|staff/i.test(profile.line_id) && !profile.position) {
     profile.position = profile.line_id;
     profile.line_id = null;

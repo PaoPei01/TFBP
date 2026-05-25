@@ -16,10 +16,15 @@ import type { VerifiedStaffAttendanceIdentity } from '../lib/attendanceTypes';
 import { groupLabel } from '../lib/grouping';
 import { identityFromAttendanceResult, saveVerifiedStaffIdentity } from '../lib/verifiedStaffIdentity';
 import { verifyStaffAttendanceIdentity } from '../services/staffAttendance';
-import { submitStaffEditRequestVerified, updateStaffPublicProfileVerified, verifyStaffIdentity, staffDisplayName, type VerifiedStaffProfileContext, type VerifiedStaffPublicProfileInput } from '../services/staffProfiles';
+import { submitStaffEditRequestVerified, updateStaffPublicProfileVerified, verifyStaffIdentity, staffDisplayName, type StaffPublicProfileInput, type VerifiedStaffProfileContext } from '../services/staffProfiles';
 import { errorMessage } from '../utils/error';
 
 const StaffPersonalQrModal = lazy(() => import('../components/attendance/StaffPersonalQrModal').then((module) => ({ default: module.StaffPersonalQrModal })));
+
+type VerifiedStaffPublicProfileForm = StaffPublicProfileInput & {
+  instagram?: string | null;
+  facebook?: string | null;
+};
 
 function requestFormFromContext(data: VerifiedStaffProfileContext, fallbackPhone: string) {
   return {
@@ -32,17 +37,21 @@ function requestFormFromContext(data: VerifiedStaffProfileContext, fallbackPhone
   };
 }
 
-function publicFormFromContext(data: VerifiedStaffProfileContext): VerifiedStaffPublicProfileInput {
+function publicFormFromContext(data: VerifiedStaffProfileContext): VerifiedStaffPublicProfileForm {
   return {
     avatar_path: data.public_profile?.avatar_path ?? null,
     avatar_url: data.public_profile?.avatar_url ?? '',
     bio: data.public_profile?.bio ?? '',
+    hometown: data.public_profile?.hometown ?? '',
+    interests: data.public_profile?.interests ?? [],
     public_profile_enabled: data.public_profile?.public_profile_enabled ?? true,
     show_instagram: data.public_profile?.show_instagram ?? false,
+    show_facebook: data.public_profile?.show_facebook ?? false,
     show_line_id: data.public_profile?.show_line_id ?? false,
     show_phone_to_staff: data.public_profile?.show_phone_to_staff ?? true,
     show_phone_to_public: data.public_profile?.show_phone_to_public ?? false,
     instagram: data.profile.instagram ?? '',
+    facebook: data.profile.facebook ?? '',
   };
 }
 
@@ -51,7 +60,7 @@ export function StaffProfileVerifyPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [data, setData] = useState<VerifiedStaffProfileContext | null>(null);
-  const [form, setForm] = useState<VerifiedStaffPublicProfileInput>({});
+  const [form, setForm] = useState<VerifiedStaffPublicProfileForm>({ interests: [] });
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestForm, setRequestForm] = useState({ phone: '', line_id: '', disease: '', drug_allergy: '', food_allergy: '', medical_note: '' });
   const [verifiedAttendanceIdentity, setVerifiedAttendanceIdentity] = useState<VerifiedStaffAttendanceIdentity | null>(null);
@@ -61,18 +70,7 @@ export function StaffProfileVerifyPage() {
   const profileEditRef = useRef<HTMLDivElement | null>(null);
   const firstProfileEditInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const mergedForm = useMemo(() => ({ ...(data?.public_profile ?? {}), instagram: data?.profile.instagram ?? '', ...form }), [data, form]);
-  const publicProfilePayload: VerifiedStaffPublicProfileInput = {
-    avatar_path: mergedForm.avatar_path ?? null,
-    avatar_url: mergedForm.avatar_url ?? null,
-    bio: mergedForm.bio ?? '',
-    public_profile_enabled: mergedForm.public_profile_enabled ?? true,
-    show_instagram: mergedForm.show_instagram ?? false,
-    show_line_id: mergedForm.show_line_id ?? false,
-    show_phone_to_staff: mergedForm.show_phone_to_staff ?? true,
-    show_phone_to_public: mergedForm.show_phone_to_public ?? false,
-    instagram: mergedForm.instagram ?? '',
-  };
+  const mergedForm = useMemo(() => ({ ...(data?.public_profile ?? {}), instagram: data?.profile.instagram ?? '', facebook: data?.profile.facebook ?? '', ...form }), [data, form]);
   const preview = data ? {
     staff_profile_id: data.profile.id,
     avatar_path: mergedForm.avatar_path ?? null,
@@ -88,9 +86,10 @@ export function StaffProfileVerifyPage() {
     subgroup: data.assignment?.subgroup ?? null,
     base_number: data.assignment?.base_number ?? null,
     bio: mergedForm.bio ?? null,
-    interests: [],
+    interests: mergedForm.interests ?? [],
     instagram: mergedForm.show_instagram ? mergedForm.instagram ?? null : null,
     line_id: mergedForm.show_line_id ? data.profile.line_id ?? null : null,
+    facebook: mergedForm.show_facebook ? mergedForm.facebook ?? null : null,
     phone: null,
   } : null;
 
@@ -100,7 +99,7 @@ export function StaffProfileVerifyPage() {
     setRequestForm(requestFormFromContext(result, fallbackPhone));
   }
 
-  function patch(values: VerifiedStaffPublicProfileInput) {
+  function patch(values: VerifiedStaffPublicProfileForm) {
     setForm((current) => ({ ...current, ...values }));
   }
 
@@ -145,7 +144,7 @@ export function StaffProfileVerifyPage() {
     event?.preventDefault();
     setLoading(true);
     try {
-      const result = await updateStaffPublicProfileVerified(email, phone, publicProfilePayload);
+      const result = await updateStaffPublicProfileVerified(email, phone, mergedForm);
       const refreshed = await verifyStaffIdentity(email, phone);
       applyVerifiedContext(refreshed ?? result, phone);
       setToast({ type: 'success', message: language === 'th' ? 'บันทึกโปรไฟล์ทีมงานแล้ว' : 'Staff profile saved' });
@@ -291,24 +290,27 @@ export function StaffProfileVerifyPage() {
                 </Card>
                 <Card className="privacy-notice full-span" variant="soft">
                   <strong>{language === 'th' ? 'การอัปโหลดรูป' : 'Profile photo upload'}</strong>
-                  <span>{language === 'th' ? 'เพื่อความปลอดภัย การอัปโหลดไฟล์รูปทำได้หลังเข้าสู่ระบบทีมงาน หรือให้แอดมินอัปโหลดให้เท่านั้น หน้านี้ยังแก้ Bio และการมองเห็นข้อมูลได้ตามปกติ' : 'For security, image file upload is available after staff login or by admin. This verified page can still edit bio and visibility settings.'}</span>
+                  <span>{language === 'th' ? 'เพื่อความปลอดภัย การอัปโหลดไฟล์รูปทำได้หลังเข้าสู่ระบบทีมงาน หรือให้แอดมินอัปโหลดให้เท่านั้น หน้านี้ยังแก้ Bio/ความสนใจ/การมองเห็นได้ตามปกติ' : 'For security, image file upload is available after staff login or by admin. This verified page can still edit bio, interests, and visibility settings.'}</span>
                 </Card>
                 <h3 className="full-span form-section-title">{language === 'th' ? 'โปรไฟล์สาธารณะ' : 'Public profile'}</h3>
                 <label className="field">
                   <span>Bio</span>
                   <textarea ref={firstProfileEditInputRef} rows={4} value={mergedForm.bio ?? ''} onChange={(event) => patch({ bio: event.target.value })} />
                 </label>
+                <Input label={language === 'th' ? 'ภูมิลำเนา' : 'Hometown'} value={mergedForm.hometown ?? ''} onChange={(event) => patch({ hometown: event.target.value })} />
+                <Input label={language === 'th' ? 'ความสนใจ (คั่นด้วย comma)' : 'Interests'} value={(mergedForm.interests ?? []).join(', ')} onChange={(event) => patch({ interests: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} />
                 <Input label="Instagram" value={mergedForm.instagram ?? ''} onChange={(event) => patch({ instagram: event.target.value })} />
+                <Input label="Facebook" value={mergedForm.facebook ?? ''} onChange={(event) => patch({ facebook: event.target.value })} />
                 <h3 className="full-span form-section-title">{language === 'th' ? 'การมองเห็นข้อมูล' : 'Visibility'}</h3>
                 {[
                   ['public_profile_enabled', language === 'th' ? 'เปิด/ปิดโปรไฟล์พื้นฐาน' : 'Basic profile on/off'],
                   ['show_instagram', language === 'th' ? 'แสดง Instagram' : 'Show Instagram'],
                   ['show_line_id', language === 'th' ? 'แสดง LINE' : 'Show LINE'],
+                  ['show_facebook', language === 'th' ? 'แสดง Facebook' : 'Show Facebook'],
                   ['show_phone_to_staff', language === 'th' ? 'ให้ทีมงานที่มีสิทธิ์เห็นเบอร์โทร' : 'Show phone to authorized staff'],
-                  ['show_phone_to_public', language === 'th' ? 'แสดงเบอร์โทรในโปรไฟล์สาธารณะ' : 'Show phone on public profile'],
                 ].map(([key, label]) => (
                   <label className="check-field" key={key}>
-                    <input type="checkbox" checked={Boolean(mergedForm[key as keyof typeof mergedForm])} onChange={(event) => patch({ [key]: event.target.checked } as VerifiedStaffPublicProfileInput)} />
+                    <input type="checkbox" checked={Boolean(mergedForm[key as keyof typeof mergedForm])} onChange={(event) => patch({ [key]: event.target.checked } as StaffPublicProfileInput)} />
                     <span>{label}</span>
                   </label>
                 ))}
