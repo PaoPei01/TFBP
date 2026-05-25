@@ -80,6 +80,14 @@ export async function verifyStaffIdentity(email: string, phone: string) {
   return data as VerifiedStaffProfileContext | null;
 }
 
+export async function fetchVerifiedStaffProfileByToken(verifiedStaffToken: string) {
+  const { data, error } = await supabase.rpc('get_verified_staff_profile_context_by_token', {
+    input_verified_staff_token: verifiedStaffToken,
+  });
+  if (error) throw error;
+  return data as VerifiedStaffProfileContext | null;
+}
+
 export async function updateMyStaffPublicProfile(input: StaffPublicProfileInput) {
   const { data, error } = await supabase.rpc('update_my_staff_public_profile', { input_data: cleanInput(input as Record<string, unknown>) });
   if (error) throw error;

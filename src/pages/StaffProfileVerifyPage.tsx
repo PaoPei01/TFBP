@@ -1,5 +1,5 @@
 import { ClipboardCheck, LogIn, QrCode, Save, SearchCheck, Send, UserRound } from 'lucide-react';
-import { FormEvent, lazy, Suspense, useMemo, useRef, useState } from 'react';
+import { FormEvent, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HelpButton } from '../components/help/HelpButton';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
@@ -16,7 +16,7 @@ import type { VerifiedStaffAttendanceIdentity } from '../lib/attendanceTypes';
 import { groupLabel } from '../lib/grouping';
 import { getVerifiedStaffIdentity, identityFromAttendanceResult, saveVerifiedStaffIdentity } from '../lib/verifiedStaffIdentity';
 import { verifyStaffAttendanceIdentity } from '../services/staffAttendance';
-import { submitStaffEditRequestVerified, updateStaffPublicProfileVerified, verifyStaffIdentity, staffDisplayName, type StaffPublicProfileInput, type VerifiedStaffProfileContext } from '../services/staffProfiles';
+import { fetchVerifiedStaffProfileByToken, submitStaffEditRequestVerified, updateStaffPublicProfileVerified, verifyStaffIdentity, staffDisplayName, type StaffPublicProfileInput, type VerifiedStaffProfileContext } from '../services/staffProfiles';
 import { errorMessage } from '../utils/error';
 
 const StaffPersonalQrModal = lazy(() => import('../components/attendance/StaffPersonalQrModal').then((module) => ({ default: module.StaffPersonalQrModal })));
@@ -93,11 +93,43 @@ export function StaffProfileVerifyPage() {
     phone: null,
   } : null;
 
-  function applyVerifiedContext(result: VerifiedStaffProfileContext, fallbackPhone = phone) {
+  const applyVerifiedContext = useCallback((result: VerifiedStaffProfileContext, fallbackPhone: string) => {
     setData(result);
     setForm(publicFormFromContext(result));
     setRequestForm(requestFormFromContext(result, fallbackPhone));
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!rememberedIdentity?.verified_staff_token || data) return;
+    let active = true;
+
+    async function hydrateRememberedProfile() {
+      setLoading(true);
+      try {
+        const result = await fetchVerifiedStaffProfileByToken(rememberedIdentity?.verified_staff_token ?? '');
+        if (!active || !result) return;
+        setEmail(result.profile.email ?? '');
+        setPhone(result.profile.phone ?? '');
+        setVerifiedAttendanceIdentity(rememberedIdentity);
+        applyVerifiedContext(result, result.profile.phone ?? '');
+      } catch {
+        if (!active) return;
+        setToast({
+          type: 'error',
+          message: language === 'th'
+            ? 'โหลดข้อมูลทีมงานที่จำไว้ไม่สำเร็จ กรุณายืนยันตัวตนอีกครั้ง'
+            : 'Could not load your remembered staff profile. Please verify again.',
+        });
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    void hydrateRememberedProfile();
+    return () => {
+      active = false;
+    };
+  }, [applyVerifiedContext, data, language, rememberedIdentity]);
 
   function patch(values: VerifiedStaffPublicProfileForm) {
     setForm((current) => ({ ...current, ...values }));
