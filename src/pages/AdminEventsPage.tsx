@@ -12,7 +12,7 @@ import { useAsync } from '../hooks/useAsync';
 import { DEFAULT_EVENT_SLUG } from '../lib/defaultEvent';
 import { formatBangkokDate } from '../lib/dateTime';
 import type { EventRecord } from '../lib/eventTypes';
-import { adminEventApplicationsPath, adminEventPath, eventPath } from '../lib/eventRoutes';
+import { adminEventApplicationPreviewPath, adminEventApplicationsPath, adminEventPath, eventPath } from '../lib/eventRoutes';
 import { fetchAdminEvents } from '../services/events';
 
 function eventName(event: EventRecord, language: 'th' | 'en') {
@@ -101,6 +101,7 @@ export function AdminEventsPage() {
             <div className="event-card-actions">
               <Link className="btn btn-secondary" to={adminEventPath(row.id)}>{smartEventAction(row.status, language)}</Link>
               {row.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationsPath(row.id)}>{language === 'th' ? 'ใบสมัคร' : 'Applications'}</Link> : null}
+              {row.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationPreviewPath(row.id)}><Eye size={16} />{language === 'th' ? 'พรีวิวฟอร์ม' : 'Preview form'}</Link> : null}
               <Link className="btn btn-secondary" to={eventPath(row.slug)}><Eye size={16} />{language === 'th' ? 'ดูหน้าสาธารณะ' : 'Public page'}</Link>
             </div>
           )}
@@ -114,6 +115,7 @@ export function AdminEventsPage() {
               <div className="table-action-row">
                 <Link className="btn btn-secondary" to={adminEventPath(row.id)}>{smartEventAction(row.status, language)}</Link>
                 {row.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationsPath(row.id)}>{language === 'th' ? 'ใบสมัคร' : 'Applications'}</Link> : null}
+                {row.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationPreviewPath(row.id)}><Eye size={16} />{language === 'th' ? 'พรีวิวฟอร์ม' : 'Preview form'}</Link> : null}
                 <Link className="btn btn-secondary" to={eventPath(row.slug)}><Eye size={16} />{language === 'th' ? 'ดูหน้าสาธารณะ' : 'Public page'}</Link>
               </div>
             ), align: 'right' },

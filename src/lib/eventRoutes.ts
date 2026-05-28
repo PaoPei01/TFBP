@@ -36,6 +36,10 @@ export function adminEventApplicationsPath(eventId = 'default') {
   return `${adminEventPath(eventId)}/applications`;
 }
 
+export function adminEventApplicationPreviewPath(eventId = 'default') {
+  return `${adminEventPath(eventId)}/staff-application-preview`;
+}
+
 export function adminEventsPath() {
   return '/admin/events';
 }

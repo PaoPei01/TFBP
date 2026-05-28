@@ -39,6 +39,7 @@ const GuideTopicPage = lazy(() => import('./pages/GuideTopicPage').then((module)
 const PendingRequestsPage = lazy(() => import('./pages/PendingRequestsPage').then((module) => ({ default: module.PendingRequestsPage })));
 const PortalPage = lazy(() => import('./pages/PortalPage').then((module) => ({ default: module.PortalPage })));
 const AdminEventsPage = lazy(() => import('./pages/AdminEventsPage').then((module) => ({ default: module.AdminEventsPage })));
+const AdminEventApplicationPreviewPage = lazy(() => import('./pages/AdminEventApplicationPreviewPage').then((module) => ({ default: module.AdminEventApplicationPreviewPage })));
 const AdminEventDetailPage = lazy(() => import('./pages/AdminEventDetailPage').then((module) => ({ default: module.AdminEventDetailPage })));
 const AdminEventApplicationsPage = lazy(() => import('./pages/AdminEventApplicationsPage').then((module) => ({ default: module.AdminEventApplicationsPage })));
 const AdminPeopleDedupePage = lazy(() => import('./pages/AdminPeopleDedupePage').then((module) => ({ default: module.AdminPeopleDedupePage })));
@@ -123,6 +124,7 @@ export function App() {
           <Route path="admin/dashboard" element={<Suspense fallback={<RouteLoadingFallback />}><AdminDashboardPage /></Suspense>} />
           <Route path="admin/events" element={<Suspense fallback={<RouteLoadingFallback />}><AdminEventsPage /></Suspense>} />
           <Route path="admin/events/:eventId/applications" element={<Suspense fallback={<RouteLoadingFallback />}><AdminEventApplicationsPage /></Suspense>} />
+          <Route path="admin/events/:eventId/staff-application-preview" element={<Suspense fallback={<RouteLoadingFallback />}><AdminEventApplicationPreviewPage /></Suspense>} />
           <Route path="admin/events/:eventId" element={<Suspense fallback={<RouteLoadingFallback />}><AdminEventDetailPage /></Suspense>} />
           <Route path="admin/announcements" element={<Suspense fallback={<RouteLoadingFallback />}><AdminAnnouncementsPage /></Suspense>} />
           <Route path="admin/announcements/new" element={<Suspense fallback={<RouteLoadingFallback />}><AnnouncementEditPage /></Suspense>} />

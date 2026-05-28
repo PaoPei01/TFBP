@@ -16,7 +16,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAsync } from '../hooks/useAsync';
 import { getEventContent } from '../lib/eventContent';
 import type { EventRecord, EventStatus, EventVisibility } from '../lib/eventTypes';
-import { adminEventApplicationsPath, eventPath } from '../lib/eventRoutes';
+import { adminEventApplicationPreviewPath, adminEventApplicationsPath, eventPath } from '../lib/eventRoutes';
 import { fetchAdminEventOverview, updateAdminEvent } from '../services/events';
 import { errorMessage } from '../utils/error';
 
@@ -164,6 +164,7 @@ export function AdminEventDetailPage() {
           <>
             <HelpButton topicId="events.overview" variant="link" />
             {event ? <Link className="btn btn-secondary" to={eventPath(event.slug)}><Eye size={17} />{language === 'th' ? 'ดูหน้าสาธารณะ' : 'Public page'}</Link> : null}
+            {event?.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationPreviewPath(event.id)}><Eye size={17} />{language === 'th' ? 'พรีวิวใบสมัคร' : 'Preview application'}</Link> : null}
             {event?.event_type === 'staff_recruitment' ? <Link className="btn btn-secondary" to={adminEventApplicationsPath(event.id)}>{language === 'th' ? 'ใบสมัคร' : 'Applications'}</Link> : null}
             <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
           </>
@@ -198,7 +199,7 @@ export function AdminEventDetailPage() {
                 <p>{language === 'th' ? 'เริ่มจากดูใบสมัคร สร้างรอบเช็กชื่อ ประกาศข้อมูล และเตรียมเอกสารสำหรับกิจกรรมนี้' : 'Start with applications, attendance sessions, announcements, and documents for this event.'}</p>
                 <div className="event-operation-actions">
                   <QuickAction to="#event-info" icon={<Settings size={20} />} title={language === 'th' ? 'ข้อมูลกิจกรรม' : 'Event info'} description={language === 'th' ? 'สถานะ การมองเห็น และตัวเลขสรุป' : 'Status, visibility, and summary metrics'} primary />
-                  <QuickAction to="/admin/events" icon={<FileText size={20} />} title={language === 'th' ? 'ฟอร์มสมัคร' : 'Registration form'} description={language === 'th' ? 'ตรวจ route ลงทะเบียนและสถานะกิจกรรม' : 'Check registration route and event status'} />
+                  {isRecruitmentEvent ? <QuickAction to={adminEventApplicationPreviewPath(event.id)} icon={<Eye size={20} />} title={language === 'th' ? 'พรีวิวใบสมัคร' : 'Application preview'} description={language === 'th' ? 'ดูหน้าฟอร์มโดยไม่ต้องสมัครจริง' : 'Review the form without submitting'} /> : null}
                   <QuickAction to={adminEventApplicationsPath(event.id)} icon={<UserPlus size={20} />} title={language === 'th' ? 'สมัครทีมงาน' : 'Staff application'} description={language === 'th' ? 'เปิดหน้ารีวิวใบสมัครทีมงาน' : 'Open staff application review'} />
                   <QuickAction to={adminEventApplicationsPath(event.id)} icon={<UsersRound size={20} />} title={language === 'th' ? 'ใบสมัคร' : 'Applications'} description={language === 'th' ? 'รีวิวและจัดหน้าที่' : 'Review and assign duties'} />
                   <QuickAction to="/admin/staff/attendance" icon={<QrCode size={20} />} title={language === 'th' ? 'สร้างรอบเช็กชื่อ' : 'Create attendance session'} description={language === 'th' ? 'ใช้ event ที่เลือกใน EventSwitcher' : 'Uses selected EventSwitcher event'} />

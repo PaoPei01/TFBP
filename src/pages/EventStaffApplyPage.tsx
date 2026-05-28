@@ -1,5 +1,5 @@
 import { CheckCircle2, RefreshCw } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { HelpButton } from '../components/help/HelpButton';
 import { LineGroupCard } from '../components/events/LineGroupCard';
@@ -155,9 +155,47 @@ const applicationSteps = [
   { id: 4, th: 'ตรวจสอบก่อนส่ง', en: 'Confirm' },
 ] as const;
 
-export function EventStaffApplyPage() {
+type EventStaffApplyPageProps = {
+  previewMode?: boolean;
+  previewEventSlug?: string;
+  previewBackTo?: string;
+};
+
+function previewIdentityLookup(): PersonApplicationLookupResult {
+  return {
+    success: true,
+    code: 'preview',
+    found: true,
+    person_id: 'preview-person',
+    identity_status: 'verified',
+    can_continue_application: true,
+    requires_update_request: false,
+    message_th: 'ข้อมูลตัวอย่างสำหรับพรีวิว',
+    safe_person: {
+      person_id: 'preview-person',
+      student_id: '680610000',
+      name_th: 'นักศึกษาตัวอย่าง ใบสมัคร',
+      name_en: 'Preview Applicant',
+      full_name_th: 'นักศึกษาตัวอย่าง ใบสมัคร',
+      full_name_en: 'Preview Applicant',
+      display_full_name: 'นักศึกษาตัวอย่าง ใบสมัคร',
+      display_name: 'นักศึกษาตัวอย่าง ใบสมัคร',
+      nickname: 'ตัวอย่าง',
+      nickname_th: 'ตัวอย่าง',
+      nickname_en: 'Preview',
+      display_nickname: 'ตัวอย่าง',
+      major: 'วิศวกรรมศาสตร์',
+      year_level: 2,
+      masked_email: 'pr***@cmu.ac.th',
+      masked_phone: '08x-xxx-0000',
+    },
+  };
+}
+
+export function EventStaffApplyPage({ previewMode = false, previewEventSlug, previewBackTo }: EventStaffApplyPageProps = {}) {
   const { language } = useLanguage();
-  const { eventSlug = '' } = useParams();
+  const { eventSlug: routeEventSlug = '' } = useParams();
+  const eventSlug = previewEventSlug ?? routeEventSlug;
   const state = useAsync(() => fetchEventBySlug(eventSlug), [eventSlug]);
   const quotaState = useAsync(() => state.data?.id ? fetchEventDutyQuotaStatus(state.data.id) : Promise.resolve(null), [state.data?.id]);
   const content = getEventContent(eventSlug);
@@ -165,13 +203,13 @@ export function EventStaffApplyPage() {
   const isParentOrientationStaff = eventSlug === parentOrientationStaffSlug;
   const isSingleDutySelection = isParentOrientationStaff;
   const isApplicationClosed = isParentOrientationStaff && Date.now() > parentOrientationStaffCloseAt.getTime();
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [studentId, setStudentId] = useState('');
-  const [requestedNameTh, setRequestedNameTh] = useState('');
-  const [requestedNameEn, setRequestedNameEn] = useState('');
-  const [requestedMajor, setRequestedMajor] = useState('');
-  const [identityLookup, setIdentityLookup] = useState<PersonApplicationLookupResult | null>(null);
+  const [email, setEmail] = useState(previewMode ? 'preview_staff@cmu.ac.th' : '');
+  const [phone, setPhone] = useState(previewMode ? '08x-xxx-0000' : '');
+  const [studentId, setStudentId] = useState(previewMode ? '680610000' : '');
+  const [requestedNameTh, setRequestedNameTh] = useState(previewMode ? 'นักศึกษาตัวอย่าง ใบสมัคร' : '');
+  const [requestedNameEn, setRequestedNameEn] = useState(previewMode ? 'Preview Applicant' : '');
+  const [requestedMajor, setRequestedMajor] = useState(previewMode ? 'วิศวกรรมศาสตร์' : '');
+  const [identityLookup, setIdentityLookup] = useState<PersonApplicationLookupResult | null>(() => previewMode ? previewIdentityLookup() : null);
   const [checkingIdentity, setCheckingIdentity] = useState(false);
   const [updateRequestId, setUpdateRequestId] = useState<string | null>(null);
   const [existingApplication, setExistingApplication] = useState<ApplicantExistingApplicationResult | null>(null);
@@ -180,18 +218,18 @@ export function EventStaffApplyPage() {
   const [submittingUpdate, setSubmittingUpdate] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDuties, setSelectedDuties] = useState<string[]>([]);
-  const [canAttendRehearsal, setCanAttendRehearsal] = useState('');
-  const [canWorkEventDay, setCanWorkEventDay] = useState('');
-  const [staffExperience, setStaffExperience] = useState('');
-  const [hasHealthNotice, setHasHealthNotice] = useState<HealthNoticeAnswer>('');
+  const [canAttendRehearsal, setCanAttendRehearsal] = useState(previewMode ? 'ได้' : '');
+  const [canWorkEventDay, setCanWorkEventDay] = useState(previewMode ? 'ได้' : '');
+  const [staffExperience, setStaffExperience] = useState(previewMode ? 'เคยช่วยงานกิจกรรมคณะและดูแลจุดลงทะเบียน' : '');
+  const [hasHealthNotice, setHasHealthNotice] = useState<HealthNoticeAnswer>(previewMode ? 'no' : '');
   const [chronicCondition, setChronicCondition] = useState('');
   const [foodAllergy, setFoodAllergy] = useState('');
   const [drugAllergy, setDrugAllergy] = useState('');
   const [healthNote, setHealthNote] = useState('');
   const [healthPrefilledFromProfile, setHealthPrefilledFromProfile] = useState(false);
-  const [healthCurrentConfirmed, setHealthCurrentConfirmed] = useState(false);
-  const [workshopUniformStatus, setWorkshopUniformStatus] = useState('');
-  const [note, setNote] = useState('');
+  const [healthCurrentConfirmed, setHealthCurrentConfirmed] = useState(previewMode);
+  const [workshopUniformStatus, setWorkshopUniformStatus] = useState(previewMode ? 'already_have' : '');
+  const [note, setNote] = useState(previewMode ? 'ตัวอย่างหมายเหตุเพิ่มเติมสำหรับแอดมินตรวจหน้าฟอร์ม' : '');
   const [consents, setConsents] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
@@ -201,7 +239,7 @@ export function EventStaffApplyPage() {
   const event = state.data;
   const eventName = event ? (language === 'th' ? event.name_th : event.name_en || event.name_th) : '';
   const lineGroup = recruitment?.lineGroup;
-  const quotaDuties = quotaState.data?.duties ?? [];
+  const quotaDuties = useMemo(() => quotaState.data?.duties ?? [], [quotaState.data?.duties]);
   const selectedDutyLabels = selectedDuties.map((key) => {
     const duty = quotaDuties.find((item) => item.duty_key === key);
     return duty ? dutyLabel(duty) : key;
@@ -228,6 +266,25 @@ export function EventStaffApplyPage() {
     && identityLookup.can_continue_application
     && !updateRequestId,
   );
+
+  useEffect(() => {
+    if (!previewMode) return;
+    if (!selectedDuties.length) {
+      const firstAvailableDuty = quotaDuties.find((duty) => !duty.is_full)?.duty_key ?? recruitment?.dutiesTh[0];
+      if (firstAvailableDuty) setSelectedDuties([firstAvailableDuty]);
+    }
+  }, [previewMode, quotaDuties, recruitment?.dutiesTh, selectedDuties.length]);
+
+  useEffect(() => {
+    if (!previewMode || !recruitment?.consentItemsTh.length) return;
+    setConsents((current) => {
+      const next = { ...current };
+      recruitment.consentItemsTh.forEach((item) => {
+        next[item] = true;
+      });
+      return next;
+    });
+  }, [previewMode, recruitment?.consentItemsTh]);
 
   function buildHealthSummary() {
     if (hasHealthNotice === 'no') return language === 'th' ? 'ไม่มี' : 'No';
@@ -409,6 +466,12 @@ export function EventStaffApplyPage() {
   }
 
   function goNext() {
+    if (previewMode) {
+      setErrors({});
+      setCurrentStep((step) => Math.min(step + 1, 4));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     if (!validateStep(currentStep)) {
       setToast({ type: 'error', message: language === 'th' ? 'กรุณาตรวจข้อมูลในขั้นตอนนี้' : 'Please check this step.' });
       return;
@@ -425,6 +488,11 @@ export function EventStaffApplyPage() {
   }
 
   async function checkIdentity() {
+    if (previewMode) {
+      setIdentityLookup(previewIdentityLookup());
+      setToast({ type: 'info', message: language === 'th' ? 'โหมดพรีวิวไม่ตรวจสอบข้อมูลจริง' : 'Preview mode does not run real identity checks.' });
+      return;
+    }
     const nextErrors: Record<string, string> = {};
     if (!studentId.trim()) nextErrors.student_id = language === 'th' ? 'กรุณากรอกรหัสนักศึกษา' : 'Student ID is required';
     if (!email.trim() || !isValidCmuEmail(email)) nextErrors.email = language === 'th' ? 'กรุณากรอก CMU Mail ที่ลงท้ายด้วย @cmu.ac.th เท่านั้น' : 'Please enter a valid CMU Mail ending with @cmu.ac.th';
@@ -487,6 +555,11 @@ export function EventStaffApplyPage() {
   }
 
   async function submitUpdateRequest() {
+    if (previewMode) {
+      setShowUpdateModal(false);
+      setToast({ type: 'info', message: language === 'th' ? 'โหมดพรีวิวไม่ส่งคำร้องแก้ไขข้อมูล' : 'Preview mode does not submit update requests.' });
+      return;
+    }
     if (!studentId.trim() || !isValidCmuEmail(email)) {
       setToast({ type: 'error', message: language === 'th' ? 'กรุณากรอก CMU Mail และรหัสนักศึกษาให้ถูกต้อง' : 'Please enter a valid student ID and CMU Mail' });
       return;
@@ -520,6 +593,10 @@ export function EventStaffApplyPage() {
 
   async function submit(eventObject: FormEvent) {
     eventObject.preventDefault();
+    if (previewMode) {
+      setToast({ type: 'info', message: language === 'th' ? 'นี่คือโหมดพรีวิว จึงไม่ส่งใบสมัครจริง' : 'This is preview mode, so no application is submitted.' });
+      return;
+    }
     if (saving) return;
     if (isApplicationClosed) {
       setToast({ type: 'error', message: language === 'th' ? 'ปิดรับสมัครสตาฟแล้ว ไม่สามารถส่งใบสมัครใหม่ได้' : 'Staff applications are closed. New submissions are no longer accepted.' });
@@ -620,18 +697,45 @@ export function EventStaffApplyPage() {
     <section className="events-page narrow-page page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow="Staff Application"
-        title={language === 'th' ? 'สมัครเป็นสตาฟ' : 'Apply as Staff'}
-        description={language === 'th'
-          ? 'ยืนยันด้วยรหัสนักศึกษาและ CMU Mail จากนั้นเลือกหน้าที่และตอบคำถามเฉพาะกิจกรรมนี้'
-          : 'Verify with student ID and CMU Mail, then answer event-specific staff questions.'}
+        eyebrow={previewMode ? (language === 'th' ? 'Admin Preview' : 'Admin Preview') : 'Staff Application'}
+        title={previewMode ? (language === 'th' ? 'พรีวิวหน้าใบสมัครสตาฟ' : 'Staff application preview') : (language === 'th' ? 'สมัครเป็นสตาฟ' : 'Apply as Staff')}
+        description={previewMode
+          ? (language === 'th' ? 'ดูหน้าฟอร์มและขั้นตอนการสมัครโดยไม่ตรวจสอบข้อมูลจริงหรือส่งใบสมัคร' : 'Review the application form and steps without real identity checks or submission.')
+          : (language === 'th'
+              ? 'ยืนยันด้วยรหัสนักศึกษาและ CMU Mail จากนั้นเลือกหน้าที่และตอบคำถามเฉพาะกิจกรรมนี้'
+              : 'Verify with student ID and CMU Mail, then answer event-specific staff questions.')}
         actions={(
           <>
             <HelpButton topicId="events.staff-application" variant="link" />
+            {previewMode && previewBackTo ? <Link className="btn btn-secondary" to={previewBackTo}>{language === 'th' ? 'กลับหน้าแอดมิน' : 'Back to admin'}</Link> : null}
             <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={state.reload}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
           </>
         )}
       />
+
+      {previewMode ? (
+        <Card className="privacy-notice" variant="warning">
+          <strong>{language === 'th' ? 'โหมดพรีวิวสำหรับแอดมิน' : 'Admin preview mode'}</strong>
+          <span>{language === 'th' ? 'ข้อมูลในฟอร์มเป็นข้อมูลตัวอย่าง ปุ่มตรวจสอบและส่งข้อมูลจะไม่บันทึกลงระบบ' : 'This form uses sample data. Check and submit actions do not write to the system.'}</span>
+          <div className="form-actions">
+            {applicationSteps.map((step) => (
+              <Button
+                key={step.id}
+                type="button"
+                size="sm"
+                variant={currentStep === step.id ? 'primary' : 'secondary'}
+                onClick={() => {
+                  setErrors({});
+                  setCurrentStep(step.id);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                {step.id}. {language === 'th' ? step.th : step.en}
+              </Button>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       {state.loading ? <LoadingSkeleton /> : null}
       {state.error ? <EmptyState title={language === 'th' ? 'โหลดกิจกรรมไม่สำเร็จ' : 'Could not load event'} action={<Button variant="secondary" onClick={state.reload}>{language === 'th' ? 'ลองใหม่' : 'Retry'}</Button>} /> : null}
@@ -726,7 +830,7 @@ export function EventStaffApplyPage() {
                 <Link className="btn btn-secondary" to={eventProfileCheckPath(event.slug)}>{language === 'th' ? 'ติดต่อผู้ดูแล / ขอแก้ไขข้อมูล' : 'Contact admin / request update'}</Link>
               </div>
             </div>
-          ) : isApplicationClosed ? (
+          ) : isApplicationClosed && !previewMode ? (
             <EmptyState
               title={language === 'th' ? 'ปิดรับสมัครสตาฟแล้ว' : 'Staff applications are closed.'}
               description={language === 'th'
@@ -1016,7 +1120,11 @@ export function EventStaffApplyPage() {
               </Card>
               <div className="form-actions full-span">
                 <Button type="button" variant="secondary" onClick={goBack}>{language === 'th' ? 'ย้อนกลับไปแก้ไข' : 'Back to edit'}</Button>
-                <Button type="submit" loading={saving} disabled={saving}>{saving ? (language === 'th' ? 'กำลังส่งใบสมัคร...' : 'Submitting...') : (language === 'th' ? 'ยืนยันส่งใบสมัคร' : 'Confirm submission')}</Button>
+                <Button type="submit" loading={saving} disabled={saving || previewMode}>
+                  {previewMode
+                    ? (language === 'th' ? 'พรีวิวเท่านั้น ไม่ส่งใบสมัคร' : 'Preview only, no submission')
+                    : saving ? (language === 'th' ? 'กำลังส่งใบสมัคร...' : 'Submitting...') : (language === 'th' ? 'ยืนยันส่งใบสมัคร' : 'Confirm submission')}
+                </Button>
               </div>
                 </>
               ) : null}
