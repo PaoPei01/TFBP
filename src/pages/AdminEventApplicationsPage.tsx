@@ -523,6 +523,7 @@ export function AdminEventApplicationsPage() {
       'เข้าซ้อมวันที่ 10 มิ.ย. ได้หรือไม่': text(row.answers?.can_attend_rehearsal),
       'ปฏิบัติงานวันที่ 12 มิ.ย. ได้หรือไม่': text(row.answers?.can_work_event_day),
       'ช่วงเวลาที่สะดวก (ข้อมูลเดิม)': exportCell(row.availability?.text ?? row.answers?.availability),
+      'สถานะชุดช็อป': text(row.answers?.workshop_uniform_status_label_th ?? row.answers?.workshop_uniform_status),
       'ประสบการณ์สตาฟ': text(row.answers?.staff_experience ?? row.experience),
       'ข้อจำกัดด้านสุขภาพ/การแพ้อาหารที่จำเป็นต้องแจ้ง': healthSummary(row, language),
       'หมายเหตุเพิ่มเติม': text(row.answers?.note ?? row.motivation),
@@ -1182,6 +1183,7 @@ export function AdminEventApplicationsPage() {
                   <div className="application-detail-grid">
                     <DetailRow label={language === 'th' ? 'วันซ้อม' : 'Rehearsal'} value={text(detailRow.answers?.can_attend_rehearsal)} />
                     <DetailRow label={language === 'th' ? 'วันจริง' : 'Event day'} value={text(detailRow.answers?.can_work_event_day)} />
+                    <DetailRow label={language === 'th' ? 'สถานะชุดช็อป' : 'Workshop uniform status'} value={text(detailRow.answers?.workshop_uniform_status_label_th ?? detailRow.answers?.workshop_uniform_status)} />
                     <DetailRow label={language === 'th' ? 'ประสบการณ์' : 'Experience'} value={text(detailRow.answers?.staff_experience) || detailRow.experience} />
                   </div>
                 </Card>
