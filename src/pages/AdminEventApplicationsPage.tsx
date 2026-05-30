@@ -599,6 +599,7 @@ export function AdminEventApplicationsPage() {
       'รหัสนักศึกษา': exportCell(row.people?.student_id || row.requested_student_id),
       'เบอร์': exportCell(row.people?.phone || row.requested_phone),
       'ตำแหน่ง': exportCell(handoffPosition(row)),
+      'สถานะชุดช็อป': exportCell(row.answers?.workshop_uniform_status_label_th ?? row.answers?.workshop_uniform_status),
       'โรคประจำตัว': exportCell(healthValue(row, 'chronic_condition') || text(row.answers?.health_or_limitations)),
       'แพ้ยา': exportCell(healthValue(row, 'drug_allergy')),
       'แพ้อาหาร': exportCell(healthValue(row, 'food_allergy')),

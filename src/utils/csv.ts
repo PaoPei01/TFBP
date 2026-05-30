@@ -8,6 +8,7 @@ export type StaffApplicantExportRow = {
   'รหัสนักศึกษา': string;
   'เบอร์': string;
   'ตำแหน่ง': string;
+  'สถานะชุดช็อป': string;
   'โรคประจำตัว': string;
   'แพ้ยา': string;
   'แพ้อาหาร': string;
@@ -142,6 +143,7 @@ export async function exportStaffApplicantsXlsx(rows: StaffApplicantExportRow[],
     { header: 'รหัสนักศึกษา', key: 'รหัสนักศึกษา', width: 16 },
     { header: 'เบอร์', key: 'เบอร์', width: 16 },
     { header: 'ตำแหน่ง', key: 'ตำแหน่ง', width: 24 },
+    { header: 'สถานะชุดช็อป', key: 'สถานะชุดช็อป', width: 28 },
     { header: 'โรคประจำตัว', key: 'โรคประจำตัว', width: 28 },
     { header: 'แพ้ยา', key: 'แพ้ยา', width: 24 },
     { header: 'แพ้อาหาร', key: 'แพ้อาหาร', width: 24 },
@@ -152,6 +154,7 @@ export async function exportStaffApplicantsXlsx(rows: StaffApplicantExportRow[],
     'รหัสนักศึกษา': safeCell(row['รหัสนักศึกษา']),
     'เบอร์': safeCell(row['เบอร์']),
     'ตำแหน่ง': safeCell(row['ตำแหน่ง']),
+    'สถานะชุดช็อป': safeCell(row['สถานะชุดช็อป']),
     'โรคประจำตัว': safeCell(row['โรคประจำตัว']),
     'แพ้ยา': safeCell(row['แพ้ยา']),
     'แพ้อาหาร': safeCell(row['แพ้อาหาร']),
