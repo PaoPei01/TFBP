@@ -1,8 +1,72 @@
 import { Database, FileSpreadsheet, GitMerge, Pencil, UsersRound } from 'lucide-react';
-import { PortalActionCard } from '../components/PortalActionCard';
+import { Link } from 'react-router-dom';
+import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useLanguage } from '../context/LanguageContext';
+
+const hubItems = [
+  {
+    to: '/admin/people',
+    icon: <Database size={24} />,
+    titleTh: 'ค้นหาข้อมูลบุคคล',
+    titleEn: 'Search central records',
+    bodyTh: 'ค้นหาและตรวจข้อมูลกลางของนักศึกษา ทีมงาน และผู้เข้าร่วม',
+    bodyEn: 'Search and inspect central records for students, staff, and participants.',
+    badgeTh: 'ข้อมูลกลาง',
+    badgeEn: 'Directory',
+  },
+  {
+    to: '/admin/people/dedupe',
+    icon: <GitMerge size={24} />,
+    titleTh: 'ตรวจข้อมูลซ้ำ',
+    titleEn: 'Duplicate check',
+    bodyTh: 'ตรวจรายการที่อาจเป็นคนเดียวกันก่อนรวมข้อมูล',
+    bodyEn: 'Review records that may belong to the same person before merging.',
+    badgeTh: 'ข้อมูลที่ควรตรวจ',
+    badgeEn: 'Data quality',
+  },
+  {
+    to: '/admin/people/update-requests',
+    icon: <Pencil size={24} />,
+    titleTh: 'คำร้องแก้ข้อมูล',
+    titleEn: 'People update requests',
+    bodyTh: 'ตรวจคำร้องที่เกี่ยวกับ CMU Mail เบอร์โทร และข้อมูลยืนยันตัวตน',
+    bodyEn: 'Review requests for CMU Mail, phone, and identity data.',
+    badgeTh: 'รอตรวจ',
+    badgeEn: 'Review',
+  },
+  {
+    to: '/admin/requests',
+    icon: <Pencil size={24} />,
+    titleTh: 'คำขอแก้ไขผู้เข้าร่วม',
+    titleEn: 'Participant edit requests',
+    bodyTh: 'ตรวจคำขอจากหน้า “ข้อมูลผู้เข้าร่วม” ของผู้เข้าร่วมกิจกรรม',
+    bodyEn: 'Review requests from the participant information flow.',
+    badgeTh: 'ผู้เข้าร่วม',
+    badgeEn: 'Participants',
+  },
+  {
+    to: '/admin/people/import-year2',
+    icon: <FileSpreadsheet size={24} />,
+    titleTh: 'นำเข้าฐานปี 2',
+    titleEn: 'Import Year 2',
+    bodyTh: 'ตรวจ staging และ preview ก่อนนำเข้าข้อมูลกลาง',
+    bodyEn: 'Review staging and preview before importing into central records.',
+    badgeTh: 'นำเข้า',
+    badgeEn: 'Import',
+  },
+  {
+    to: '/admin/groups',
+    icon: <UsersRound size={24} />,
+    titleTh: 'จัดกลุ่ม',
+    titleEn: 'Groups',
+    bodyTh: 'จัดการกลุ่มสี กลุ่มย่อย จุดนัดพบ และพี่กลุ่ม',
+    bodyEn: 'Manage color groups, subgroups, meeting points, and mentors.',
+    badgeTh: 'กลุ่ม',
+    badgeEn: 'Groups',
+  },
+];
 
 export function AdminPeopleGroupsHubPage() {
   const { language } = useLanguage();
@@ -16,17 +80,21 @@ export function AdminPeopleGroupsHubPage() {
       />
       <Card className="workflow-explainer-card" variant="soft">
         <div>
-          <strong>{language === 'th' ? 'ใช้ hub นี้เมื่อเกี่ยวกับ “คน” และ “กลุ่ม”' : 'Use this hub for people and grouping work'}</strong>
-          <span>{language === 'th' ? 'ข้อมูลส่วนตัวและข้อมูลสุขภาพยังอยู่หลังสิทธิ์แอดมินตามเดิม ไม่มีการเปิดเผยสาธารณะจากหน้านี้' : 'Private and health data remain behind existing admin access. This page does not expose anything publicly.'}</span>
+          <strong>{language === 'th' ? 'แยกงานข้อมูลกลางออกจากงานจัดกลุ่ม' : 'Central data and grouping are separated'}</strong>
+          <span>{language === 'th' ? 'เริ่มจากการค้นหาข้อมูลกลาง ตรวจคุณภาพข้อมูล นำเข้า หรือจัดกลุ่มตามงานที่ต้องทำ ข้อมูลส่วนตัวอยู่หลังสิทธิ์แอดมินตามเดิม' : 'Start with directory search, data quality, imports, or group operations. Private data stays behind existing admin access.'}</span>
         </div>
       </Card>
-      <div className="staff-action-grid">
-        <PortalActionCard to="/admin/people" icon={<Database size={28} />} title={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'} description={language === 'th' ? 'จัดการข้อมูลกลางของนักศึกษาและผู้เข้าร่วม' : 'Manage central student and participant records.'} primary />
-        <PortalActionCard to="/admin/groups" icon={<UsersRound size={28} />} title={language === 'th' ? 'จัดกลุ่ม' : 'Groups'} description={language === 'th' ? 'จัดการกลุ่มสี กลุ่มย่อย จุดนัดพบ และพี่กลุ่ม' : 'Manage color groups, subgroups, meeting points, and mentors.'} />
-        <PortalActionCard to="/admin/requests" icon={<Pencil size={28} />} title={language === 'th' ? 'คำขอแก้ไขผู้เข้าร่วม' : 'Participant edit requests'} description={language === 'th' ? 'ตรวจคำขอแก้ไขข้อมูลที่ผู้เข้าร่วมส่งจากหน้าข้อมูลของฉัน' : 'Review edit requests submitted from the My information page.'} />
-        <PortalActionCard to="/admin/people/update-requests" icon={<Pencil size={28} />} title={language === 'th' ? 'คำร้องแก้ข้อมูลบุคคล' : 'People update requests'} description={language === 'th' ? 'ตรวจคำร้องที่เกี่ยวกับอีเมล เบอร์โทร หรือข้อมูลยืนยันตัวตน' : 'Review requests related to identity fields such as email or phone.'} />
-        <PortalActionCard to="/admin/people/dedupe" icon={<GitMerge size={28} />} title={language === 'th' ? 'ตรวจข้อมูลซ้ำ' : 'Duplicate check'} description={language === 'th' ? 'ตรวจรายการที่อาจเป็นคนเดียวกันและต้องรวมข้อมูล' : 'Review records that may belong to the same person.'} />
-        <PortalActionCard to="/admin/people/import-year2" icon={<FileSpreadsheet size={28} />} title={language === 'th' ? 'นำเข้าฐานปี 2' : 'Import Year 2'} description={language === 'th' ? 'นำเข้าข้อมูลผ่าน staging และ preview ก่อน import จริง' : 'Import through staging with preview before the final import.'} />
+      <div className="people-hub-grid">
+        {hubItems.map((item) => (
+          <Link className="people-hub-card" to={item.to} key={item.to}>
+            <div className="people-hub-icon">{item.icon}</div>
+            <div>
+              <strong>{language === 'th' ? item.titleTh : item.titleEn}</strong>
+              <span>{language === 'th' ? item.bodyTh : item.bodyEn}</span>
+            </div>
+            <Badge status="pending">{language === 'th' ? item.badgeTh : item.badgeEn}</Badge>
+          </Link>
+        ))}
       </div>
     </section>
   );

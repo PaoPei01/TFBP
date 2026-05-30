@@ -151,6 +151,79 @@
   background: var(--card-bg);
 }
 
+.people-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.people-hub-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: start;
+  min-height: 128px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1rem;
+  color: var(--text);
+  background: var(--card-bg);
+  text-decoration: none;
+  box-shadow: var(--shadow-soft);
+  transition: 160ms ease;
+}
+
+.people-hub-card:hover,
+.people-hub-card:focus-visible {
+  border-color: color-mix(in srgb, var(--primary) 32%, transparent);
+  transform: translateY(-1px);
+}
+
+.people-hub-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  color: var(--accent-strong);
+  background: var(--primary-soft);
+}
+
+.people-hub-card div:nth-child(2) {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.people-hub-card span:not(.badge) {
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.people-privacy-note {
+  align-items: flex-start;
+}
+
+.people-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+}
+
+.people-directory-search {
+  display: grid;
+  gap: 1rem;
+}
+
+.people-data-health-panel > details {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.people-data-health-panel summary {
+  min-height: 44px;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-weight: 950;
+}
+
 .command-center-grid {
   grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
   align-items: start;
@@ -253,7 +326,8 @@
   .admin-command-hub-grid,
   .admin-command-live-grid,
   .admin-app-summary-grid,
-  .admin-app-tabs {
+  .admin-app-tabs,
+  .people-hub-grid {
     grid-template-columns: 1fr;
   }
 
@@ -295,6 +369,15 @@
 
   .mobile-filter-trigger {
     display: inline-flex;
+  }
+
+  .people-hub-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .people-hub-card .badge {
+    grid-column: 2;
+    justify-self: start;
   }
 }
 
