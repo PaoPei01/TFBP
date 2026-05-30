@@ -121,7 +121,7 @@ const deepRouteLabels: Array<{ prefix: string; hub: string; titleTh: string; tit
   { prefix: '/admin/people/import-year2', hub: '/admin/people-groups', titleTh: 'นำเข้าฐานปี 2', titleEn: 'Import Year 2' },
   { prefix: '/admin/requests', hub: '/admin/people-groups', titleTh: 'คำขอแก้ไขข้อมูล', titleEn: 'Edit requests' },
   { prefix: '/admin/people-groups', hub: '/admin/people-groups', titleTh: 'รายชื่อและกลุ่ม', titleEn: 'People & Groups' },
-  { prefix: '/admin/people', hub: '/admin/people-groups', titleTh: 'ฐานข้อมูลบุคคล', titleEn: 'People database' },
+  { prefix: '/admin/people', hub: '/admin/people-groups', titleTh: 'ข้อมูลกลาง', titleEn: 'Central records' },
   { prefix: '/admin/groups', hub: '/admin/people-groups', titleTh: 'จัดกลุ่ม', titleEn: 'Groups' },
   { prefix: '/admin/documents/settings', hub: '/admin/documents', titleTh: 'ข้อมูลตั้งต้นเอกสาร', titleEn: 'Document settings' },
   { prefix: '/admin/documents/templates', hub: '/admin/documents', titleTh: 'เทมเพลตเอกสาร', titleEn: 'Document templates' },

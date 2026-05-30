@@ -22,6 +22,29 @@ Use this checklist before real event operations and after every production-readi
 - [ ] At least one active staff attendance session can be created.
 - [ ] Test on iPhone SE width, common Android width, tablet, desktop.
 
+## Admin Redesign QA
+
+Use this checklist after admin navigation, page shell, or admin operations layout changes.
+
+- [ ] Test admin routes: `/admin`, `/admin/events`, `/admin/events/:eventId`, `/admin/events/:eventId/applications`, `/admin/people`, `/admin/people-groups`, `/admin/staff-ops`, `/admin/staff`, `/admin/staff/attendance`, `/admin/staff/attendance/:sessionId`, `/admin/documents`, `/admin/data-health`, `/admin/system-readiness`, and `/admin/emergency`.
+- [ ] Test viewports at 375px, 390px, 430px, 768px, 1024px, and 1440px.
+- [ ] Confirm each admin route keeps the same route guard and never exposes admin content to non-admin users.
+- [ ] Confirm no page has horizontal overflow on mobile; tables may scroll only inside their table wrapper on tablet/desktop.
+- [ ] Confirm bottom navigation, sticky action bars, and mobile sheets do not cover primary actions.
+- [ ] Confirm the mobile More menu opens, scrolls, groups admin links clearly, closes on backdrop/click/Escape, and keeps touch targets at least 44px high.
+- [ ] Confirm mobile filter sheets open, scroll internally, and keep Apply/Clear actions reachable.
+- [ ] Confirm modals and drawers scroll internally, keep close controls visible, and return page scroll after closing.
+- [ ] Confirm export confirmation modals are readable and require explicit acknowledgement before downloading sensitive files.
+- [ ] Confirm health data does not appear in main admin lists and appears only in authorized detail/export contexts.
+- [ ] Confirm dangerous actions such as delete, reject, close session, and merge require confirmation and use danger styling.
+- [ ] Confirm row/card actions keep one clear primary action; additional actions are grouped under More when there are several.
+- [ ] Confirm dark mode admin cards, badges, filters, modals, tables, and mobile cards remain readable.
+- [ ] Confirm status badges include text and do not rely on color alone.
+- [ ] Confirm focus rings are visible for links, buttons, form controls, summaries, and modal close buttons.
+- [ ] Confirm admin copy avoids raw backend/RPC/database wording in normal workflow pages; diagnostic pages may mention schema/RPC when useful.
+- [ ] Confirm Thai terms are consistent: ศูนย์ควบคุมระบบ, รายชื่อและกลุ่ม, งานทีมงาน, เช็กชื่อทีมงาน, ตรวจสุขภาพข้อมูล, ตรวจความพร้อมระบบ, ข้อมูลกลาง.
+- [ ] Confirm English labels are short and clear: Command Center, People & Groups, Staff Operations, Staff check-in, Data Health, System Readiness, Central records.
+
 ## Localization and Theme Future QA
 
 - [ ] Browser language detection defaults `th-TH` browsers to Thai on first visit.

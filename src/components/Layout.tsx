@@ -304,7 +304,7 @@ export function Layout() {
                 <NavLink to="/admin/staff/operations"><UsersRound size={18} />{language === 'th' ? 'โควตา/งานทีมงาน' : 'Staff operations'}</NavLink>
                 <NavLink to="/admin/staff/import"><Database size={18} />{language === 'th' ? 'นำเข้าสตาฟ' : 'Import staff'}</NavLink>
                 <NavLink to="/admin/staff/requests"><Pencil size={18} />{language === 'th' ? 'คำขอทีมงาน' : 'Staff requests'}</NavLink>
-                <NavLink to="/admin/people"><Database size={18} />{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}</NavLink>
+                <NavLink to="/admin/people"><Database size={18} />{language === 'th' ? 'ข้อมูลกลาง' : 'Central records'}</NavLink>
                 <NavLink to="/admin/groups"><UsersRound size={18} />{language === 'th' ? 'จัดกลุ่ม' : 'Groups'}</NavLink>
                 <NavLink to="/admin/requests"><Pencil size={18} />{uiCopy.editRequests}</NavLink>
                 <NavLink to="/admin/people/update-requests"><Database size={18} />{uiCopy.updateRequests}</NavLink>

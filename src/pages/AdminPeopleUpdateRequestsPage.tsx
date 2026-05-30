@@ -88,13 +88,13 @@ export function AdminPeopleUpdateRequestsPage() {
     <section className="events-page page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow={language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}
+        eyebrow={language === 'th' ? 'ข้อมูลกลาง' : 'Central records'}
         title={language === 'th' ? 'คำร้องแก้ข้อมูล' : 'Update requests'}
         description={language === 'th' ? 'ตรวจคำร้องแก้ไข CMU Mail เบอร์โทร และข้อมูลพื้นฐาน โดยไม่แสดงข้อมูลสุขภาพ' : 'Review CMU Mail, phone, and basic profile correction requests without exposing health data.'}
         meta={<EventSwitcher compact />}
         actions={(
           <>
-            <Link className="btn btn-secondary" to="/admin/people">{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}</Link>
+            <Link className="btn btn-secondary" to="/admin/people">{language === 'th' ? 'ข้อมูลกลาง' : 'Central records'}</Link>
             <Button variant="secondary" icon={<RefreshCw size={18} />} onClick={() => { void eventsState.reload(); void requestsState.reload(); }}>{language === 'th' ? 'รีเฟรช' : 'Refresh'}</Button>
           </>
         )}

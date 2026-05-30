@@ -7,6 +7,7 @@
   max-width: 1180px;
   width: 100%;
   margin-inline: auto;
+  overflow-x: clip;
 }
 
 .admin-section,
@@ -97,6 +98,19 @@
   min-height: 42px;
 }
 
+.admin-main :where(.form-actions, .row-actions, .application-more-actions, .mobile-card-actions) {
+  min-width: 0;
+}
+
+.admin-main :where(.form-actions, .row-actions, .application-more-actions, .mobile-card-actions) > * {
+  min-width: 0;
+}
+
+.admin-main :where(.btn) {
+  max-width: 100%;
+  white-space: normal;
+}
+
 .admin-main :where(.btn-danger) {
   box-shadow: none;
 }
@@ -104,6 +118,10 @@
 .admin-main :where(.table-wrap) {
   border-radius: var(--admin-card-radius);
   box-shadow: var(--shadow-soft);
+}
+
+.admin-main :where(.modal-body) {
+  overflow-wrap: anywhere;
 }
 
 .admin-main :where(th, td) {

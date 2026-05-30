@@ -97,7 +97,7 @@ export function AdminDashboardPage() {
     },
   ] : [];
   const quickActions = [
-    { to: '/admin/people', icon: <Database size={22} />, title: language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database', body: language === 'th' ? 'จัดการข้อมูลทั้งหมด' : 'Manage all records' },
+    { to: '/admin/people', icon: <Database size={22} />, title: language === 'th' ? 'ข้อมูลกลาง' : 'Central records', body: language === 'th' ? 'ค้นหาและตรวจข้อมูลบุคคล' : 'Search and inspect records' },
     { to: '/admin/groups', icon: <UsersRound size={22} />, title: language === 'th' ? 'จัดกลุ่ม' : 'Groups', body: language === 'th' ? 'ดูและปรับกลุ่มผู้เข้าร่วม' : 'Review participant grouping' },
     { to: '/admin/staff', icon: <UserCheck size={22} />, title: language === 'th' ? 'ทีมงาน' : 'Staff', body: language === 'th' ? 'จัดการรายชื่อและสิทธิ์ทีมงาน' : 'Manage staff records and roles' },
     { to: '/admin/staff/attendance', icon: <ClipboardCheck size={22} />, title: language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff attendance', body: language === 'th' ? 'เปิดรอบเช็กชื่อและดูสถานะ' : 'Open sessions and attendance status' },

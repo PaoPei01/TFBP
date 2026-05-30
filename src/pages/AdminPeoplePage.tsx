@@ -236,7 +236,7 @@ export function AdminPeoplePage() {
       />
 
       <Card className="workflow-explainer-card people-privacy-note" variant="soft">
-        <strong>{language === 'th' ? 'ฐานข้อมูลบุคคล' : 'People database'}</strong>
+        <strong>{language === 'th' ? 'ข้อมูลกลาง' : 'Central records'}</strong>
         <span>{language === 'th' ? 'ข้อมูลติดต่อถูก masked ในรายการหลัก และแสดงรายละเอียดเฉพาะในหน้าแอดมินนี้เท่านั้น' : 'Contact details are masked in the main list and available only inside this admin view.'}</span>
       </Card>
 

@@ -105,7 +105,7 @@ export function Year2PeopleImportPage() {
     <section className="page-stack">
       <Toast toast={toast} />
       <PageHeader
-        eyebrow={language === 'th' ? 'นำเข้าฐานข้อมูลบุคคล' : 'People Import'}
+        eyebrow={language === 'th' ? 'นำเข้าข้อมูลกลาง' : 'Central Records Import'}
         title={language === 'th' ? 'นำเข้าข้อมูลนักศึกษาปี 2' : 'Import Year 2 Student Data'}
         description={language === 'th' ? 'นำเข้าฐานข้อมูลนักศึกษาวิศวกรรมปี 2 ผ่าน staging table ก่อน upsert เข้า people อย่างปลอดภัย' : 'Safely stage Engineering year 2 student data before upserting into the central people table.'}
         meta={<Badge status="pending">{language === 'th' ? 'Admin only' : 'Admin only'}</Badge>}
