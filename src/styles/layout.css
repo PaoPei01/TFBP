@@ -510,6 +510,135 @@
   padding: 2rem 0 calc(8rem + env(safe-area-inset-bottom));
 }
 
+.admin-shell {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.admin-shell-sidebar {
+  position: sticky;
+  top: calc(74px + 1rem);
+  display: grid;
+  gap: 0.85rem;
+  max-height: calc(100vh - 106px);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 0.85rem;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-soft);
+}
+
+.admin-shell-sidebar-head {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.35rem 0.45rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-shell-sidebar-head strong {
+  color: var(--text-strong);
+  font-size: 1rem;
+}
+
+.admin-shell-sidebar-head span {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.admin-shell-nav {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-shell-nav-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  padding: 0.75rem;
+  color: var(--text);
+  text-decoration: none;
+  transition: 160ms ease;
+}
+
+.admin-shell-nav-link svg {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+  color: var(--accent-strong);
+}
+
+.admin-shell-nav-link span {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.admin-shell-nav-link strong {
+  color: var(--text-strong);
+  font-size: 0.9rem;
+}
+
+.admin-shell-nav-link small {
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+
+.admin-shell-nav-link:hover,
+.admin-shell-nav-link:focus-visible,
+.admin-shell-nav-link.active {
+  border-color: color-mix(in srgb, var(--primary) 28%, transparent);
+  background: var(--primary-soft);
+}
+
+.admin-shell-main {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.admin-breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.admin-breadcrumbs a,
+.admin-breadcrumbs span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.admin-breadcrumbs a {
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.admin-breadcrumbs a::after {
+  content: "/";
+  margin-left: 0.35rem;
+  color: var(--text-soft);
+}
+
+@media (max-width: 1080px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-shell-sidebar {
+    display: none;
+  }
+}
+
 .page-content,
 .page-container,
 .admin-page-container,

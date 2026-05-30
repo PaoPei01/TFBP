@@ -1754,6 +1754,44 @@
   padding-bottom: calc(0.5rem + var(--safe-bottom));
 }
 
+.mobile-more-accordion {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(132, 155, 190, 0.18);
+  border-radius: 22px;
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+
+.mobile-more-accordion summary {
+  min-height: 52px;
+  padding: 0.85rem 0.95rem;
+  color: var(--text-strong);
+  cursor: pointer;
+  font-weight: 950;
+  list-style: none;
+}
+
+.mobile-more-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobile-more-accordion summary::after {
+  content: "+";
+  float: right;
+  color: var(--text-soft);
+}
+
+.mobile-more-accordion[open] summary::after {
+  content: "−";
+}
+
+.mobile-more-accordion .mobile-more-section {
+  border: 0;
+  border-top: 1px solid rgba(132, 155, 190, 0.16);
+  border-radius: 0;
+  background: transparent;
+}
+
 .mobile-more-section {
   grid-column: 1 / -1;
   display: grid;

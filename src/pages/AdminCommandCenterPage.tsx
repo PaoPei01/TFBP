@@ -1,7 +1,19 @@
-import { AlertTriangle, Bell, CalendarDays, ClipboardCheck, Database, FileText, GitMerge, HeartPulse, Pencil, ShieldCheck, SlidersHorizontal, UsersRound } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  CalendarDays,
+  ClipboardCheck,
+  Database,
+  FileText,
+  GitMerge,
+  HeartPulse,
+  Pencil,
+  ShieldCheck,
+  SlidersHorizontal,
+  UsersRound,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { EventSwitcher } from '../components/events/EventSwitcher';
-import { PortalActionCard } from '../components/PortalActionCard';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -11,11 +23,11 @@ export function AdminCommandCenterPage() {
   const { language } = useLanguage();
 
   return (
-    <section className="page-stack">
+    <section className="page-stack admin-command-page">
       <PageHeader
         eyebrow="Admin"
         title={language === 'th' ? 'ศูนย์ควบคุมระบบ' : 'Admin Command Center'}
-        description={language === 'th' ? 'ดูภาพรวม งานที่ควรตรวจสอบ และทางลัดสำหรับจัดการกิจกรรมทั้งหมด' : 'Review system status, urgent tasks, and shortcuts for managing the event.'}
+        description={language === 'th' ? 'เริ่มจากงานที่ควรตรวจสอบ แล้วเปิด hub เฉพาะด้านสำหรับจัดการหน้างานและข้อมูลหลัก' : 'Start with work that needs review, then open focused hubs for live operations and core data.'}
         meta={<EventSwitcher compact />}
         actions={<Link className="btn btn-secondary" to="/admin/dashboard">{language === 'th' ? 'เปิดแดชบอร์ดเดิม' : 'Open legacy dashboard'}</Link>}
       />
@@ -23,73 +35,62 @@ export function AdminCommandCenterPage() {
       <Card className="event-detail-card admin-command-intro" variant="soft">
         <div className="mobile-row-head">
           <div>
-            <strong>{language === 'th' ? 'จัดการระบบจาก hub หลัก' : 'Manage operations from focused hubs'}</strong>
-            <span>{language === 'th' ? 'เริ่มจากงานที่ควรตรวจ แล้วค่อยเปิด hub เฉพาะด้านเพื่อลดการไล่หาเมนูยาว ๆ' : 'Start with review work, then open focused hubs instead of scanning one long menu.'}</span>
+            <strong>{language === 'th' ? 'Command center สำหรับผู้ดูแล' : 'Admin command center'}</strong>
+            <span>{language === 'th' ? 'หน้าแอดมินถูกจัดเป็น hub เพื่อลดการไล่หาเมนูยาว และยังเข้าถึง route เดิมได้ครบจากแต่ละ hub' : 'Admin tools are grouped into hubs so the old routes stay reachable without one long tool list.'}</span>
           </div>
           <Badge status="approved">{language === 'th' ? 'ผู้ดูแลระบบ' : 'Admin'}</Badge>
         </div>
       </Card>
 
-      <section className="command-center-grid" aria-label={language === 'th' ? 'ศูนย์ควบคุมระบบ' : 'Admin command center'}>
-        <Card className="command-panel">
-          <div className="section-heading-row">
-            <div>
-              <p className="eyebrow">{language === 'th' ? 'งานที่ควรตรวจสอบ' : 'Needs review'}</p>
-              <h2>{language === 'th' ? 'งานที่ควรตรวจสอบ' : 'Needs review'}</h2>
-              <span>{language === 'th' ? 'ถ้ายังไม่มีตัวเลขสด ให้เปิดหน้าตรวจสอบจากการ์ดเหล่านี้ได้ทันที' : 'Open these checks directly when live counts are not available.'}</span>
-            </div>
+      <section className="admin-command-section" aria-labelledby="admin-review-work">
+        <div className="section-heading-row">
+          <div>
+            <p className="eyebrow">{language === 'th' ? 'งานที่ควรตรวจสอบ' : 'Needs review'}</p>
+            <h2 id="admin-review-work">{language === 'th' ? 'งานที่ควรตรวจสอบ' : 'Needs review'}</h2>
+            <span>{language === 'th' ? 'รายการที่มักต้องตัดสินใจหรือแก้ข้อมูลก่อนวันใช้งานจริง' : 'Common review points before live operations.'}</span>
           </div>
-          <div className="needs-review-list">
-            <Link className="needs-review-item" to="/admin/requests"><strong><Pencil size={22} /></strong><span>{language === 'th' ? 'คำขอแก้ไขข้อมูลรอตรวจสอบ' : 'Participant edit requests'}</span><em>{language === 'th' ? 'ตรวจสอบ' : 'Review'}</em></Link>
-            <Link className="needs-review-item" to="/admin/people/update-requests"><strong><Pencil size={22} /></strong><span>{language === 'th' ? 'คำร้องแก้ข้อมูลบุคคล' : 'People update requests'}</span><em>{language === 'th' ? 'ตรวจสอบ' : 'Review'}</em></Link>
-            <Link className="needs-review-item" to="/admin/people/dedupe"><strong><GitMerge size={22} /></strong><span>{language === 'th' ? 'ข้อมูลซ้ำที่ควรตรวจ' : 'Possible duplicates'}</span><em>{language === 'th' ? 'ตรวจสอบ' : 'Review'}</em></Link>
-            <Link className="needs-review-item" to="/admin/staff/operations"><strong><UsersRound size={22} /></strong><span>{language === 'th' ? 'ทีมงานยังไม่ครบโควตา' : 'Staff quota issues'}</span><em>{language === 'th' ? 'ตรวจสอบ' : 'Review'}</em></Link>
-            <Link className="needs-review-item" to="/admin/emergency"><strong><HeartPulse size={22} /></strong><span>{language === 'th' ? 'ข้อมูลสุขภาพที่ควรตรวจ' : 'Health data to review'}</span><em>{language === 'th' ? 'ตรวจสอบ' : 'Review'}</em></Link>
-            <Link className="needs-review-item" to="/admin/documents"><strong><FileText size={22} /></strong><span>{language === 'th' ? 'ข้อมูลเอกสารยังไม่ครบ' : 'Incomplete document setup'}</span><em>{language === 'th' ? 'ตรวจสอบ' : 'Review'}</em></Link>
-            <Link className="needs-review-item" to="/admin/system-readiness"><strong><AlertTriangle size={22} /></strong><span>{language === 'th' ? 'ปัญหาความพร้อมระบบ' : 'System readiness issues'}</span><em>{language === 'th' ? 'ตรวจสอบ' : 'Review'}</em></Link>
-          </div>
-        </Card>
-
-        <Card className="command-panel">
-          <div className="section-heading-row">
-            <div>
-              <p className="eyebrow">{language === 'th' ? 'ทางลัดหลัก' : 'Main shortcuts'}</p>
-              <h2>{language === 'th' ? 'ทางลัดหลัก' : 'Main shortcuts'}</h2>
-              <span>{language === 'th' ? 'เปิด hub หรือเครื่องมือหลักสำหรับจัดการกิจกรรม' : 'Open the main operational hubs and tools.'}</span>
-            </div>
-          </div>
-          <div className="admin-quick-action-grid">
-            <Link className="admin-quick-action-card" to="/admin/events"><CalendarDays size={22} /><strong>{language === 'th' ? 'จัดการกิจกรรม' : 'Events'}</strong><span>{language === 'th' ? 'ตั้งค่าและเปิดหน้า event admin' : 'Set up and manage event pages.'}</span></Link>
-            <Link className="admin-quick-action-card" to="/admin/people-groups"><Database size={22} /><strong>{language === 'th' ? 'รายชื่อและกลุ่ม' : 'People & Groups'}</strong><span>{language === 'th' ? 'ข้อมูลบุคคล กลุ่ม และคำขอแก้ไข' : 'People, groups, and edit requests.'}</span></Link>
-            <Link className="admin-quick-action-card" to="/admin/staff-ops"><UsersRound size={22} /><strong>{language === 'th' ? 'ทีมงาน' : 'Staff Operations'}</strong><span>{language === 'th' ? 'ทีมงาน ใบสมัคร โควตา และคำขอ' : 'Staff, applications, quota, and requests.'}</span></Link>
-            <Link className="admin-quick-action-card" to="/admin/staff/attendance"><ClipboardCheck size={22} /><strong>{language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'}</strong><span>{language === 'th' ? 'รอบเช็กชื่อและ QR' : 'Sessions and QR tools.'}</span></Link>
-            <Link className="admin-quick-action-card" to="/admin/emergency"><HeartPulse size={22} /><strong>{language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'}</strong><span>{language === 'th' ? 'ข้อมูลช่วยเหลือและความปลอดภัย' : 'Safety and emergency data.'}</span></Link>
-            <Link className="admin-quick-action-card" to="/admin/documents"><FileText size={22} /><strong>{language === 'th' ? 'ศูนย์เอกสาร' : 'Document Center'}</strong><span>{language === 'th' ? 'เทมเพลต สร้างไฟล์ และประวัติ' : 'Templates, generation, and history.'}</span></Link>
-            <Link className="admin-quick-action-card" to="/admin/data-health"><ShieldCheck size={22} /><strong>{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'}</strong><span>{language === 'th' ? 'ข้อมูลขาด ซ้ำ หรือเสี่ยง' : 'Missing, duplicate, or risky data.'}</span></Link>
-            <Link className="admin-quick-action-card" to="/admin/system-readiness"><SlidersHorizontal size={22} /><strong>{language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System Readiness'}</strong><span>{language === 'th' ? 'ตรวจ production readiness' : 'Production readiness checks.'}</span></Link>
-          </div>
-        </Card>
+        </div>
+        <div className="needs-review-list admin-command-review-list">
+          <Link className="needs-review-item" to="/admin/requests"><strong><Pencil size={22} /></strong><span>{language === 'th' ? 'คำขอแก้ไขข้อมูลผู้เข้าร่วม' : 'Participant edit requests'}</span><em>{language === 'th' ? 'ตรวจคำขอและอนุมัติข้อมูล' : 'Review and approve updates'}</em></Link>
+          <Link className="needs-review-item" to="/admin/people/update-requests"><strong><Pencil size={22} /></strong><span>{language === 'th' ? 'คำร้องแก้ข้อมูลบุคคล' : 'People update requests'}</span><em>{language === 'th' ? 'ตรวจข้อมูลจากฐานกลาง' : 'Check central people data'}</em></Link>
+          <Link className="needs-review-item" to="/admin/people/dedupe"><strong><GitMerge size={22} /></strong><span>{language === 'th' ? 'ข้อมูลซ้ำที่ควรตรวจ' : 'Possible duplicates'}</span><em>{language === 'th' ? 'รวม/แยกข้อมูลอย่างระมัดระวัง' : 'Review duplicate records carefully'}</em></Link>
+          <Link className="needs-review-item" to="/admin/staff/operations"><strong><UsersRound size={22} /></strong><span>{language === 'th' ? 'โควตาและการจัดทีมงาน' : 'Staff quota and assignments'}</span><em>{language === 'th' ? 'ดูทีมที่ยังต้องเติมคน' : 'Find teams that need attention'}</em></Link>
+          <Link className="needs-review-item" to="/admin/data-health"><strong><ShieldCheck size={22} /></strong><span>{language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data health'}</span><em>{language === 'th' ? 'ข้อมูลขาด ซ้ำ หรือเสี่ยงผิดพลาด' : 'Missing, duplicate, or risky data'}</em></Link>
+          <Link className="needs-review-item" to="/admin/system-readiness"><strong><AlertTriangle size={22} /></strong><span>{language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System readiness'}</span><em>{language === 'th' ? 'ตรวจความพร้อมก่อนใช้งานจริง' : 'Pre-launch readiness checks'}</em></Link>
+        </div>
       </section>
 
-      <div className="section-heading-row">
-        <div>
-          <p className="eyebrow">{language === 'th' ? 'เครื่องมือเดิม' : 'Existing tools'}</p>
-          <h2>{language === 'th' ? 'เครื่องมือแอดมินทั้งหมด' : 'All admin tools'}</h2>
-          <span>{language === 'th' ? 'ยังเข้าถึงเครื่องมือเดิมได้ครบจากตรงนี้' : 'All existing admin routes remain available here.'}</span>
+      <section className="admin-command-section" aria-labelledby="admin-live-work">
+        <div className="section-heading-row">
+          <div>
+            <p className="eyebrow">{language === 'th' ? 'งานหน้างาน' : 'Live operations'}</p>
+            <h2 id="admin-live-work">{language === 'th' ? 'งานหน้างาน' : 'Live operations'}</h2>
+            <span>{language === 'th' ? 'เครื่องมือที่ต้องเปิดเร็วระหว่างวันงานหรือช่วงประกาศสำคัญ' : 'Fast access for event-day work and important updates.'}</span>
+          </div>
         </div>
-      </div>
+        <div className="admin-command-hub-grid admin-command-live-grid">
+          <Link className="admin-quick-action-card" to="/admin/staff/attendance"><ClipboardCheck size={22} /><strong>{language === 'th' ? 'เช็กชื่อ' : 'Check-in'}</strong><span>{language === 'th' ? 'สร้างรอบ เปิด QR และดูประวัติการเช็กชื่อ' : 'Create sessions, open QR, and view attendance history.'}</span></Link>
+          <Link className="admin-quick-action-card" to="/admin/emergency"><HeartPulse size={22} /><strong>{language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'}</strong><span>{language === 'th' ? 'เปิดข้อมูลช่วยเหลือและข้อมูลสุขภาพตามสิทธิ์' : 'Open safety and support information with admin access.'}</span></Link>
+          <Link className="admin-quick-action-card" to="/admin/announcements"><Bell size={22} /><strong>{language === 'th' ? 'ประกาศ' : 'Announcements'}</strong><span>{language === 'th' ? 'เผยแพร่ประกาศและข้อมูลตามกิจกรรม' : 'Publish event-aware announcements and updates.'}</span></Link>
+        </div>
+      </section>
 
-      <div className="staff-action-grid">
-        <PortalActionCard to="/admin/events" icon={<CalendarDays size={28} />} title={language === 'th' ? 'กิจกรรม' : 'Events'} description={language === 'th' ? 'จัดการกิจกรรม หน้า public และใบสมัครตามกิจกรรม' : 'Manage events, public pages, and event applications.'} primary />
-        <PortalActionCard to="/admin/people-groups" icon={<Database size={28} />} title={language === 'th' ? 'รายชื่อและกลุ่ม' : 'People & Groups'} description={language === 'th' ? 'ข้อมูลบุคคล กลุ่ม และคำขอแก้ไข' : 'People, groups, and edit requests.'} />
-        <PortalActionCard to="/admin/staff-ops" icon={<UsersRound size={28} />} title={language === 'th' ? 'งานทีมงาน' : 'Staff Operations'} description={language === 'th' ? 'ทีมงาน ใบสมัคร โควตา และคำขอ' : 'Staff, applications, quota, and requests.'} />
-        <PortalActionCard to="/admin/staff/attendance" icon={<ClipboardCheck size={28} />} title={language === 'th' ? 'เช็กชื่อทีมงาน' : 'Staff check-in'} description={language === 'th' ? 'สร้างรอบเช็กชื่อ เปิด QR และดูประวัติการเช็กชื่อ' : 'Create sessions, open QR codes, and review attendance.'} />
-        <PortalActionCard to="/admin/documents" icon={<FileText size={28} />} title={language === 'th' ? 'ศูนย์เอกสาร' : 'Document Center'} description={language === 'th' ? 'ตั้งค่า template สร้างเอกสาร และดูประวัติ' : 'Manage templates, generate documents, and view history.'} />
-        <PortalActionCard to="/admin/announcements" icon={<Bell size={28} />} title={language === 'th' ? 'ประกาศ' : 'Announcements'} description={language === 'th' ? 'เผยแพร่ประกาศและข้อมูลตามกิจกรรม' : 'Publish event-aware announcements and information.'} />
-        <PortalActionCard to="/admin/data-health" icon={<ShieldCheck size={28} />} title={language === 'th' ? 'ตรวจสุขภาพข้อมูล' : 'Data Health'} description={language === 'th' ? 'ตรวจข้อมูลที่หาย ซ้ำ หรือเสี่ยงผิดพลาด' : 'Find missing, duplicate, or risky data.'} />
-        <PortalActionCard to="/admin/system-readiness" icon={<SlidersHorizontal size={28} />} title={language === 'th' ? 'ตรวจความพร้อมระบบ' : 'System Readiness'} description={language === 'th' ? 'ตรวจความพร้อมก่อนใช้งานจริง' : 'Check readiness before real operations.'} />
-        <PortalActionCard to="/admin/emergency" icon={<HeartPulse size={28} />} title={language === 'th' ? 'เหตุฉุกเฉิน' : 'Emergency'} description={language === 'th' ? 'เปิดข้อมูลช่วยเหลือและสุขภาพตามสิทธิ์ผู้ดูแล' : 'Open emergency support information with admin access.'} />
-      </div>
+      <section className="admin-command-section" aria-labelledby="admin-main-hubs">
+        <div className="section-heading-row">
+          <div>
+            <p className="eyebrow">{language === 'th' ? 'ศูนย์จัดการหลัก' : 'Main hubs'}</p>
+            <h2 id="admin-main-hubs">{language === 'th' ? 'ศูนย์จัดการหลัก' : 'Main hubs'}</h2>
+            <span>{language === 'th' ? 'เริ่มจาก hub เหล่านี้แทนการไล่เมนูย่อยทีละรายการ' : 'Start from these hubs instead of scanning deep tools one by one.'}</span>
+          </div>
+        </div>
+        <div className="admin-command-hub-grid">
+          <Link className="admin-quick-action-card" to="/admin/events"><CalendarDays size={22} /><strong>{language === 'th' ? 'กิจกรรม' : 'Events'}</strong><span>{language === 'th' ? 'ตั้งค่า event หน้า public ใบสมัคร และประกาศ' : 'Manage events, public pages, applications, and announcements.'}</span></Link>
+          <Link className="admin-quick-action-card" to="/admin/staff-ops"><UsersRound size={22} /><strong>{language === 'th' ? 'ใบสมัคร/ทีมงาน' : 'Applications / Staff'}</strong><span>{language === 'th' ? 'ใบสมัคร รายชื่อทีมงาน โควตา และคำขอแก้ไข' : 'Applications, roster, quota, and staff requests.'}</span></Link>
+          <Link className="admin-quick-action-card" to="/admin/people-groups"><Database size={22} /><strong>{language === 'th' ? 'รายชื่อและกลุ่ม' : 'People & Groups'}</strong><span>{language === 'th' ? 'ข้อมูลบุคคล กลุ่ม คำขอแก้ไข และนำเข้าข้อมูล' : 'People, groups, edit requests, and imports.'}</span></Link>
+          <Link className="admin-quick-action-card" to="/admin/documents"><FileText size={22} /><strong>{language === 'th' ? 'ศูนย์เอกสาร' : 'Document Center'}</strong><span>{language === 'th' ? 'ตั้งค่าเทมเพลต สร้างไฟล์ และดูประวัติ' : 'Manage templates, generate files, and view history.'}</span></Link>
+          <Link className="admin-quick-action-card" to="/admin/system-readiness"><SlidersHorizontal size={22} /><strong>{language === 'th' ? 'ระบบ' : 'System'}</strong><span>{language === 'th' ? 'ตรวจความพร้อมระบบ ประวัติ และสุขภาพข้อมูล' : 'Review readiness, logs, and data health.'}</span></Link>
+        </div>
+      </section>
     </section>
   );
 }
